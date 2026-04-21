@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-register',
@@ -6,6 +7,8 @@ import { Component } from '@angular/core';
   styleUrls: ['./register.component.css']
 })
 export class RegisterComponent {
+
+  constructor(private router: Router) {}
 
   role: string = 'patient';
 
@@ -39,93 +42,90 @@ export class RegisterComponent {
   }
 
   // ================= MAIN REGISTER FUNCTION =================
-  register(form: any) {
+register(form: any) {
 
-    // stop if form itself invalid
-    if (form.invalid) {
-      console.log("Form is invalid");
+  if (form.invalid) {
+    console.log("Form is invalid");
+    return;
+  }
+
+  // ================= PATIENT =================
+  if (this.role === 'patient') {
+
+    if (!this.patient.fullName ||
+        !this.patient.age ||
+        !this.patient.gender ||
+        !this.patient.email ||
+        !this.patient.phone ||
+        !this.patient.address ||
+        !this.patient.password ||
+        !this.patient.confirmPassword) {
+
+      alert("Please fill all patient fields");
       return;
     }
 
-    // ================= PATIENT VALIDATION =================
-    if (this.role === 'patient') {
-
-      if (!this.patient.fullName ||
-          !this.patient.age ||
-          !this.patient.gender ||
-          !this.patient.email ||
-          !this.patient.phone ||
-          !this.patient.address ||
-          !this.patient.password ||
-          !this.patient.confirmPassword) {
-
-        alert("Please fill all patient fields");
-        return;
-      }
-
-      if (!this.validateEmail(this.patient.email)) {
-        alert("Invalid email format");
-        return;
-      }
-
-      if (!this.validatePhone(this.patient.phone)) {
-        alert("Phone must be 10 digits");
-        return;
-      }
-
-      if (this.patient.password.length < 6) {
-        alert("Password must be at least 6 characters");
-        return;
-      }
-
-      if (this.patient.password !== this.patient.confirmPassword) {
-        alert("Passwords do not match");
-        return;
-      }
-
-      console.log("✅ Patient Data Valid:", this.patient);
+    if (!this.validateEmail(this.patient.email)) {
+      alert("Invalid email format");
+      return;
     }
 
-    // ================= NURSE VALIDATION =================
-    else if (this.role === 'nurse') {
-
-      if (!this.nurse.fullName ||
-          !this.nurse.email ||
-          !this.nurse.password ||
-          !this.nurse.confirmPassword ||
-          !this.nurse.specialization ||
-          !this.nurse.experience ||
-          !this.nurse.availability ||
-          !this.nurse.phone) {
-
-        alert("Please fill all nurse fields");
-        return;
-      }
-
-      if (!this.validateEmail(this.nurse.email)) {
-        alert("Invalid email format");
-        return;
-      }
-
-      if (!this.validatePhone(this.nurse.phone)) {
-        alert("Phone must be 10 digits");
-        return;
-      }
-
-      if (this.nurse.password.length < 6) {
-        alert("Password must be at least 6 characters");
-        return;
-      }
-
-      if (this.nurse.password !== this.nurse.confirmPassword) {
-        alert("Passwords do not match");
-        return;
-      }
-
-      console.log("✅ Nurse Data Valid:", this.nurse);
+    if (!this.validatePhone(this.patient.phone)) {
+      alert("Phone must be 10 digits");
+      return;
     }
+
+    if (this.patient.password.length < 6) {
+      alert("Password must be at least 6 characters");
+      return;
+    }
+
+    if (this.patient.password !== this.patient.confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    console.log("✅ Patient Data Valid:", this.patient);
+
+    // 🔥 ROUTE TO PATIENT DASHBOARD
+    this.router.navigate(['/patient']);
   }
 
+  // ================= NURSE =================
+  else if (this.role === 'nurse') {
+
+    if (!this.nurse.fullName ||
+        !this.nurse.email ||
+        !this.nurse.phone ||
+        !this.nurse.password ||
+        !this.nurse.confirmPassword) {
+
+      alert("Please fill all nurse fields");
+      return;
+    }
+
+    if (!this.validateEmail(this.nurse.email)) {
+      alert("Invalid email format");
+      return;
+    }
+
+    if (!this.validatePhone(this.nurse.phone)) {
+      alert("Phone must be 10 digits");
+      return;
+    }
+
+    if (this.nurse.password !== this.nurse.confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    console.log("✅ Nurse Data Valid:", this.nurse);
+
+    // 🔥 ROUTE TO NURSE DASHBOARD
+    this.router.navigate(['/nurse']);
+  }
+
+}
   // ================= HELPER FUNCTIONS =================
 
   validateEmail(email: string): boolean {

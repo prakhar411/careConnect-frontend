@@ -11,6 +11,10 @@ import { AdminDashboardComponent } from './pages/admin/admin-dashboard/admin-das
 import { PatientDashboardComponent } from './pages/patient/patient-dashboard/patient-dashboard.component';
 import { NurseDashboardComponent } from './pages/nurse/nurse-dashboard/nurse-dashboard.component';
 import { FormsModule } from '@angular/forms';
+import { MyAppointmentsComponent } from './pages/patient/my-appointments/my-appointments.component';
+import { MedicalRecordsComponent } from './pages/patient/medical-records/medical-records.component';
+import { SettingsComponent } from './pages/patient/settings/settings.component';
+import { BookAppointmentComponent } from './pages/patient/book-appointment/book-appointment.component';
 
 @NgModule({
   declarations: [
@@ -20,7 +24,11 @@ import { FormsModule } from '@angular/forms';
     HomeComponent,
     AdminDashboardComponent,
     PatientDashboardComponent,
-    NurseDashboardComponent
+    NurseDashboardComponent,
+    BookAppointmentComponent,
+    MyAppointmentsComponent,
+    MedicalRecordsComponent,
+    SettingsComponent
   ],
   imports: [
     BrowserModule,

@@ -31,5 +31,6 @@ onLogin(form: any) {
     password: this.password,
     role: this.selectedRole
   });
+  // this.router.navigate(['/patient']);
 }
 }

@@ -1,1 +1,220 @@
-<p>patient-dashboard works!</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>CareConnect — Patient Portal</title>
+    <!-- Bootstrap 5 + Icons + Google Fonts -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-0 position-relative">
+    <!-- ========== SIDEBAR (FIXED, FULL HEIGHT, GREEN GRADIENT) ========== -->
+    <nav class="fixed-sidebar text-white p-3 d-none d-md-block">
+        <div class="sidebar-brand">
+            <i class="bi bi-heart-pulse-fill"></i> 
+            <span>CareConnect</span>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item mb-1">
+                <a class="nav-link-custom" routerLink="/patient" routerLinkActive="active">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item mb-1">
+                <a class="nav-link-custom" routerLink="/book-appointment" routerLinkActive="active">
+                    <i class="bi bi-calendar-plus"></i> Book Nurse
+                </a>
+            </li>
+            <li class="nav-item mb-1">
+                <a class="nav-link-custom" routerLink="/my-appointments" routerLinkActive="active">
+                    <i class="bi bi-journal-bookmark-fill"></i> My Appointments
+                </a>
+            </li>
+            <li class="nav-item mb-1">
+                <a class="nav-link-custom" routerLink="/medical-records" routerLinkActive="active">
+                    <i class="bi bi-folder-medical"></i> Medical Records
+                </a>
+            </li>
+            <div class="sidebar-divider"></div>
+            <li class="nav-item mt-2">
+                <a class="nav-link-custom" routerLink="/settings" routerLinkActive="active">
+                    <i class="bi bi-gear"></i> Settings
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- ========== MAIN CONTENT (OFFSET DESKTOP) ========== -->
+    <main class="main-offset bg-soft min-vh-100 px-md-4 px-3 py-3">
+        <!-- Top bar (preserved empty as original, but style consistency) -->
+        <div class="d-flex justify-content-between align-items-center py-2">
+            <!-- original structure kept -->
+        </div>
+
+        <!-- Welcome section + patient info (enhanced visual) -->
+        <div class="greeting-wrap mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <h4 class="fw-bold" style="color: #1e3a2f;">
+                    {{ greeting }}, {{ patientName }} <span class="wave">✨</span>
+                </h4>
+                <div class="d-flex align-items-center gap-2 mt-1">
+                    <span class="badge-soft-id">
+                        <i class="bi bi-person-vcard me-1"></i> ID: {{ patientId }}
+                    </span>
+                    <span class="badge bg-white text-dark border px-3 py-1 rounded-pill shadow-sm">
+                        <i class="bi bi-shield-check text-success"></i> Active
+                    </span>
+                </div>
+            </div>
+            <div class="d-none d-sm-block">
+                <div class="rounded-circle bg-white shadow-sm p-2 text-center" style="width: 50px; height: 50px; line-height: 1.2;">
+                    <i class="bi bi-person-circle fs-3 text-success"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions (fully interactive with improved card design) -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="card action-card-green p-3 shadow-sm" (click)="goToBookAppointment()">
+                    <div class="d-flex align-items-center">
+                        <div class="action-icon"><i class="bi bi-calendar-check"></i></div>
+                        <div>
+                            <h6 class="mb-1 fw-bold">Book Nurse Appointment</h6>
+                            <small class="text-muted">Schedule a home visit</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card action-card-green p-3 shadow-sm" (click)="goToMyAppointments()">
+                    <div class="d-flex align-items-center">
+                        <div class="action-icon"><i class="bi bi-clock-history"></i></div>
+                        <div>
+                            <h6 class="mb-1 fw-bold">My Appointments</h6>
+                            <small class="text-muted">View scheduled visits</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card action-card-green p-3 shadow-sm" (click)="goToMedicalRecords()">
+                    <div class="d-flex align-items-center">
+                        <div class="action-icon"><i class="bi bi-upload"></i></div>
+                        <div>
+                            <h6 class="mb-1 fw-bold">Upload Record</h6>
+                            <small class="text-muted">Add lab reports & documents</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Two columns: appointments (left) + right panel (records & notifications) -->
+        <div class="row g-4">
+            <!-- Left: Upcoming Appointments -->
+            <div class="col-md-8">
+                <div class="card card-modern p-4 mb-4">
+                    <div class="section-title mb-3">
+                        <i class="bi bi-calendar-week fs-4" style="color: #158467;"></i>
+                        <h5 class="mb-0">Upcoming Appointments</h5>
+                    </div>
+
+                    <!-- No appointments placeholder -->
+                    <div *ngIf="appointments.length === 0" class="text-center py-5 text-muted bg-light rounded-4">
+                        <i class="bi bi-calendar-x fs-1 d-block mb-2 opacity-50"></i>
+                        <span>No upcoming appointments</span>
+                    </div>
+
+                    <!-- Appointment list with scroll for many items -->
+                    <div class="appointment-scroll-area" *ngIf="appointments.length > 0">
+                        <div *ngFor="let appt of appointments"
+                             class="d-flex flex-wrap flex-sm-nowrap justify-content-between align-items-center border-bottom py-3 appointment-item">
+                            <div class="mb-2 mb-sm-0">
+                                <strong class="fs-6"><i class="bi bi-person-heart me-1" style="color:#158467;"></i> {{ appt.nurseName }}</strong><br>
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar3 me-1"></i> {{ appt.date }} &nbsp;|&nbsp;
+                                    <i class="bi bi-clock me-1"></i> {{ appt.time }}
+                                </small>
+                            </div>
+                            <span class="badge-primary-green px-3 py-1 my-1 my-sm-0">{{ appt.status }}</span>
+                            <div class="d-flex gap-2 mt-2 mt-sm-0">
+                                <button class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                    <i class="bi bi-x-circle"></i> Cancel
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary-soft rounded-pill px-3">
+                                    <i class="bi bi-arrow-repeat"></i> Reschedule
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Medical Records + Notifications -->
+            <div class="col-md-4">
+                <!-- Medical Records Card -->
+                <div class="card card-modern p-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+                        <div class="section-title mb-0">
+                            <i class="bi bi-file-medical fs-4" style="color:#158467;"></i>
+                            <h5 class="mb-0">Recent Records</h5>
+                        </div>
+                        <button class="btn btn-primary-green btn-sm rounded-pill px-3">
+                            <i class="bi bi-plus-lg"></i> Upload
+                        </button>
+                    </div>
+
+                    <!-- Empty state for records -->
+                    <div *ngIf="records.length === 0" class="text-muted text-center py-4">
+                        <i class="bi bi-folder2-open fs-2 d-block opacity-50"></i>
+                        <small>No records uploaded</small>
+                    </div>
+
+                    <!-- Records list -->
+                    <div *ngFor="let record of records" class="record-item d-flex justify-content-between align-items-center mt-2">
+                        <div>
+                            <strong class="fs-6"><i class="bi bi-file-earmark-text me-1"></i> {{ record.fileName }}</strong><br>
+                            <small class="text-muted"><i class="bi bi-calendar"></i> {{ record.date }}</small>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-primary-green rounded-pill px-3">
+                                <i class="bi bi-eye"></i> View
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary-soft rounded-pill px-3">
+                                <i class="bi bi-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notifications Card -->
+                <div class="card card-modern p-4">
+                    <div class="section-title mb-3">
+                        <i class="bi bi-bell fs-4" style="color:#158467;"></i>
+                        <h5 class="mb-0">Notifications</h5>
+                    </div>
+                    <!-- Empty state notifications -->
+                    <div *ngIf="notifications.length === 0" class="text-center py-4 text-muted">
+                        <i class="bi bi-envelope-open fs-2 d-block opacity-50 mb-2"></i>
+                        <small>No new notifications</small>
+                    </div>
+                    <!-- Notification list with improved alert style -->
+                    <div *ngFor="let note of notifications" class="alert-notif mt-2 d-flex align-items-start gap-2">
+                        <i class="bi bi-info-circle-fill mt-0" style="color:#158467;"></i>
+                        <span>{{ note }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>
