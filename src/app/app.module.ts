@@ -10,7 +10,7 @@ import { HomeComponent } from './pages/home/home.component';
 import { AdminDashboardComponent } from './pages/admin/admin-dashboard/admin-dashboard.component';
 import { PatientDashboardComponent } from './pages/patient/patient-dashboard/patient-dashboard.component';
 import { NurseDashboardComponent } from './pages/nurse/nurse-dashboard/nurse-dashboard.component';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MyAppointmentsComponent } from './pages/patient/my-appointments/my-appointments.component';
 import { MedicalRecordsComponent } from './pages/patient/medical-records/medical-records.component';
 import { SettingsComponent } from './pages/patient/settings/settings.component';
@@ -42,7 +42,9 @@ import { ApplicationsComponent } from './pages/nurse/applications/applications.c
     AppRoutingModule,
     HttpClientModule,
     FormsModule,
-    RouterModule
+    RouterModule,
+   ReactiveFormsModule
+
   ],
   providers: [],
   bootstrap: [AppComponent]

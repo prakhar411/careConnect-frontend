@@ -1,18 +1,4 @@
-    <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>CareConnect — Patient Portal</title>
-    <!-- Bootstrap 5 + Icons + Google Fonts -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
-    <style>
-
-    </style>
-</head>
-    
+    <!-- ========== SIDEBAR (EXACTLY AS PROVIDED, ONLY WIDTH FIXED FOR LAYOUT) ========== -->
     <nav class="fixed-sidebar text-white p-3 d-none d-md-block">
         <div class="sidebar-brand">
             <i class="bi bi-heart-pulse-fill"></i> 
@@ -25,25 +11,181 @@
                 </a>
             </li>
             <li class="nav-item mb-1">
-                <a class="nav-link-custom" routerLink="/book-appointment" routerLinkActive="active">
+                <a class="nav-link-custom" routerLink="/patient-book-appointment" routerLinkActive="active">
                     <i class="bi bi-calendar-plus"></i> Book Nurse
                 </a>
             </li>
             <li class="nav-item mb-1">
-                <a class="nav-link-custom" routerLink="/my-appointments" routerLinkActive="active">
+                <a class="nav-link-custom" routerLink="/patient-appointments" routerLinkActive="active">
                     <i class="bi bi-journal-bookmark-fill"></i> My Appointments
                 </a>
             </li>
             <li class="nav-item mb-1">
-                <a class="nav-link-custom" routerLink="/medical-records" routerLinkActive="active">
+                <a class="nav-link-custom" routerLink="/patient-medical-records" routerLinkActive="active">
                     <i class="bi bi-folder-medical"></i> Medical Records
                 </a>
             </li>
             <div class="sidebar-divider"></div>
             <li class="nav-item mt-2">
-                <a class="nav-link-custom" routerLink="/settings" routerLinkActive="active">
+                <a class="nav-link-custom" routerLink="/patient-settings" routerLinkActive="active">
                     <i class="bi bi-gear"></i> Settings
                 </a>
             </li>
         </ul>
     </nav>
+
+    <!-- MAIN CONTENT: ORIGINAL ANGULAR FORM (FULLY INTACT) -->
+    <div class="container mt-4 content-area">
+        <div class="mb-4">
+            <h3 class="mb-2 fw-semibold">Book Nurse Appointment</h3>
+            <p class="text-muted small">
+                Fill in the details below to request a nurse. Our team will confirm your appointment.
+            </p>
+        </div>
+
+        <form [formGroup]="bookingForm" (ngSubmit)="onSubmit()">
+
+            <!-- Patient Details Card -->
+            <div class="card p-3 mb-4">
+                <h5><i class="bi bi-person-circle"></i> Patient Details</h5>
+                <div class="row mt-2">
+                    <div class="col-md-6 mb-3">
+                        <label>Full Name *</label>
+                        <input class="form-control" formControlName="fullName" placeholder="e.g., Emily Johnson">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label>Phone *</label>
+                        <input class="form-control" formControlName="phone" placeholder="+1 234 567 890">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label>Email *</label>
+                        <input class="form-control" formControlName="email" placeholder="hello@example.com">
+                    </div>
+                    <div class="col-12 mb-2">
+                        <label>Address *</label>
+                        <input class="form-control" formControlName="address" placeholder="Street, City, ZIP">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Care Requirements Card -->
+            <div class="card p-3 mb-4">
+                <h5><i class="bi bi-heart-pulse"></i> Care Requirements</h5>
+                <div class="mt-2">
+                    <label>Type of Care *</label>
+                    <select class="form-select" formControlName="careType">
+                        <option value="">Select</option>
+                        <option *ngFor="let type of careTypes" [value]="type">{{type}}</option>
+                    </select>
+                </div>
+                <div class="mt-4">
+                    <label>Specialization *</label>
+                    <div class="d-flex flex-wrap gap-2 mt-2">
+                        <button type="button"
+                            class="btn"
+                            *ngFor="let spec of specializations"
+                            [class.btn-success]="bookingForm.value.specialization === spec"
+                            [class.btn-outline-secondary]="bookingForm.value.specialization !== spec"
+                            (click)="selectSpecialization(spec)">
+                            {{spec}}
+                        </button>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <label>Additional Skills</label>
+                    <div class="d-flex flex-wrap gap-2 mt-2">
+                        <button type="button"
+                            class="btn btn-outline-secondary"
+                            *ngFor="let skill of skillsList"
+                            (click)="toggleSkill(skill)"
+                            [class.btn-success]="bookingForm.value.skills.includes(skill)">
+                            {{skill}}
+                        </button>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <label>Description (symptoms / special requests)</label>
+                    <textarea class="form-control" rows="3" formControlName="description" placeholder="Provide any additional details about the required care..."></textarea>
+                </div>
+            </div>
+
+            <!-- Schedule Card -->
+            <div class="card p-3 mb-4">
+                <h5><i class="bi bi-calendar-week"></i> Schedule</h5>
+                <div class="row mt-2">
+                    <div class="col-md-6 mb-3">
+                        <label>Start Date *</label>
+                        <input type="date" class="form-control" formControlName="startDate">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label>End Date (optional)</label>
+                        <input type="date" class="form-control" formControlName="endDate">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label>Time Slot *</label>
+                        <select class="form-select" formControlName="timeSlot">
+                            <option value="">Select</option>
+                            <option>Morning</option>
+                            <option>Afternoon</option>
+                            <option>Evening</option>
+                            <option>Night</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label>Duration *</label>
+                        <select class="form-select" formControlName="durationType">
+                            <option value="">Select</option>
+                            <option>One-time</option>
+                            <option>Daily</option>
+                            <option>Weekly</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Priority Card -->
+            <div class="card p-3 mb-4">
+                <h5><i class="bi bi-exclamation-triangle"></i> Priority</h5>
+                <div class="d-flex flex-wrap gap-4 mt-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" value="Normal" formControlName="priority" id="priorityNormal">
+                        <label class="form-check-label" for="priorityNormal">Normal</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" value="Urgent" formControlName="priority" id="priorityUrgent">
+                        <label class="form-check-label text-warning fw-semibold" for="priorityUrgent">Urgent</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" value="Emergency" formControlName="priority" id="priorityEmergency">
+                        <label class="form-check-label text-danger fw-semibold" for="priorityEmergency">Emergency</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preferences Card -->
+            <div class="card p-3 mb-4">
+                <h5><i class="bi bi-sliders2"></i> Preferences</h5>
+                <div class="row mt-2">
+                    <div class="col-md-6 mb-3">
+                        <label>Gender Preference</label>
+                        <select class="form-select" formControlName="genderPreference">
+                            <option>No Preference</option>
+                            <option>Male</option>
+                            <option>Female</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label>Special Notes (optional)</label>
+                        <input class="form-control" formControlName="notes" placeholder="e.g., language preference, allergies...">
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-success w-100 py-3" type="submit">
+                <i class="bi bi-check-circle-fill me-2"></i> Book Appointment
+            </button>
+        </form>
+    </div>
+

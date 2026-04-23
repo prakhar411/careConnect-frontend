@@ -1,19 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>CareConnect — Patient Portal</title>
-    <!-- Bootstrap 5 + Icons + Google Fonts -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
-    <style>
-
-    </style>
-</head>
-<body>
-
 <div class="container-fluid p-0 position-relative">
     <!-- ========== SIDEBAR (FIXED, FULL HEIGHT, GREEN GRADIENT) ========== -->
     <nav class="fixed-sidebar text-white p-3 d-none d-md-block">
@@ -28,43 +12,41 @@
                 </a>
             </li>
             <li class="nav-item mb-1">
-                <a class="nav-link-custom" routerLink="/book-appointment" routerLinkActive="active">
+                <a class="nav-link-custom" routerLink="/patient-book-appointment" routerLinkActive="active">
                     <i class="bi bi-calendar-plus"></i> Book Nurse
                 </a>
             </li>
             <li class="nav-item mb-1">
-                <a class="nav-link-custom" routerLink="/my-appointments" routerLinkActive="active">
+                <a class="nav-link-custom" routerLink="/patient-appointments" routerLinkActive="active">
                     <i class="bi bi-journal-bookmark-fill"></i> My Appointments
                 </a>
             </li>
             <li class="nav-item mb-1">
-                <a class="nav-link-custom" routerLink="/medical-records" routerLinkActive="active">
+                <a class="nav-link-custom" routerLink="/patient-medical-records" routerLinkActive="active">
                     <i class="bi bi-folder-medical"></i> Medical Records
                 </a>
             </li>
             <div class="sidebar-divider"></div>
             <li class="nav-item mt-2">
-                <a class="nav-link-custom" routerLink="/settings" routerLinkActive="active">
+                <a class="nav-link-custom" routerLink="/patient-settings" routerLinkActive="active">
                     <i class="bi bi-gear"></i> Settings
                 </a>
             </li>
         </ul>
     </nav>
 
-    <!-- ========== MAIN CONTENT (OFFSET DESKTOP) ========== -->
+    <!-- ========== MAIN CONTENT (RESPONSIVE OFFSET) ========== -->
     <main class="main-offset bg-soft min-vh-100 px-md-4 px-3 py-3">
-        <!-- Top bar (preserved empty as original, but style consistency) -->
-        <div class="d-flex justify-content-between align-items-center py-2">
-            <!-- original structure kept -->
-        </div>
+        <!-- Top bar placeholder -->
+        <div class="d-flex justify-content-between align-items-center py-2"></div>
 
-        <!-- Welcome section + patient info (enhanced visual) -->
+        <!-- Welcome section + patient info -->
         <div class="greeting-wrap mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
             <div>
                 <h4 class="fw-bold" style="color: #1e3a2f;">
                     {{ greeting }}, {{ patientName }} <span class="wave">✨</span>
                 </h4>
-                <div class="d-flex align-items-center gap-2 mt-1">
+                <div class="d-flex align-items-center gap-2 mt-1 flex-wrap">
                     <span class="badge-soft-id">
                         <i class="bi bi-person-vcard me-1"></i> ID: {{ patientId }}
                     </span>
@@ -80,13 +62,13 @@
             </div>
         </div>
 
-        <!-- Quick Actions (fully interactive with improved card design) -->
+        <!-- Quick Actions -->
         <div class="row g-4 mb-5">
             <div class="col-md-4">
                 <div class="card action-card-green p-3 shadow-sm" (click)="goToBookAppointment()">
                     <div class="d-flex align-items-center">
                         <div class="action-icon"><i class="bi bi-calendar-check"></i></div>
-                        <div>
+                        <div [routerLink]=" '/patient-book-appointment' ">
                             <h6 class="mb-1 fw-bold">Book Nurse Appointment</h6>
                             <small class="text-muted">Schedule a home visit</small>
                         </div>
@@ -133,7 +115,7 @@
                         <span>No upcoming appointments</span>
                     </div>
 
-                    <!-- Appointment list with scroll for many items -->
+                    <!-- Appointment list -->
                     <div class="appointment-scroll-area" *ngIf="appointments.length > 0">
                         <div *ngFor="let appt of appointments"
                              class="d-flex flex-wrap flex-sm-nowrap justify-content-between align-items-center border-bottom py-3 appointment-item">
@@ -206,7 +188,7 @@
                         <i class="bi bi-envelope-open fs-2 d-block opacity-50 mb-2"></i>
                         <small>No new notifications</small>
                     </div>
-                    <!-- Notification list with improved alert style -->
+                    <!-- Notification list -->
                     <div *ngFor="let note of notifications" class="alert-notif mt-2 d-flex align-items-start gap-2">
                         <i class="bi bi-info-circle-fill mt-0" style="color:#158467;"></i>
                         <span>{{ note }}</span>
@@ -216,5 +198,4 @@
         </div>
     </main>
 </div>
-</body>
-</html>
+

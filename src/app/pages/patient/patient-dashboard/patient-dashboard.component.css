@@ -3,26 +3,29 @@
             font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
         }
 
-        body {
-            background: #f5f9f0;
+        html, body {
             overflow-x: hidden;
+            width: 100%;
         }
 
-        /* ---------- FIXED SIDEBAR (FULL HEIGHT, NO SCROLL ISSUES) ---------- */
+        body {
+            background: #f5f9f0;
+        }
+
+        /* ---------- FIXED SIDEBAR (FIXED WIDTH, NO OVERLAP) ---------- */
         .fixed-sidebar {
             position: fixed;
             top: 0;
             left: 0;
-            width: 16.66666667%;  /* matches col-md-2 proportion */
+            width: 280px;
             height: 100vh;
             overflow-y: auto;
             z-index: 1030;
             background: linear-gradient(135deg, #0f6b51, #158467, #1ca97c);
             box-shadow: 6px 0 18px rgba(0, 0, 0, 0.08);
-            transition: all 0.2s;
+            transition: all 0.2s ease;
         }
 
-        /* custom scroll for sidebar */
         .fixed-sidebar::-webkit-scrollbar {
             width: 5px;
         }
@@ -33,23 +36,6 @@
         .fixed-sidebar::-webkit-scrollbar-thumb {
             background: rgba(255,255,255,0.4);
             border-radius: 10px;
-        }
-
-        /* main content offset (desktop) */
-        .main-offset {
-            margin-left: 16.66666667%;
-            width: 83.33333333%;
-        }
-
-        /* responsive: on tablets & small, sidebar collapses as original bootstrap d-md-block behavior, but we keep layout safe */
-        @media (max-width: 767.98px) {
-            .fixed-sidebar {
-                display: none;  /* hidden on mobile, original d-none d-md-block pattern */
-            }
-            .main-offset {
-                margin-left: 0;
-                width: 100%;
-            }
         }
 
         /* Sidebar inner styling */
@@ -101,10 +87,38 @@
             margin: 1.2rem 0 0.8rem 0;
         }
 
+        /* ---------- MAIN CONTENT OFFSET (MATCHES SIDEBAR WIDTH) ---------- */
+        .main-offset {
+            margin-left: 280px;
+            transition: margin-left 0.2s ease;
+            width: auto;
+            min-height: 100vh;
+        }
+
+        /* Tablet adjustment (between 768px and 991px) */
+        @media (max-width: 991.98px) {
+            .fixed-sidebar {
+                width: 260px;
+            }
+            .main-offset {
+                margin-left: 260px;
+            }
+        }
+
+        /* Mobile: hide sidebar, content full width */
+        @media (max-width: 767.98px) {
+            .fixed-sidebar {
+                display: none;
+            }
+            .main-offset {
+                margin-left: 0;
+                width: 100%;
+            }
+        }
+
         /* Main content background */
         .bg-soft {
             background-color: #f4faf5;
-            min-height: 100vh;
         }
 
         /* Card redesign – fresh & clean */
@@ -132,7 +146,6 @@
             transform: translateY(-5px);
             box-shadow: 0 18px 28px -12px rgba(21, 132, 103, 0.2);
             border-color: #1ca97c60;
-            background: #ffffff;
         }
         .action-icon {
             width: 42px;
@@ -147,7 +160,7 @@
             margin-right: 12px;
         }
 
-        /* Badge & primary color using green theme */
+        /* Badge & primary color */
         .badge-primary-green {
             background: #158467;
             color: white;
@@ -172,7 +185,6 @@
         .btn-outline-primary-green:hover {
             background: #158467;
             color: white;
-            transform: translateY(-1px);
         }
         .btn-primary-green {
             background: #158467;
@@ -184,8 +196,6 @@
         }
         .btn-primary-green:hover {
             background: #0f6b51;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 10px rgba(21,132,103,0.2);
         }
         .btn-outline-secondary-soft {
             border-color: #d4e0da;
@@ -248,10 +258,6 @@
             animation: softAppear 0.3s ease;
         }
 
-        hr {
-            opacity: 0.3;
-        }
-
         /* custom scroll for appointment list */
         .appointment-scroll-area {
             max-height: 380px;
@@ -268,4 +274,45 @@
         .appointment-scroll-area::-webkit-scrollbar-thumb {
             background: #bdd9ce;
             border-radius: 8px;
+        }
+
+        /* Responsive fine-tuning for small devices */
+        @media (max-width: 576px) {
+            .action-card-green .d-flex {
+                flex-direction: column;
+                text-align: center;
+            }
+            .action-icon {
+                margin-right: 0;
+                margin-bottom: 8px;
+            }
+            .card.p-4 {
+                padding: 1.25rem !important;
+            }
+            .greeting-wrap h4 {
+                font-size: 1.3rem;
+            }
+            .badge-soft-id, .badge-primary-green {
+                font-size: 0.75rem;
+                padding: 4px 12px;
+            }
+        }
+
+        /* Prevent any overflow from containers */
+        .container-fluid, .row, .col-md-8, .col-md-4 {
+            overflow-x: hidden;
+        }
+        .row {
+            margin-left: 0;
+            margin-right: 0;
+        }
+        .px-md-4 {
+            padding-left: 1.5rem !important;
+            padding-right: 1.5rem !important;
+        }
+        @media (max-width: 767.98px) {
+            .px-md-4 {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
         }

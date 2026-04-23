@@ -15,8 +15,9 @@ import { JobsComponent } from './pages/nurse/jobs/jobs.component';
 import { ApplicationsComponent } from './pages/nurse/applications/applications.component';
 
 const routes: Routes = [
-  { path: '', component: LoginComponent },
-  // {path:'',component:NurseDashboardComponent},
+  // { path: '', component: LoginComponent },
+    { path: '', component: PatientDashboardComponent },
+
     { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'home', component: HomeComponent },
