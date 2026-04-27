@@ -34,6 +34,7 @@
             [class.input-error]="pName.invalid && pName.touched">
           <small *ngIf="pName.touched && pName.hasError('required')">Full name is required.</small>
           <small *ngIf="pName.touched && pName.hasError('minlength')">Minimum 3 characters.</small>
+          <small *ngIf="pName.touched && pName.hasError('pattern')">Name must not contain numbers or special characters.</small>
         </div>
         <div class="field-wrap">
           <input type="text" placeholder="Age" formControlName="age"
@@ -76,10 +77,10 @@
 
       <div class="row">
         <div class="field-wrap">
-          <input type="password" placeholder="Password (min 8 chars)" formControlName="password"
+          <input type="password" placeholder="Password (min 12 characters)" formControlName="password"
             [class.input-error]="pPass.invalid && pPass.touched">
           <small *ngIf="pPass.touched && pPass.hasError('required')">Password is required.</small>
-          <small *ngIf="pPass.touched && pPass.hasError('minlength')">Minimum 8 characters.</small>
+          <small *ngIf="pPass.touched && pPass.hasError('minlength')">Minimum 12 characters required.</small>
         </div>
         <div class="field-wrap">
           <input type="password" placeholder="Confirm Password" formControlName="confirmPassword"
@@ -89,7 +90,11 @@
         </div>
       </div>
 
-      <button type="submit" class="submit-btn">Create Patient Account</button>
+      <button type="submit" class="submit-btn"
+        [disabled]="patientForm.invalid || isLoading">
+        <span *ngIf="!isLoading">Create Patient Account</span>
+        <span *ngIf="isLoading" class="spinner-wrap"><span class="btn-spinner"></span> Registering…</span>
+      </button>
     </form>
 
     <!-- ================= NURSE FORM ================= -->
@@ -101,6 +106,7 @@
             [class.input-error]="nName.invalid && nName.touched">
           <small *ngIf="nName.touched && nName.hasError('required')">Full name is required.</small>
           <small *ngIf="nName.touched && nName.hasError('minlength')">Minimum 3 characters.</small>
+          <small *ngIf="nName.touched && nName.hasError('pattern')">Name must not contain numbers or special characters.</small>
         </div>
         <div class="field-wrap">
           <input type="email" placeholder="Email" formControlName="email"
@@ -153,10 +159,10 @@
 
       <div class="row">
         <div class="field-wrap">
-          <input type="password" placeholder="Password (min 8 chars)" formControlName="password"
+          <input type="password" placeholder="Password (min 12 characters)" formControlName="password"
             [class.input-error]="nPass.invalid && nPass.touched">
           <small *ngIf="nPass.touched && nPass.hasError('required')">Password is required.</small>
-          <small *ngIf="nPass.touched && nPass.hasError('minlength')">Minimum 8 characters.</small>
+          <small *ngIf="nPass.touched && nPass.hasError('minlength')">Minimum 12 characters required.</small>
         </div>
         <div class="field-wrap">
           <input type="password" placeholder="Confirm Password" formControlName="confirmPassword"
@@ -166,7 +172,11 @@
         </div>
       </div>
 
-      <button type="submit" class="submit-btn">Create Nurse Account</button>
+      <button type="submit" class="submit-btn"
+        [disabled]="nurseForm.invalid || isLoading">
+        <span *ngIf="!isLoading">Create Nurse Account</span>
+        <span *ngIf="isLoading" class="spinner-wrap"><span class="btn-spinner"></span> Registering…</span>
+      </button>
     </form>
 
     <!-- ================= ORGANIZATION FORM ================= -->
@@ -205,6 +215,7 @@
             [class.input-error]="oContact.invalid && oContact.touched">
           <small *ngIf="oContact.touched && oContact.hasError('required')">Contact person is required.</small>
           <small *ngIf="oContact.touched && oContact.hasError('minlength')">Minimum 3 characters.</small>
+          <small *ngIf="oContact.touched && oContact.hasError('pattern')">Name must not contain numbers or special characters.</small>
         </div>
         <div class="field-wrap">
           <input type="text" placeholder="Designation (e.g. Hospital Administrator) *" formControlName="designation"
@@ -263,10 +274,10 @@
 
       <div class="row">
         <div class="field-wrap">
-          <input type="password" placeholder="Password (min 8 chars)" formControlName="password"
+          <input type="password" placeholder="Password (min 12 characters)" formControlName="password"
             [class.input-error]="oPass.invalid && oPass.touched">
           <small *ngIf="oPass.touched && oPass.hasError('required')">Password is required.</small>
-          <small *ngIf="oPass.touched && oPass.hasError('minlength')">Minimum 8 characters.</small>
+          <small *ngIf="oPass.touched && oPass.hasError('minlength')">Minimum 12 characters required.</small>
         </div>
         <div class="field-wrap">
           <input type="password" placeholder="Confirm Password" formControlName="confirmPassword"
@@ -281,12 +292,36 @@
         Your organization account will be reviewed within 24 hours before activation.
       </p>
 
-      <button type="submit" class="submit-btn">Register Organization</button>
+      <button type="submit" class="submit-btn"
+        [disabled]="orgForm.invalid || isLoading">
+        <span *ngIf="!isLoading">Register Organization</span>
+        <span *ngIf="isLoading" class="spinner-wrap"><span class="btn-spinner"></span> Registering…</span>
+      </button>
     </form>
 
     <p class="login-link">
       Already have an account? <span routerLink="/login">Login here</span>
     </p>
 
+  </div>
+</div>
+
+<!-- ===== MODAL OVERLAY ===== -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-card"
+       [class.modal-success]="modalType === 'success'"
+       [class.modal-error]="modalType === 'error'"
+       (click)="$event.stopPropagation()">
+    <div class="modal-icon"
+         [class.icon-success]="modalType === 'success'"
+         [class.icon-error]="modalType === 'error'">
+      <i [class]="modalType === 'success' ? 'bi bi-check-circle-fill' : 'bi bi-x-circle-fill'"></i>
+    </div>
+    <h3 class="modal-title">{{ modalTitle }}</h3>
+    <p class="modal-msg">{{ modalMessage }}</p>
+    <button class="modal-btn"
+            [class.modal-btn-success]="modalType === 'success'"
+            [class.modal-btn-error]="modalType === 'error'"
+            (click)="closeModal()">OK</button>
   </div>
 </div>

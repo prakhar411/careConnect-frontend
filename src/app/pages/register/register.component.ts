@@ -1,12 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 export const passwordMatchValidator: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
-  const pass = group.get('password')?.value;
+  const pass    = group.get('password')?.value;
   const confirm = group.get('confirmPassword')?.value;
   return pass && confirm && pass !== confirm ? { passwordMismatch: true } : null;
 };
+
+const NAME_PATTERN = Validators.pattern('^[a-zA-Z .\'\-]+$');
+const PASS_MIN     = Validators.minLength(12);
 
 @Component({
   selector: 'app-register',
@@ -15,10 +19,16 @@ export const passwordMatchValidator: ValidatorFn = (group: AbstractControl): Val
 })
 export class RegisterComponent implements OnInit {
 
-  role: string = 'patient';
+  role = 'patient';
   patientForm!: FormGroup;
-  nurseForm!: FormGroup;
-  orgForm!: FormGroup;
+  nurseForm!:   FormGroup;
+  orgForm!:     FormGroup;
+  isLoading = false;
+
+  showModal    = false;
+  modalType: 'success' | 'error' = 'success';
+  modalTitle   = '';
+  modalMessage = '';
 
   specializations = [
     'General Nursing', 'ICU / Critical Care', 'Cardiology', 'Pediatric Nursing',
@@ -28,29 +38,33 @@ export class RegisterComponent implements OnInit {
 
   orgTypes = ['Hospital', 'Nursing Home', 'Clinic', 'Care Center', 'Rehabilitation Center', 'Other'];
 
-  constructor(private fb: FormBuilder, private router: Router) {}
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private auth: AuthService
+  ) {}
 
   ngOnInit(): void {
     this.patientForm = this.fb.group({
-      fullName:        ['', [Validators.required, Validators.minLength(3)]],
+      fullName:        ['', [Validators.required, Validators.minLength(3), NAME_PATTERN]],
       age:             ['', [Validators.required, Validators.pattern('^[0-9]+$'), Validators.min(1)]],
       gender:          ['', Validators.required],
       email:           ['', [Validators.required, Validators.email]],
       phone:           ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
       address:         ['', [Validators.required, Validators.minLength(10)]],
-      password:        ['', [Validators.required, Validators.minLength(8)]],
+      password:        ['', [Validators.required, PASS_MIN]],
       confirmPassword: ['', Validators.required]
     }, { validators: passwordMatchValidator });
 
     this.nurseForm = this.fb.group({
-      fullName:        ['', [Validators.required, Validators.minLength(3)]],
+      fullName:        ['', [Validators.required, Validators.minLength(3), NAME_PATTERN]],
       email:           ['', [Validators.required, Validators.email]],
       phone:           ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
       licenseNumber:   ['', [Validators.required, Validators.minLength(5)]],
       specialization:  ['', Validators.required],
       experience:      ['', [Validators.required, Validators.pattern('^[0-9]+$')]],
       availability:    ['', Validators.required],
-      password:        ['', [Validators.required, Validators.minLength(8)]],
+      password:        ['', [Validators.required, PASS_MIN]],
       confirmPassword: ['', Validators.required]
     }, { validators: passwordMatchValidator });
 
@@ -58,7 +72,7 @@ export class RegisterComponent implements OnInit {
       orgName:          ['', [Validators.required, Validators.minLength(3)]],
       orgType:          ['', Validators.required],
       regNumber:        ['', [Validators.required, Validators.minLength(5)]],
-      contactPerson:    ['', [Validators.required, Validators.minLength(3)]],
+      contactPerson:    ['', [Validators.required, Validators.minLength(3), NAME_PATTERN]],
       designation:      ['', [Validators.required, Validators.minLength(3)]],
       email:            ['', [Validators.required, Validators.email]],
       phone:            ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
@@ -67,12 +81,18 @@ export class RegisterComponent implements OnInit {
       state:            ['', Validators.required],
       pincode:          ['', [Validators.required, Validators.pattern('^[0-9]{6}$')]],
       website:          [''],
-      password:         ['', [Validators.required, Validators.minLength(8)]],
+      password:         ['', [Validators.required, PASS_MIN]],
       confirmPassword:  ['', Validators.required]
     }, { validators: passwordMatchValidator });
   }
 
-  selectRole(selected: string): void { this.role = selected; }
+  get activeForm(): FormGroup {
+    return this.role === 'patient' ? this.patientForm
+         : this.role === 'nurse'   ? this.nurseForm
+         : this.orgForm;
+  }
+
+  selectRole(r: string): void { this.role = r; }
 
   // Patient getters
   get pName()    { return this.patientForm.get('fullName')!; }
@@ -95,7 +115,7 @@ export class RegisterComponent implements OnInit {
   get nPass()    { return this.nurseForm.get('password')!; }
   get nConfirm() { return this.nurseForm.get('confirmPassword')!; }
 
-  // Organization getters
+  // Org getters
   get oName()    { return this.orgForm.get('orgName')!; }
   get oType()    { return this.orgForm.get('orgType')!; }
   get oReg()     { return this.orgForm.get('regNumber')!; }
@@ -111,19 +131,53 @@ export class RegisterComponent implements OnInit {
   get oConfirm() { return this.orgForm.get('confirmPassword')!; }
 
   register(): void {
+    const form = this.activeForm;
+    if (form.invalid) { form.markAllAsTouched(); return; }
+
+    this.isLoading = true;
+    this.auth.register(this.buildPayload()).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.openModal('success', 'Registration Successful!',
+          'Your account has been created successfully. Click OK to go to the login page.');
+      },
+      error: (err: Error) => {
+        this.isLoading = false;
+        this.openModal('error', 'Registration Failed', err.message);
+      }
+    });
+  }
+
+  private buildPayload(): any {
     if (this.role === 'patient') {
-      if (this.patientForm.invalid) { this.patientForm.markAllAsTouched(); return; }
-      this.router.navigate(['/patient']);
-
-    } else if (this.role === 'nurse') {
-      if (this.nurseForm.invalid) { this.nurseForm.markAllAsTouched(); return; }
-      this.router.navigate(['/nurse']);
-
-    } else if (this.role === 'organization') {
-      if (this.orgForm.invalid) { this.orgForm.markAllAsTouched(); return; }
-      this.router.navigate(['/admin']);
+      const v = this.patientForm.value;
+      return { fullName: v.fullName.trim(), email: v.email.trim().toLowerCase(),
+               password: v.password, role: 'PATIENT', phone: v.phone };
     }
+    if (this.role === 'nurse') {
+      const v = this.nurseForm.value;
+      return { fullName: v.fullName.trim(), email: v.email.trim().toLowerCase(),
+               password: v.password, role: 'NURSE', phone: v.phone,
+               licenseNumber: v.licenseNumber.trim(), specialization: v.specialization,
+               experienceYears: parseInt(v.experience, 10) };
+    }
+    const v = this.orgForm.value;
+    return { fullName: v.contactPerson.trim(), email: v.email.trim().toLowerCase(),
+             password: v.password, role: 'ORGANIZATION', phone: v.phone,
+             orgName: v.orgName.trim(), orgType: v.orgType,
+             regNumber: v.regNumber.trim(), contactPerson: v.contactPerson.trim(),
+             designation: v.designation.trim(), address: v.address.trim(),
+             city: v.city.trim(), state: v.state.trim(), pincode: v.pincode,
+             website: v.website?.trim() || '' };
+  }
+
+  openModal(type: 'success' | 'error', title: string, message: string): void {
+    this.modalType = type; this.modalTitle = title; this.modalMessage = message;
+    this.showModal = true;
+  }
+
+  closeModal(): void {
+    this.showModal = false;
+    if (this.modalType === 'success') this.router.navigate(['/login']);
   }
 }
-
-

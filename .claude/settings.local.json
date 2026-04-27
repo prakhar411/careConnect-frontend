@@ -13,7 +13,13 @@
       "Read(//c/Users/prakhar/Music/Angular/CareConnect/careConnect-backend/src/main/java/com/careconnect/entity/**)",
       "Read(//c/Users/prakhar/Music/Angular/CareConnect/careConnect-backend/src/main/java/com/careconnect/dto/request/**)",
       "Bash(npm install *)",
-      "PowerShell(Start-Process \"C:\\\\Users\\\\prakhar\\\\Music\\\\Angular\\\\CareConnect\\\\careConnect-backend\\\\docs\\\\careconnect_erd_viewer.html\")"
+      "PowerShell(Start-Process \"C:\\\\Users\\\\prakhar\\\\Music\\\\Angular\\\\CareConnect\\\\careConnect-backend\\\\docs\\\\careconnect_erd_viewer.html\")",
+      "Bash(mvn clean *)",
+      "Bash(taskkill /F /IM java.exe)",
+      "PowerShell(Stop-Process -Name java -Force -ErrorAction SilentlyContinue)",
+      "Bash(java -jar target/careconnect-backend-1.0.0.jar --spring.datasource.url=jdbc:mysql://localhost:3306/careconnect_db --spring.datasource.username=root --spring.datasource.password=Prakhar@411 --spring.jpa.hibernate.ddl-auto=update --spring.cloud.consul.enabled=false)",
+      "Bash(curl -s http://localhost:8080/actuator/health)",
+      "Bash(java -jar target/careconnect-backend-1.0.0.jar --spring.datasource.url=jdbc:mysql://localhost:3306/careconnect_db --spring.datasource.username=root \"--spring.datasource.password=Prakhar@411\" --spring.jpa.hibernate.ddl-auto=update --spring.cloud.consul.enabled=false)"
     ],
     "additionalDirectories": [
       "C:\\Users\\prakhar\\Music\\Angular\\CareConnect\\careConnect-backend\\src\\main\\java\\com\\careconnect\\entity",

@@ -12,29 +12,22 @@
     <div class="role-section">
       <p class="label">SELECT YOUR ROLE</p>
       <div class="roles">
-
         <div class="role-card" [class.active]="selectedRole === 'patient'" (click)="selectRole('patient')">
-          🧑‍🦽
-          <span>Patient</span>
+          🧑‍🦽<span>Patient</span>
         </div>
-
         <div class="role-card" [class.active]="selectedRole === 'nurse'" (click)="selectRole('nurse')">
-          👩‍⚕️
-          <span>Nurse</span>
+          👩‍⚕️<span>Nurse</span>
         </div>
-
         <div class="role-card" [class.active]="selectedRole === 'organization'" (click)="selectRole('organization')">
-          🏥
-          <span>Organization</span>
+          🏥<span>Organization</span>
         </div>
-
       </div>
     </div>
 
-    <!-- Reactive Form -->
+    <!-- Form -->
     <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
 
-      <!-- Identifier field — email for patient/nurse, license number for organization -->
+      <!-- Identifier -->
       <div class="form-group">
         <label>{{ identifierLabel }}</label>
         <input
@@ -43,8 +36,11 @@
           formControlName="identifier"
           [class.input-error]="identifier.invalid && identifier.touched"
           [class.field-text]="selectedRole === 'organization'"
+          autocomplete="username"
         >
-        <small *ngIf="identifier.touched && identifier.hasError('required')">This field is required.</small>
+        <small *ngIf="identifier.touched && identifier.hasError('required')">
+          This field is required.
+        </small>
         <small *ngIf="identifier.touched && identifier.hasError('email') && selectedRole !== 'organization'">
           Enter a valid email address.
         </small>
@@ -58,18 +54,30 @@
         <label>Password</label>
         <input
           type="password"
-          placeholder="Enter your password"
+          placeholder="Enter your password (min 12 characters)"
           formControlName="password"
           [class.input-error]="password.invalid && password.touched"
+          autocomplete="current-password"
         >
         <small *ngIf="password.touched && password.hasError('required')">Password is required.</small>
-        <small *ngIf="password.touched && password.hasError('minlength')">Minimum 6 characters.</small>
+        <small *ngIf="password.touched && password.hasError('minlength')">Minimum 12 characters required.</small>
         <span class="forgot" routerLink="/forgot-password">Forgot password?</span>
       </div>
 
-      <button type="submit" class="login-btn">
-        <i class="bi bi-box-arrow-in-right me-1"></i>
-        Login as {{ selectedRole === 'organization' ? 'Organization' : (selectedRole | titlecase) }}
+      <!-- Submit Button — disabled when form invalid or loading -->
+      <button
+        type="submit"
+        class="login-btn"
+        [disabled]="loginForm.invalid || isLoading"
+        [class.btn-loading]="isLoading"
+      >
+        <span *ngIf="!isLoading">
+          <i class="bi bi-box-arrow-in-right me-1"></i>
+          Login as {{ selectedRole === 'organization' ? 'Organization' : (selectedRole | titlecase) }}
+        </span>
+        <span *ngIf="isLoading" class="spinner-wrap">
+          <span class="btn-spinner"></span> Logging in…
+        </span>
       </button>
 
     </form>
@@ -78,5 +86,28 @@
       New user? <span routerLink="/register">Register here</span>
     </p>
 
+  </div>
+</div>
+
+<!-- ── MODAL OVERLAY ───────────────────────────────────────── -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-card" [class.modal-success]="modalType === 'success'"
+       [class.modal-error]="modalType === 'error'" (click)="$event.stopPropagation()">
+
+    <!-- Icon -->
+    <div class="modal-icon-wrap">
+      <div class="modal-icon" [class.icon-success]="modalType === 'success'"
+           [class.icon-error]="modalType === 'error'">
+        <i class="bi" [ngClass]="modalType === 'success' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
+      </div>
+    </div>
+
+    <h3 class="modal-title">{{ modalTitle }}</h3>
+    <p class="modal-message">{{ modalMessage }}</p>
+
+    <button class="modal-btn" [class.modal-btn-success]="modalType === 'success'"
+            [class.modal-btn-error]="modalType === 'error'" (click)="closeModal()">
+      OK
+    </button>
   </div>
 </div>
