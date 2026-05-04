@@ -31,7 +31,7 @@ export class LoginComponent implements OnInit {
 
   buildForm(): void {
     const idValidators = this.selectedRole === 'organization'
-      ? [Validators.required, Validators.minLength(5)]
+      ? [Validators.required, Validators.minLength(5), Validators.pattern('^[^@\\s]+$')]
       : [Validators.required, Validators.email];
 
     this.loginForm = this.fb.group({
@@ -63,7 +63,11 @@ export class LoginComponent implements OnInit {
 
     this.isLoading = true;
 
-    this.auth.login(this.identifier.value.trim(), this.password.value).subscribe({
+    const roleEnum = this.selectedRole === 'organization' ? 'ORGANIZATION'
+                   : this.selectedRole === 'nurse'         ? 'NURSE'
+                   : 'PATIENT';
+
+    this.auth.login(this.identifier.value.trim(), this.password.value, roleEnum).subscribe({
       next: (res: any) => {
         this.isLoading = false;
         const data = res.data;

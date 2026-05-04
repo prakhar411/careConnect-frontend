@@ -20,7 +20,12 @@
       "Bash(java -jar target/careconnect-backend-1.0.0.jar --spring.datasource.url=jdbc:mysql://localhost:3306/careconnect_db --spring.datasource.username=root --spring.datasource.password=Prakhar@411 --spring.jpa.hibernate.ddl-auto=update --spring.cloud.consul.enabled=false)",
       "Bash(curl -s http://localhost:8080/actuator/health)",
       "Bash(java -jar target/careconnect-backend-1.0.0.jar --spring.datasource.url=jdbc:mysql://localhost:3306/careconnect_db --spring.datasource.username=root \"--spring.datasource.password=Prakhar@411\" --spring.jpa.hibernate.ddl-auto=update --spring.cloud.consul.enabled=false)",
-      "Bash(ng build *)"
+      "Bash(ng build *)",
+      "PowerShell(Start-Sleep -Seconds 20; Select-String -Path \"C:\\\\Users\\\\prakhar\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-prakhar-Music-Angular-CareConnect-careConnect-frontend\\\\8845a0c2-bd94-44e2-affc-efe16c998b24\\\\tasks\\\\bajjhlxbf.output\" -Pattern \"Started|ERROR|BUILD\" | Select-Object -Last 5 | ForEach-Object { $_.Line })",
+      "Read(//tmp/**)",
+      "Bash(taskkill //F //IM java.exe)",
+      "Bash(echo \"PID: $!\")",
+      "Bash(mvn -e spring-boot:run)"
     ],
     "additionalDirectories": [
       "C:\\Users\\prakhar\\Music\\Angular\\CareConnect\\careConnect-backend\\src\\main\\java\\com\\careconnect\\entity",
