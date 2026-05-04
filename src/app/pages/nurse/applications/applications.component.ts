@@ -1,3 +1,4 @@
+﻿import { AuthService } from '../../../services/auth.service';
 import { Component } from '@angular/core';
 
 interface Application {
@@ -8,8 +9,7 @@ interface Application {
   appliedOn: string;
   status: 'Applied' | 'Under Review' | 'Interview Scheduled' | 'Accepted' | 'Rejected';
   salary: string;
-  shift: string;
-}
+  shift: string;}
 
 @Component({
   selector: 'app-applications',
@@ -17,6 +17,9 @@ interface Application {
   styleUrls: ['./applications.component.css']
 })
 export class ApplicationsComponent {
+
+  constructor(private auth: AuthService) {}
+
 
   filterStatus = 'All';
 
@@ -49,4 +52,5 @@ export class ApplicationsComponent {
     };
     return map[s] || '';
   }
+  logout(): void { this.auth.logout(); }
 }

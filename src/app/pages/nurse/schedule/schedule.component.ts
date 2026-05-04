@@ -1,3 +1,4 @@
+﻿import { AuthService } from '../../../services/auth.service';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
@@ -6,8 +7,7 @@ interface Shift {
   facility: string;
   shift: string;
   hours: number;
-  status: 'Upcoming' | 'Completed' | 'Cancelled';
-}
+  status: 'Upcoming' | 'Completed' | 'Cancelled';}
 
 @Component({
   selector: 'app-schedule',
@@ -39,7 +39,7 @@ export class ScheduleComponent implements OnInit {
   get totalHoursThisMonth() { return this.history.filter(h => h.status === 'Completed').reduce((s, h) => s + h.hours, 0); }
   get completedShifts()     { return this.history.filter(h => h.status === 'Completed').length; }
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private auth: AuthService, private fb: FormBuilder) {}
 
   ngOnInit(): void {
     this.blackoutForm = this.fb.group({
@@ -71,4 +71,5 @@ export class ScheduleComponent implements OnInit {
     if (s === 'Completed') return 'badge-completed';
     return 'badge-cancelled';
   }
+  logout(): void { this.auth.logout(); }
 }

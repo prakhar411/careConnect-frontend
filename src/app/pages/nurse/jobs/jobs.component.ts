@@ -1,3 +1,4 @@
+﻿import { AuthService } from '../../../services/auth.service';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 
@@ -14,8 +15,7 @@ interface Job {
   description: string;
   requirements: string[];
   postedDaysAgo: number;
-  applied: boolean;
-}
+  applied: boolean;}
 
 @Component({
   selector: 'app-jobs',
@@ -44,7 +44,7 @@ export class JobsComponent implements OnInit {
   shifts      = ['All', 'Day', 'Night', 'Morning', 'Evening', 'Rotating', 'Flexible'];
   jobTypes    = ['All', 'Permanent', 'Temporary', 'On-Call'];
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private auth: AuthService, private fb: FormBuilder) {}
 
   ngOnInit(): void {
     this.filterForm = this.fb.group({
@@ -84,4 +84,5 @@ export class JobsComponent implements OnInit {
     if (u === 'High')   return 'badge-high';
     return 'badge-normal';
   }
+  logout(): void { this.auth.logout(); }
 }

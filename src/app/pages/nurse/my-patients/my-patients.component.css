@@ -1,0 +1,49 @@
+.fixed-sidebar { position: fixed; top: 0; left: 0; width: 280px; height: 100vh; overflow-y: auto; z-index: 1050; background: linear-gradient(145deg, #0a3d2b, #0f5241, #145a4a); box-shadow: 6px 0 18px rgba(0,0,0,0.12); transition: all 0.25s ease; display: flex; flex-direction: column; }
+.fixed-sidebar::-webkit-scrollbar { width: 4px; }
+.fixed-sidebar::-webkit-scrollbar-track { background: rgba(255,255,255,0.1); border-radius: 10px; }
+.fixed-sidebar::-webkit-scrollbar-thumb { background: #b8e1d4; border-radius: 10px; }
+.sidebar-brand { display: flex; align-items: center; gap: 12px; font-size: 1.6rem; font-weight: 700; letter-spacing: -0.3px; padding: 28px 20px 32px 24px; border-bottom: 1px solid rgba(255,255,255,0.2); margin-bottom: 20px; }
+.sidebar-brand i { font-size: 2rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
+.sidebar-brand span { background: linear-gradient(120deg, #fff, #e3f3ef); background-clip: text; -webkit-background-clip: text; color: transparent; }
+.nav-link-custom { display: flex; align-items: center; gap: 14px; padding: 12px 20px; margin: 0 12px; border-radius: 16px; color: rgba(255,255,255,0.85); font-weight: 500; font-size: 0.95rem; transition: all 0.2s ease; text-decoration: none; }
+.nav-link-custom i { font-size: 1.3rem; width: 28px; text-align: center; }
+.nav-link-custom:hover { background: rgba(255,255,255,0.15); color: white; transform: translateX(4px); }
+.nav-link-custom.active { background: rgba(255,255,255,0.22); color: white; box-shadow: 0 4px 8px rgba(0,0,0,0.05); backdrop-filter: blur(2px); }
+.sidebar-divider { height: 1px; background: rgba(255,255,255,0.2); margin: 20px 20px 12px 20px; }
+.main { margin-left: 280px; background: #f8fafc; min-height: 100vh; transition: margin-left 0.2s; }
+@media (max-width: 767.98px) { .fixed-sidebar { transform: translateX(-100%); width: 260px; } .main { margin-left: 0 !important; padding: 1rem !important; } }
+
+.page-title { font-size: 1.4rem; font-weight: 800; color: #1a3b3a; margin: 0; }
+.page-subtitle { font-size: 0.85rem; color: #6a8c80; margin: 4px 0 0; }
+
+.filter-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.filter-btn { background: white; border: 1.5px solid #e2ece8; border-radius: 30px; padding: 6px 16px; font-size: 0.82rem; font-weight: 600; color: #6a8c80; cursor: pointer; transition: all 0.2s; }
+.filter-btn:hover { border-color: #1aa37a; color: #1aa37a; }
+.filter-active { background: #1aa37a; border-color: #1aa37a; color: white; }
+
+.empty-card { background: white; border-radius: 20px; padding: 2rem; box-shadow: 0 4px 12px rgba(0,32,32,0.06); }
+
+/* Patient card */
+.patient-card { background: white; border-radius: 20px; box-shadow: 0 6px 18px -6px rgba(0,32,32,0.08); overflow: hidden; }
+.patient-header { display: flex; align-items: center; gap: 16px; padding: 1.2rem 1.5rem; background: linear-gradient(135deg,#eef9f5,#f8fffd); border-bottom: 1.5px solid #e8f3ef; }
+.patient-avatar { width: 48px; height: 48px; background: linear-gradient(135deg,#1aa37a,#0f6b51); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem; font-weight: 700; flex-shrink: 0; }
+.patient-name { font-size: 1rem; font-weight: 700; color: #1a3b3a; margin: 0 0 3px; }
+.patient-appt-meta { font-size: 0.78rem; color: #6a8c80; font-weight: 500; }
+
+/* Appointment rows */
+.appt-list { padding: 0.4rem 0; }
+.appt-row { display: flex; align-items: center; gap: 16px; padding: 10px 1.5rem; border-bottom: 1px solid #f0f5f3; flex-wrap: wrap; }
+.appt-row:last-child { border-bottom: none; }
+.appt-date { font-size: 0.85rem; font-weight: 600; color: #1a3b3a; min-width: 120px; }
+.appt-time { font-size: 0.78rem; color: #6a8c80; min-width: 70px; }
+.appt-care { font-size: 0.82rem; color: #4e6e68; flex: 1; }
+.appt-duration { font-size: 0.78rem; color: #6a8c80; min-width: 80px; }
+
+.appt-status { padding: 3px 12px; border-radius: 30px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+.badge-confirmed   { background: #d4edda; color: #155724; }
+.badge-completed   { background: #e8f0fe; color: #1a73e8; }
+.badge-cancelled   { background: #fde8e8; color: #c0392b; }
+.badge-inprogress  { background: #fff3cd; color: #856404; }
+.badge-pending     { background: #f0f5f3; color: #4e6e68; }
+
+.appt-notes { padding: 8px 1.5rem; background: #fafffe; font-size: 0.8rem; color: #6a8c80; border-top: 1px solid #f0f5f3; font-style: italic; }

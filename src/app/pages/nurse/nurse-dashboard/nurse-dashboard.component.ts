@@ -1,3 +1,4 @@
+﻿import { AuthService } from '../../../services/auth.service';
 import { Component } from '@angular/core';
 
 @Component({
@@ -6,6 +7,9 @@ import { Component } from '@angular/core';
   styleUrls: ['./nurse-dashboard.component.css']
 })
 export class NurseDashboardComponent {
+
+  constructor(private auth: AuthService) {}
+
 
   upcomingShifts = 3;
   monthlyEarnings = '₹42,000';
@@ -41,8 +45,8 @@ export class NurseDashboardComponent {
   }
 
   hasUnreadNotifications(): boolean {
-  return this.notifications.some(n => !n.read);
-}
+    return this.notifications.some(n => !n.read);
+  }
 
   // Jobs
   jobs = [
@@ -90,4 +94,5 @@ export class NurseDashboardComponent {
       default:          return 's-default';
     }
   }
+  logout(): void { this.auth.logout(); }
 }

@@ -1,3 +1,4 @@
+﻿import { AuthService } from '../../../services/auth.service';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
@@ -24,7 +25,7 @@ export class PaymentsComponent implements OnInit {
   get totalEarningsThisMonth() { return '₹44,518'; }
   get pendingAmount()          { return '₹0'; }
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private auth: AuthService, private fb: FormBuilder) {}
 
   ngOnInit(): void {
     this.timesheetForm = this.fb.group({
@@ -45,4 +46,5 @@ export class PaymentsComponent implements OnInit {
     this.timesheetForm.reset();
     setTimeout(() => { this.submitSuccess = false; this.activeTab = 'history'; }, 2000);
   }
+  logout(): void { this.auth.logout(); }
 }

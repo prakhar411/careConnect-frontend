@@ -1,0 +1,132 @@
+<div class="d-flex">
+
+  <!-- SIDEBAR -->
+  <nav class="fixed-sidebar text-white p-3 d-none d-md-block">
+    <div class="sidebar-brand">
+      <i class="bi bi-heart-pulse-fill"></i>
+      <span>CareConnect</span>
+    </div>
+    <ul class="nav flex-column">
+      <li class="nav-item mb-1">
+        <a class="nav-link-custom" routerLink="/nurse-dashboard" routerLinkActive="active">
+          <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link-custom" routerLink="/nurse-profile" routerLinkActive="active">
+          <i class="bi bi-person-badge"></i> My Profile
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link-custom" routerLink="/nurse-available-jobs" routerLinkActive="active">
+          <i class="bi bi-briefcase"></i> Jobs
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link-custom" routerLink="/nurse-applications" routerLinkActive="active">
+          <i class="bi bi-journal-bookmark-fill"></i> Applications
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link-custom" routerLink="/nurse-my-patients" routerLinkActive="active">
+          <i class="bi bi-people-fill"></i> My Patients
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link-custom" routerLink="/nurse-schedule" routerLinkActive="active">
+          <i class="bi bi-calendar3"></i> Schedule
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link-custom" routerLink="/nurse-payments" routerLinkActive="active">
+          <i class="bi bi-cash-stack"></i> Payments
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link-custom" routerLink="/nurse-training" routerLinkActive="active">
+          <i class="bi bi-mortarboard"></i> Training
+        </a>
+      </li>
+      <div class="sidebar-divider mt-auto"></div>
+      <li class="nav-item">
+        <a class="nav-link-custom logout-link" style="cursor:pointer;" (click)="logout()">
+          <i class="bi bi-box-arrow-right"></i> Logout
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <div class="main p-4">
+
+    <div class="mb-4">
+      <h4 class="page-title">My Patients</h4>
+      <p class="page-subtitle">Patients assigned to your care</p>
+    </div>
+
+    <!-- Filter tabs -->
+    <div class="filter-row mb-4">
+      <button *ngFor="let f of filters" class="filter-btn"
+              [class.filter-active]="activeFilter === f"
+              (click)="activeFilter = f">
+        {{ filterLabels[f] }}
+      </button>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="isLoading" class="text-center py-5 text-muted">
+      <div class="spinner-border text-success" role="status"></div>
+      <p class="mt-2">Loading your patients…</p>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="!isLoading && filteredPatients.length === 0" class="empty-card text-center py-5">
+      <i class="bi bi-people fs-1 d-block mb-3" style="color:#c8ddd8;"></i>
+      <h6 style="color:#7a9e98;">No patients assigned yet</h6>
+      <p style="font-size:0.85rem; color:#9ab8b0;">Patients will appear here once appointments are booked with you.</p>
+    </div>
+
+    <!-- Patient cards -->
+    <div *ngFor="let patient of filteredPatients" class="patient-card mb-4">
+
+      <!-- Patient header -->
+      <div class="patient-header">
+        <div class="patient-avatar">
+          {{ patient.patientName?.charAt(0)?.toUpperCase() || '?' }}
+        </div>
+        <div class="patient-info">
+          <h5 class="patient-name">{{ patient.patientName }}</h5>
+          <span class="patient-appt-meta">
+            {{ appointmentsFor(patient.patientId).length }} appointment{{ appointmentsFor(patient.patientId).length !== 1 ? 's' : '' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Appointments list -->
+      <div class="appt-list">
+        <div *ngFor="let appt of appointmentsFor(patient.patientId)" class="appt-row">
+          <div class="appt-date">
+            <i class="bi bi-calendar3 me-1"></i>
+            {{ appt.appointmentDate | date:'mediumDate' }}
+          </div>
+          <div class="appt-time">{{ appt.appointmentDate | date:'shortTime' }}</div>
+          <div class="appt-care">{{ appt.careNeeds || '—' }}</div>
+          <div class="appt-duration">
+            <i class="bi bi-clock me-1"></i>{{ appt.duration || '—' }}
+          </div>
+          <span class="appt-status" [ngClass]="getStatusClass(appt.status)">
+            {{ appt.status | titlecase }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Notes if any -->
+      <div class="appt-notes" *ngIf="appointmentsFor(patient.patientId)[0]?.notes">
+        <i class="bi bi-sticky-fill me-1"></i>
+        {{ appointmentsFor(patient.patientId)[0].notes }}
+      </div>
+
+    </div>
+
+  </div>
+</div>

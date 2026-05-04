@@ -1,3 +1,4 @@
+﻿import { AuthService } from '../../../services/auth.service';
 import { Component } from '@angular/core';
 
 interface Course {
@@ -27,6 +28,9 @@ interface Certification {
   styleUrls: ['./training.component.css']
 })
 export class TrainingComponent {
+
+  constructor(private auth: AuthService) {}
+
 
   activeTab: 'courses' | 'certifications' | 'transcripts' = 'courses';
   filterCategory = 'All';
@@ -82,4 +86,5 @@ export class TrainingComponent {
       course.progress = 5;
     }
   }
+  logout(): void { this.auth.logout(); }
 }

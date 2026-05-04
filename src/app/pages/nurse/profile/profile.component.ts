@@ -1,3 +1,4 @@
+﻿import { AuthService } from '../../../services/auth.service';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
@@ -29,7 +30,7 @@ export class ProfileComponent implements OnInit {
   selectedExpertise: string[] = ['ICU', 'Wound Dressing'];
   selectedShifts: string[] = ['Morning', 'Night'];
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private auth: AuthService, private fb: FormBuilder) {}
 
   ngOnInit(): void {
     this.profileForm = this.fb.group({
@@ -90,4 +91,5 @@ export class ProfileComponent implements OnInit {
     this.profileForm.disable();
     setTimeout(() => this.saveSuccess = false, 3000);
   }
+  logout(): void { this.auth.logout(); }
 }
