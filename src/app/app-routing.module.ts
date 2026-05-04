@@ -19,6 +19,7 @@ import { BookAppointmentComponent } from './pages/patient/book-appointment/book-
 import { MyAppointmentsComponent } from './pages/patient/my-appointments/my-appointments.component';
 import { MedicalRecordsComponent } from './pages/patient/medical-records/medical-records.component';
 import { SettingsComponent } from './pages/patient/settings/settings.component';
+import { MyNursesComponent } from './pages/patient/my-nurses/my-nurses.component';
 
 import { NurseDashboardComponent } from './pages/nurse/nurse-dashboard/nurse-dashboard.component';
 import { ProfileComponent } from './pages/nurse/profile/profile.component';
@@ -27,6 +28,7 @@ import { ApplicationsComponent } from './pages/nurse/applications/applications.c
 import { ScheduleComponent } from './pages/nurse/schedule/schedule.component';
 import { PaymentsComponent } from './pages/nurse/payments/payments.component';
 import { TrainingComponent } from './pages/nurse/training/training.component';
+import { MyPatientsComponent } from './pages/nurse/my-patients/my-patients.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -50,6 +52,7 @@ const routes: Routes = [
   { path: 'patient-appointments',      component: MyAppointmentsComponent },
   { path: 'patient-medical-records',   component: MedicalRecordsComponent },
   { path: 'patient-settings',         component: SettingsComponent },
+  { path: 'patient-my-nurses',        component: MyNursesComponent },
 
   // Nurse
   { path: 'nurse',               component: NurseDashboardComponent },
@@ -60,6 +63,7 @@ const routes: Routes = [
   { path: 'nurse-schedule',      component: ScheduleComponent },
   { path: 'nurse-payments',      component: PaymentsComponent },
   { path: 'nurse-training',      component: TrainingComponent },
+  { path: 'nurse-my-patients',   component: MyPatientsComponent },
 ];
 
 @NgModule({

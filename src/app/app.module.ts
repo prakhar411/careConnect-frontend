@@ -24,6 +24,7 @@ import { BookAppointmentComponent } from './pages/patient/book-appointment/book-
 import { MyAppointmentsComponent } from './pages/patient/my-appointments/my-appointments.component';
 import { MedicalRecordsComponent } from './pages/patient/medical-records/medical-records.component';
 import { SettingsComponent } from './pages/patient/settings/settings.component';
+import { MyNursesComponent } from './pages/patient/my-nurses/my-nurses.component';
 
 import { NurseDashboardComponent } from './pages/nurse/nurse-dashboard/nurse-dashboard.component';
 import { ProfileComponent } from './pages/nurse/profile/profile.component';
@@ -32,6 +33,7 @@ import { ApplicationsComponent } from './pages/nurse/applications/applications.c
 import { ScheduleComponent } from './pages/nurse/schedule/schedule.component';
 import { PaymentsComponent } from './pages/nurse/payments/payments.component';
 import { TrainingComponent } from './pages/nurse/training/training.component';
+import { MyPatientsComponent } from './pages/nurse/my-patients/my-patients.component';
 
 @NgModule({
   declarations: [
@@ -54,6 +56,7 @@ import { TrainingComponent } from './pages/nurse/training/training.component';
     MyAppointmentsComponent,
     MedicalRecordsComponent,
     SettingsComponent,
+    MyNursesComponent,
 
     NurseDashboardComponent,
     ProfileComponent,
@@ -62,6 +65,7 @@ import { TrainingComponent } from './pages/nurse/training/training.component';
     ScheduleComponent,
     PaymentsComponent,
     TrainingComponent,
+    MyPatientsComponent,
   ],
   imports: [
     BrowserModule,
