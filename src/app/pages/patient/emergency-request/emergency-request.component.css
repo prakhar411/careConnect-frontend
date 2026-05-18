@@ -1,0 +1,126 @@
+/* ── Sidebar (patient theme) ─────────────────────────────────────────── */
+.fixed-sidebar { position:fixed; top:0; left:0; width:280px; height:100vh; overflow-y:auto; z-index:1030; background:linear-gradient(145deg,#1a1a2e,#16213e,#0f3460); box-shadow:6px 0 18px rgba(0,0,0,.25); }
+.fixed-sidebar::-webkit-scrollbar { width:5px; }
+.fixed-sidebar::-webkit-scrollbar-thumb { background:rgba(255,255,255,.3); border-radius:10px; }
+.sidebar-brand { font-weight:800; font-size:1.7rem; display:flex; align-items:center; gap:10px; border-bottom:1px solid rgba(255,255,255,.15); padding:24px 20px 20px; margin-bottom:1rem; }
+.sidebar-brand span { background:linear-gradient(120deg,#fff,#ffd6d6); background-clip:text; -webkit-background-clip:text; color:transparent; }
+.nav-link-custom { display:flex; align-items:center; gap:12px; padding:12px 18px; border-radius:16px; font-weight:500; color:rgba(255,255,255,.9); text-decoration:none; transition:all .2s; margin-bottom:6px; }
+.nav-link-custom i { font-size:1.25rem; width:28px; text-align:center; }
+.nav-link-custom:hover { background:rgba(255,255,255,.12); transform:translateX(4px); color:white; }
+.nav-link-custom.active { background:rgba(255,255,255,.22); color:white; font-weight:600; }
+.sos-link { background:rgba(220,38,38,.3) !important; border:1px solid rgba(220,38,38,.5); }
+.sos-link:hover { background:rgba(220,38,38,.5) !important; }
+.sos-link.active { background:rgba(220,38,38,.55) !important; }
+.sidebar-divider { border-top:1px solid rgba(255,255,255,.15); margin:1.2rem 0 .8rem; }
+.logout-link:hover { background:rgba(220,53,69,.25) !important; }
+.main-content { margin-left:280px; background:#fff5f5; min-height:100vh; }
+@media(max-width:767.98px){.fixed-sidebar{display:none;}.main-content{margin-left:0!important;padding:1rem!important;}}
+
+/* ── Page header ─────────────────────────────────────────────────────── */
+.emr-header { display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; }
+.emr-header-left { display:flex; align-items:center; gap:16px; }
+.sos-icon-big { width:52px; height:52px; border-radius:14px; background:linear-gradient(135deg,#dc2626,#991b1b); color:#fff; font-size:1.6rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 4px 14px rgba(220,38,38,.35); }
+.emr-title { font-size:1.3rem; font-weight:800; color:#7f1d1d; margin:0 0 3px; }
+.emr-sub   { color:#b45309; font-size:0.84rem; margin:0; }
+
+/* ── Hotline buttons ─────────────────────────────────────────────────── */
+.hotlines { display:flex; gap:8px; flex-wrap:wrap; }
+.hotline-btn { background:#dc2626; color:#fff; border:none; border-radius:20px; padding:8px 18px; font-size:0.85rem; font-weight:700; cursor:pointer; transition:background .15s; display:inline-flex; align-items:center; }
+.hotline-btn:hover { background:#b91c1c; }
+.hotline-police { background:#1d4ed8; }
+.hotline-police:hover { background:#1e40af; }
+
+/* ── Form card ───────────────────────────────────────────────────────── */
+.emr-card { background:#fff; border-radius:18px; padding:24px; box-shadow:0 2px 14px rgba(220,38,38,.08); border:1.5px solid #fecaca; }
+.emr-card-title { font-weight:700; font-size:1rem; color:#7f1d1d; margin-bottom:16px; }
+.emr-label { font-size:0.82rem; font-weight:600; color:#374151; margin-bottom:5px; display:block; }
+.emr-input { width:100%; padding:10px 14px; border:1.5px solid #e5e7eb; border-radius:10px; font-size:0.88rem; outline:none; transition:border-color .15s; }
+.emr-input:focus { border-color:#dc2626; box-shadow:0 0 0 3px rgba(220,38,38,.1); }
+.emr-textarea { resize:vertical; border-radius:12px; }
+
+/* ── Emergency type grid ─────────────────────────────────────────────── */
+.em-type-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:10px; }
+.em-type-btn { background:#fef2f2; border:1.5px solid #fecaca; border-radius:12px; padding:10px 14px; font-size:0.82rem; font-weight:600; color:#7f1d1d; cursor:pointer; text-align:left; transition:all .15s; }
+.em-type-btn:hover { background:#fee2e2; border-color:#f87171; }
+.em-type-btn.selected { background:#dc2626; color:#fff; border-color:#dc2626; }
+
+/* ── Description counter + validation ───────────────────────────────── */
+.emr-label { display:flex; justify-content:space-between; align-items:center; }
+.desc-counter { font-size:0.75rem; font-weight:500; color:#9ca3af; margin-left:auto; }
+.desc-counter-warn { color:#dc2626; font-weight:700; }
+.field-err { font-size:0.76rem; color:#dc2626; font-weight:600; }
+
+/* ── Phone row ───────────────────────────────────────────────────────── */
+.phone-row { display:flex; gap:8px; }
+.phone-code { flex:0 0 110px; width:110px; padding:10px 8px; cursor:pointer; }
+.phone-num  { flex:1; }
+
+/* ── Location row ────────────────────────────────────────────────────── */
+.location-row { display:flex; gap:8px; }
+.location-input { flex:1; }
+.fetch-loc-btn { flex-shrink:0; background:#1d4ed8; color:#fff; border:none; border-radius:10px; padding:10px 14px; font-size:0.82rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px; white-space:nowrap; transition:background .15s; }
+.fetch-loc-btn:hover:not(:disabled) { background:#1e40af; }
+.fetch-loc-btn:disabled { opacity:.6; cursor:not-allowed; }
+
+/* ── SOS submit button ───────────────────────────────────────────────── */
+.sos-submit-btn { width:100%; background:linear-gradient(135deg,#dc2626,#991b1b); color:#fff; border:none; border-radius:16px; padding:14px; font-size:1rem; font-weight:800; cursor:pointer; transition:opacity .15s; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 16px rgba(220,38,38,.35); letter-spacing:.02em; }
+.sos-submit-btn:hover:not(:disabled) { opacity:.88; }
+.sos-submit-btn:disabled { opacity:.55; cursor:not-allowed; }
+
+/* ── Protocol card ───────────────────────────────────────────────────── */
+.protocol-card { background:#fff; border-radius:18px; padding:22px; box-shadow:0 2px 12px rgba(0,0,0,.06); border:1.5px solid #fde68a; height:100%; }
+.protocol-placeholder { display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; min-height:200px; }
+.protocol-title { font-size:0.9rem; font-weight:800; color:#92400e; margin-bottom:14px; border-bottom:2px solid #fde68a; padding-bottom:8px; }
+.protocol-steps { padding-left:20px; }
+.protocol-steps li { font-size:0.86rem; color:#374151; line-height:1.6; margin-bottom:8px; }
+.protocol-footer { background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:8px 12px; font-size:0.75rem; color:#92400e; margin-top:14px; }
+
+/* ── Waiting card (compact sidebar-style) ────────────────────────────── */
+.waiting-card { background:#fff; border:1.5px solid #fecaca; border-radius:16px; padding:14px 16px; }
+.wc-header { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+.wc-anim { position:relative; width:40px; height:40px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+.pulse-ring { position:absolute; border-radius:50%; border:2px solid #dc2626; animation:pulse-out 2s infinite; width:40px; height:40px; opacity:0; }
+.pulse-ring-2 { animation-delay:.8s; }
+@keyframes pulse-out { 0%{transform:scale(.4);opacity:.8} 100%{transform:scale(1.7);opacity:0} }
+.wc-icon  { font-size:1.2rem; color:#dc2626; z-index:1; }
+.wc-title { font-size:0.88rem; font-weight:800; color:#7f1d1d; line-height:1.2; }
+.wc-sub   { font-size:0.74rem; color:#9ca3af; margin-top:2px; }
+
+.wc-chips { display:flex; flex-direction:column; gap:5px; margin-bottom:10px; }
+.wc-chip  { background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:5px 9px; font-size:0.76rem; font-weight:600; color:#7f1d1d; display:flex; align-items:flex-start; gap:4px; word-break:break-word; }
+.wc-chip-blue { background:#eff6ff; border-color:#bfdbfe; color:#1e40af; }
+
+.wc-status { font-size:0.78rem; font-weight:600; margin-bottom:10px; padding:6px 10px; background:#fef2f2; border-radius:8px; }
+.waiting-pulse { color:#dc2626; animation:blink 1.4s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+.wc-nurses { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:8px 10px; margin-bottom:10px; }
+.wc-nurses-title { font-size:0.76rem; font-weight:700; color:#065f46; margin-bottom:6px; }
+.wc-nurse-row { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:5px 0; border-top:1px solid #d1fae5; }
+.wc-nurse-name { font-size:0.8rem; font-weight:700; }
+.wc-nurse-spec { font-size:0.72rem; color:#6b7280; }
+.rn-accept-btn { background:#059669; color:#fff; border:none; border-radius:20px; padding:4px 10px; font-size:0.72rem; font-weight:600; cursor:pointer; white-space:nowrap; flex-shrink:0; }
+
+.wc-actions { display:flex; gap:6px; flex-wrap:wrap; }
+.cancel-emr-btn { background:#f3f4f6; color:#374151; border:none; border-radius:20px; padding:6px 12px; font-size:0.78rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:4px; }
+.cancel-emr-btn:hover { background:#e5e7eb; }
+
+/* ── Responded step ──────────────────────────────────────────────────── */
+.responded-card { border-color:#bbf7d0; }
+.responded-badge { background:#d1fae5; color:#065f46; display:inline-flex; align-items:center; border-radius:20px; padding:6px 16px; font-weight:700; font-size:0.9rem; margin-bottom:8px; }
+.responded-sub  { color:#6b7280; font-size:0.86rem; margin-bottom:16px; }
+.eta-banner { background:linear-gradient(135deg,#fef3c7,#fde68a); border:1.5px solid #f59e0b; border-radius:12px; padding:12px 16px; font-size:0.9rem; color:#92400e; font-weight:600; display:flex; align-items:center; }
+.nurse-contact-card { background:#f0fdf4; border:1.5px solid #bbf7d0; border-radius:14px; padding:16px; display:flex; align-items:center; gap:14px; }
+.nc-avatar { width:48px; height:48px; border-radius:50%; background:linear-gradient(135deg,#059669,#065f46); color:#fff; font-size:1.4rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.nc-name { font-weight:700; font-size:1rem; }
+.nc-actions { display:flex; gap:8px; flex-wrap:wrap; }
+.chat-link-btn { background:#0d6efd; color:#fff; border-radius:20px; padding:6px 14px; font-size:0.82rem; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; }
+.responded-details { background:#f9fafb; border-radius:10px; padding:12px; }
+.new-emr-btn { background:#f3f4f6; color:#374151; border:none; border-radius:20px; padding:8px 18px; font-size:0.85rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+
+/* ── Follow-up card ──────────────────────────────────────────────────── */
+.followup-card { background:#eff6ff; border:1.5px solid #bfdbfe; border-radius:16px; padding:18px; }
+.fu-title { font-weight:700; color:#1e40af; font-size:0.92rem; margin-bottom:6px; }
+.fu-sub   { font-size:0.82rem; color:#374151; margin-bottom:12px; }
+.fu-btn   { background:#1d4ed8; color:#fff; border-radius:20px; padding:8px 18px; font-size:0.84rem; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:6px; transition:background .15s; }
+.fu-btn:hover { background:#1e40af; color:#fff; }

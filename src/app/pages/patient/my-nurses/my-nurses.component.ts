@@ -4,6 +4,8 @@ import { AppointmentService } from '../../../services/appointment.service';
 import { MessageService } from '../../../services/message.service';
 import { ShiftService } from '../../../services/shift.service';
 import { PaymentService } from '../../../services/payment.service';
+import { VitalSignService } from '../../../services/vital-sign.service';
+import { MedicalRecordService } from '../../../services/medical-record.service';
 
 @Component({
   selector: 'app-my-nurses',
@@ -77,12 +79,20 @@ export class MyNursesComponent implements OnInit, OnDestroy, AfterViewChecked {
   reconcileError  = '';
   reconcileSuccess: Record<number, boolean> = {};
 
+  // ── Care Progress ─────────────────────────────────────────────────────────
+  careTab: 'vitals' | 'notes' | 'shifts' = 'vitals';
+  vitals:    any[] = [];
+  careNotes: any[] = [];
+  isLoadingCare = false;
+
   constructor(
     private auth:        AuthService,
     private apptService: AppointmentService,
     private msgSvc:      MessageService,
     private shiftSvc:    ShiftService,
-    private paymentSvc:  PaymentService
+    private paymentSvc:  PaymentService,
+    private vitalSvc:    VitalSignService,
+    private medSvc:      MedicalRecordService
   ) {}
 
   ngOnInit(): void {
@@ -162,8 +172,45 @@ export class MyNursesComponent implements OnInit, OnDestroy, AfterViewChecked {
     );
   }
 
-  openDetail(nurse: any): void  { this.selectedNurse = nurse; }
-  closeDetail(): void           { this.selectedNurse = null; }
+  openDetail(nurse: any): void {
+    this.selectedNurse = nurse;
+    this.careTab       = 'vitals';
+    this.vitals        = [];
+    this.careNotes     = [];
+    this.loadCareProgress();
+  }
+  closeDetail(): void { this.selectedNurse = null; }
+
+  private loadCareProgress(): void {
+    this.isLoadingCare = true;
+    let done = 0;
+    const check = () => { if (++done === 2) this.isLoadingCare = false; };
+
+    this.vitalSvc.getByPatient(this.myUserId).subscribe({
+      next: (data) => { this.vitals = (data || []).slice(0, 10); check(); },
+      error: () => check()
+    });
+    this.medSvc.getByPatient(this.myUserId).subscribe({
+      next: (data) => {
+        this.careNotes = (data || [])
+          .filter((r: any) => (r.recordType || '').toLowerCase() === 'care note')
+          .slice(0, 10);
+        check();
+      },
+      error: () => check()
+    });
+  }
+
+  latestVital(field: string): string {
+    if (!this.vitals.length) return '—';
+    const v = this.vitals[0];
+    return v[field] != null ? String(v[field]) : '—';
+  }
+
+  formatVitalDate(d: string): string {
+    if (!d) return '—';
+    return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
 
   // ── Shift Loading ─────────────────────────────────────────────────────────
 

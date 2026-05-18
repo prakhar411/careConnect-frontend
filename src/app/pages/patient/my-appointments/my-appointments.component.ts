@@ -40,6 +40,15 @@ export class MyAppointmentsComponent implements OnInit {
   // Nurse detail view (inside applicants panel)
   selectedApplicant: any = null;
 
+  // Rating modal state
+  ratingTarget:  any    = null;
+  ratingValue    = 0;
+  ratingHover    = 0;
+  ratingFeedback = '';
+  isRating       = false;
+  ratingError    = '';
+  ratingSuccess  = false;
+
   // Reschedule modal state
   rescheduleTarget: any = null;
   rescheduleDate   = '';
@@ -77,13 +86,16 @@ export class MyAppointmentsComponent implements OnInit {
     const dt = new Date(a.appointmentDate);
     return {
       id:             a.id,
+      nurseId:        a.nurseId   || null,
       nurseName:      a.nurseName || null,
       careType:       a.careNeeds || '—',
       duration:       a.duration  || '—',
       date: dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       time: dt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
       status:         (a.status || 'PENDING').toUpperCase(),
-      applicantCount: a.applicantCount ?? 0
+      applicantCount: a.applicantCount ?? 0,
+      patientRating:  a.patientRating  ?? null,
+      patientFeedback:a.patientFeedback ?? null
     };
   }
 
@@ -186,6 +198,54 @@ export class MyAppointmentsComponent implements OnInit {
   viewNurseDetail(app: any): void  { this.selectedApplicant = app; }
   closeNurseDetail(): void         { this.selectedApplicant = null; }
 
+  // ── Compatibility score ───────────────────────────────────────────────────
+  compatibilityScore(app: any): number {
+    const raw = this.rawAppointments.find((a: any) => a.id === this.applicantsTarget?.id);
+    let score = 0;
+
+    // Specialization match: 40 pts
+    const ns = (app.nurseSpecialization || '').toLowerCase();
+    const as = (raw?.specialization || '').toLowerCase();
+    if (ns && as) {
+      if (ns === as) score += 40;
+      else if (ns.split('/').some((p: string) => as.includes(p.trim())) ||
+               as.split('/').some((p: string) => ns.includes(p.trim()))) score += 28;
+      else score += 12;
+    } else score += 20;
+
+    // Skills/expertise match: 30 pts
+    const exp    = (app.nurseExpertise || '').toLowerCase();
+    const care   = (raw?.careNeeds || raw?.requiredSkills || '').toLowerCase();
+    if (exp && care) {
+      const words = care.replace(/[^a-z ]/g, '').split(/\s+/).filter((w: string) => w.length > 3);
+      const hits  = words.filter((w: string) => exp.includes(w)).length;
+      score += Math.min(30, 10 + hits * 8);
+    } else score += 15;
+
+    // Experience: 30 pts
+    const yrs = parseInt(app.nurseExperience) || 0;
+    if (yrs >= 5) score += 30;
+    else if (yrs >= 3) score += 22;
+    else if (yrs >= 1) score += 14;
+    else score += 6;
+
+    return Math.min(score, 100);
+  }
+
+  compatibilityLabel(score: number): string {
+    if (score >= 85) return 'Excellent Match';
+    if (score >= 70) return 'Good Match';
+    if (score >= 50) return 'Moderate Match';
+    return 'Basic Match';
+  }
+
+  compatibilityClass(score: number): string {
+    if (score >= 85) return 'compat-excellent';
+    if (score >= 70) return 'compat-good';
+    if (score >= 50) return 'compat-moderate';
+    return 'compat-basic';
+  }
+
   selectNurse(applicationId: number): void {
     this.acceptingApplicationId = applicationId;
     this.applicantsError        = '';
@@ -279,6 +339,40 @@ export class MyAppointmentsComponent implements OnInit {
 
   formatAmount(n: number): string {
     return '₹' + Number(n).toLocaleString('en-IN');
+  }
+
+  // ── Rating ────────────────────────────────────────────────────────────────
+
+  openRating(appt: any): void {
+    this.ratingTarget  = appt;
+    this.ratingValue   = 0;
+    this.ratingHover   = 0;
+    this.ratingFeedback = '';
+    this.ratingError   = '';
+    this.ratingSuccess = false;
+  }
+
+  closeRating(): void { this.ratingTarget = null; }
+
+  starArray(): number[] { return [1, 2, 3, 4, 5]; }
+
+  submitRating(): void {
+    if (this.ratingValue === 0) { this.ratingError = 'Please select a star rating.'; return; }
+    const userId = this.auth.getUserId()!;
+    this.isRating    = true;
+    this.ratingError = '';
+    this.apptService.rateAppointment(
+      this.ratingTarget.id, userId, this.ratingValue, this.ratingFeedback
+    ).subscribe({
+      next: (updated: any) => {
+        const appt = this.appointments.find(a => a.id === this.ratingTarget.id);
+        if (appt) { appt.patientRating = updated.patientRating; appt.patientFeedback = updated.patientFeedback; }
+        this.isRating      = false;
+        this.ratingSuccess = true;
+        setTimeout(() => this.closeRating(), 1500);
+      },
+      error: (err: Error) => { this.ratingError = err.message; this.isRating = false; }
+    });
   }
 
   logout(): void { this.auth.logout(); }

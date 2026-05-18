@@ -61,6 +61,25 @@
 .btn-cancel:hover { background: #fde8e8; }
 .btn-reschedule { background: white; color: #4e6e68; border: 1.5px solid #d0e8e0; border-radius: 20px; padding: 6px 14px; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.18s; }
 .btn-reschedule:hover { background: #eef9f5; }
+.btn-rate { background: linear-gradient(135deg,#f59e0b,#d97706); color:#fff; border:none; border-radius:20px; padding:6px 16px; font-size:0.82rem; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; transition:opacity .15s; }
+.btn-rate:hover { opacity:.88; }
+
+/* Rating done row */
+.rating-done-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.rating-done-label { font-size:0.8rem; color:#6b7280; font-weight:600; }
+.star-static { font-size:1.1rem; color:#e5e7eb; }
+.star-static.star-filled { color:#f59e0b; }
+.rating-done-val { font-size:0.8rem; font-weight:700; color:#374151; }
+.rating-done-feedback { font-size:0.78rem; color:#6b7280; font-style:italic; }
+
+/* Rating modal */
+.rating-modal { max-width:420px; }
+.rating-nurse-name { font-size:0.9rem; color:#374151; margin:0 0 2px; }
+.rating-appt-info { font-size:0.8rem; color:#9ca3af; margin-bottom:14px; }
+.star-picker { display:flex; align-items:center; gap:6px; }
+.star-pick { font-size:2rem; color:#e5e7eb; cursor:pointer; transition:color .1s; line-height:1; }
+.star-pick.star-active { color:#f59e0b; }
+.star-pick-label { font-size:0.82rem; font-weight:700; color:#92400e; margin-left:6px; }
 
 .empty-state { background: white; border-radius: 18px; padding: 3rem; text-align: center; color: #9ab8b2; box-shadow: 0 4px 14px -4px rgba(0,32,32,0.06); }
 
@@ -153,6 +172,30 @@
 .nd-btn-select { background:#0f5241; color:#fff; border:none; border-radius:20px; padding:8px 18px; font-size:0.86rem; font-weight:600; cursor:pointer; }
 .nd-btn-select:hover { background:#0a3d2e; }
 .nd-btn-select:disabled { opacity:.6; cursor:not-allowed; }
+
+/* ── Compatibility badge ───────────────────────────────────── */
+.compat-badge { display:inline-flex; align-items:center; font-size:0.72rem; font-weight:700; padding:3px 10px; border-radius:20px; white-space:nowrap; }
+.compat-excellent { background:#d1fae5; color:#065f46; }
+.compat-good      { background:#dbeafe; color:#1e40af; }
+.compat-moderate  { background:#fef3c7; color:#92400e; }
+.compat-basic     { background:#f3f4f6; color:#374151; }
+
+.nd-compat-bar { background:#f0fdf4; border:1px solid #d1fae5; border-radius:10px; padding:10px 14px; }
+.compat-track { height:7px; background:#e5e7eb; border-radius:6px; overflow:hidden; margin-top:6px; }
+.compat-fill  { height:100%; border-radius:6px; transition:width .5s ease; }
+.compat-fill.compat-excellent { background:#10b981; }
+.compat-fill.compat-good      { background:#3b82f6; }
+.compat-fill.compat-moderate  { background:#f59e0b; }
+.compat-fill.compat-basic     { background:#9ca3af; }
+
+/* ── Credentials ────────────────────────────────────────────── */
+.cred-list { display:flex; flex-direction:column; gap:8px; }
+.cred-item { background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; padding:10px 12px; }
+.cred-top  { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:4px; }
+.cred-name { font-size:0.88rem; font-weight:600; color:#1a3a2e; }
+.cred-meta { display:flex; flex-wrap:wrap; gap:10px; font-size:0.75rem; color:#6a8c80; }
+.cred-active  { background:#d1fae5; color:#065f46; font-size:0.68rem; font-weight:700; padding:2px 8px; border-radius:10px; }
+.cred-expired { background:#fee2e2; color:#991b1b; font-size:0.68rem; font-weight:700; padding:2px 8px; border-radius:10px; }
 
 /* ── PAYMENT CARDS ─────────────────────────────────────────── */
 .pay-group-card    { background:#fff; border-radius:12px; padding:18px 20px; box-shadow:0 2px 8px rgba(0,0,0,0.06); border-left:4px solid #1aa37a; }

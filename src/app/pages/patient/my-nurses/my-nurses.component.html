@@ -32,6 +32,13 @@
           <i class="bi bi-journal-medical"></i> Medical Records
         </a>
       </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link-custom" routerLink="/patient-emergency" routerLinkActive="active"
+           style="background:rgba(220,38,38,.18);border:1px solid rgba(220,38,38,.35);">
+          <i class="bi bi-exclamation-octagon-fill" style="color:#f87171;"></i>
+          <span style="color:#fca5a5;font-weight:700;">Emergency SOS</span>
+        </a>
+      </li>
       <div class="sidebar-divider"></div>
       <li class="nav-item mt-2">
         <a class="nav-link-custom" routerLink="/patient-settings" routerLinkActive="active">
@@ -366,6 +373,114 @@
           <span class="dp-value">{{ selectedNurse.nurseEmail }}</span>
         </div>
       </div>
+    </div>
+
+    <!-- ── Care Progress (AC 3.7) ──────────────────────────── -->
+    <div class="dp-section">
+      <div class="dp-section-title"><i class="bi bi-activity me-2"></i>Care Progress</div>
+
+      <!-- Tab strip -->
+      <div class="care-tabs mb-3">
+        <button class="care-tab" [class.active]="careTab==='vitals'"  (click)="careTab='vitals'">
+          <i class="bi bi-heart-pulse me-1"></i>Vitals
+        </button>
+        <button class="care-tab" [class.active]="careTab==='notes'"   (click)="careTab='notes'">
+          <i class="bi bi-journal-text me-1"></i>Care Notes
+        </button>
+        <button class="care-tab" [class.active]="careTab==='shifts'"  (click)="careTab='shifts'">
+          <i class="bi bi-calendar-check me-1"></i>Shifts
+        </button>
+      </div>
+
+      <div *ngIf="isLoadingCare" class="text-center py-3">
+        <div class="spinner-border spinner-border-sm text-success"></div>
+      </div>
+
+      <!-- Vitals tab -->
+      <ng-container *ngIf="!isLoadingCare && careTab==='vitals'">
+        <div *ngIf="vitals.length === 0" class="care-empty">
+          <i class="bi bi-heart-pulse"></i> No vitals recorded yet.
+        </div>
+
+        <!-- Latest reading summary -->
+        <div class="vitals-latest-card mb-3" *ngIf="vitals.length > 0">
+          <div class="vlc-title">Latest Reading — {{ formatVitalDate(vitals[0].recordedAt) }}</div>
+          <div class="vitals-grid">
+            <div class="vg-item" *ngIf="vitals[0].bloodPressure">
+              <span class="vg-icon"><i class="bi bi-droplet-half"></i></span>
+              <span class="vg-val">{{ vitals[0].bloodPressure }}</span>
+              <span class="vg-lbl">BP (mmHg)</span>
+            </div>
+            <div class="vg-item" *ngIf="vitals[0].pulseRate">
+              <span class="vg-icon"><i class="bi bi-heart-fill"></i></span>
+              <span class="vg-val">{{ vitals[0].pulseRate }}</span>
+              <span class="vg-lbl">Pulse (bpm)</span>
+            </div>
+            <div class="vg-item" *ngIf="vitals[0].temperature">
+              <span class="vg-icon"><i class="bi bi-thermometer-half"></i></span>
+              <span class="vg-val">{{ vitals[0].temperature }}°F</span>
+              <span class="vg-lbl">Temp</span>
+            </div>
+            <div class="vg-item" *ngIf="vitals[0].spo2">
+              <span class="vg-icon"><i class="bi bi-lungs"></i></span>
+              <span class="vg-val">{{ vitals[0].spo2 }}%</span>
+              <span class="vg-lbl">SpO2</span>
+            </div>
+            <div class="vg-item" *ngIf="vitals[0].weight">
+              <span class="vg-icon"><i class="bi bi-speedometer2"></i></span>
+              <span class="vg-val">{{ vitals[0].weight }} kg</span>
+              <span class="vg-lbl">Weight</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- History list -->
+        <div class="vitals-history" *ngIf="vitals.length > 1">
+          <div class="vh-title">History</div>
+          <div class="vh-row" *ngFor="let v of vitals.slice(1)">
+            <span class="vh-date">{{ formatVitalDate(v.recordedAt) }}</span>
+            <span class="vh-chips">
+              <span *ngIf="v.bloodPressure" class="vh-chip">BP {{ v.bloodPressure }}</span>
+              <span *ngIf="v.pulseRate"    class="vh-chip">♥ {{ v.pulseRate }}</span>
+              <span *ngIf="v.temperature"  class="vh-chip">🌡 {{ v.temperature }}°F</span>
+              <span *ngIf="v.spo2"         class="vh-chip">O₂ {{ v.spo2 }}%</span>
+            </span>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Care Notes tab -->
+      <ng-container *ngIf="!isLoadingCare && careTab==='notes'">
+        <div *ngIf="careNotes.length === 0" class="care-empty">
+          <i class="bi bi-journal-x"></i> No care notes yet.
+        </div>
+        <div class="care-note-card" *ngFor="let n of careNotes">
+          <div class="cnc-header">
+            <span class="cnc-title">{{ n.title || 'Care Note' }}</span>
+            <span class="cnc-date">{{ formatVitalDate(n.createdAt) }}</span>
+          </div>
+          <p class="cnc-body">{{ n.description }}</p>
+        </div>
+      </ng-container>
+
+      <!-- Shifts tab -->
+      <ng-container *ngIf="careTab==='shifts'">
+        <div *ngFor="let appt of appointmentsFor(selectedNurse.nurseId)">
+          <div class="shifts-appt-label">
+            {{ appt.careNeeds || 'Home Care' }} · {{ appt.appointmentDate | date:'d MMM y' }}
+          </div>
+          <div class="shift-row" *ngFor="let s of shiftsFor(appt.id)">
+            <div class="shift-row-left">
+              <i class="bi bi-clock-history me-2" style="color:#1aa37a;"></i>
+              <span class="shift-date">{{ s.shiftDate | date:'d MMM y' }}</span>
+              <span class="shift-rate ms-2">{{ formatAmount(s.ratePerShift) }}</span>
+            </div>
+            <span class="shift-status-badge" [ngClass]="shiftStatusClass(s.status)">{{ shiftStatusLabel(s.status) }}</span>
+          </div>
+          <div *ngIf="shiftsFor(appt.id).length === 0" class="text-muted small py-1 ps-2">No shifts yet.</div>
+        </div>
+        <p *ngIf="appointmentsFor(selectedNurse.nurseId).length === 0" class="text-muted small">No appointments yet.</p>
+      </ng-container>
     </div>
 
     <!-- Appointment + Shift History -->
