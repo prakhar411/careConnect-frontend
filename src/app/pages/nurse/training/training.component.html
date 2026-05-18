@@ -1,4 +1,4 @@
-﻿<div class="d-flex">
+<div class="d-flex">
   <nav class="fixed-sidebar text-white p-3 d-none d-md-block">
     <div class="sidebar-brand"><i class="bi bi-heart-pulse-fill"></i><span>CareConnect</span></div>
     <ul class="nav flex-column">
@@ -12,130 +12,202 @@
       <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-training" routerLinkActive="active"><i class="bi bi-mortarboard"></i> Training</a></li>
       <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-notifications" routerLinkActive="active"><i class="bi bi-bell-fill"></i> Notifications<span *ngIf="unreadCount>0" style="background:#ef4444;color:white;border-radius:20px;font-size:.65rem;font-weight:700;padding:1px 7px;margin-left:auto;">{{unreadCount}}</span></a></li>
       <div class="sidebar-divider mt-auto"></div>
-      <li class="nav-item">
-        <a class="nav-link-custom logout-link" style="cursor:pointer;" (click)="logout()">
-          <i class="bi bi-box-arrow-right"></i> Logout
-        </a>
-      </li>
+      <li class="nav-item"><a class="nav-link-custom logout-link" style="cursor:pointer;" (click)="logout()"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
     </ul>
   </nav>
 
   <div class="main p-4 w-100">
+
+    <!-- HEADER -->
     <div class="mb-4">
       <h4 class="fw-semibold mb-0" style="color:#1a3b3a;">Training & Development</h4>
       <small class="text-muted">Continuing education, certifications, and professional growth</small>
     </div>
 
-    <!-- Stats -->
-    <div class="row g-3 mb-4">
-      <div class="col-6 col-md-3">
-        <div class="stat-card"><i class="bi bi-award stat-icon"></i><p class="stat-num">{{ totalCredits }}</p><p class="stat-lbl">Credits Earned</p></div>
+    <!-- Loading -->
+    <div *ngIf="isLoading" class="text-center py-5 text-muted">
+      <div class="spinner-border text-success"></div>
+      <p class="mt-2">Loading your training data…</p>
+    </div>
+
+    <ng-container *ngIf="!isLoading">
+
+    <!-- CEU SUMMARY BAR -->
+    <div class="ceu-bar mb-4">
+      <div class="ceu-item">
+        <div class="ceu-num">{{ totalCredits }}</div>
+        <div class="ceu-lbl">Total CEUs Earned</div>
       </div>
-      <div class="col-6 col-md-3">
-        <div class="stat-card"><i class="bi bi-check-circle stat-icon"></i><p class="stat-num">{{ completedCount }}</p><p class="stat-lbl">Completed</p></div>
+      <div class="ceu-divider"></div>
+      <div class="ceu-item">
+        <div class="ceu-num c-green">{{ thisYearCredits }}</div>
+        <div class="ceu-lbl">This Year</div>
       </div>
-      <div class="col-6 col-md-3">
-        <div class="stat-card"><i class="bi bi-play-circle stat-icon" style="color:#d68910;"></i><p class="stat-num" style="color:#d68910;">{{ inProgressCount }}</p><p class="stat-lbl">In Progress</p></div>
+      <div class="ceu-divider"></div>
+      <div class="ceu-item">
+        <div class="ceu-num">{{ completions.length }}</div>
+        <div class="ceu-lbl">Courses Completed</div>
       </div>
-      <div class="col-6 col-md-3">
-        <div class="stat-card"><i class="bi bi-exclamation-triangle stat-icon" style="color:#c0392b;"></i><p class="stat-num" style="color:#c0392b;">{{ certifications.length }}</p><p class="stat-lbl">Certs to Review</p></div>
+      <div class="ceu-divider"></div>
+      <div class="ceu-item">
+        <div class="ceu-num c-amber">{{ orgCourses.length }}</div>
+        <div class="ceu-lbl">Org Mandatory</div>
       </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="tab-bar mb-4">
-      <button class="tab-btn" [class.tab-active]="activeTab === 'courses'" (click)="activeTab = 'courses'"><i class="bi bi-book me-1"></i>Courses</button>
-      <button class="tab-btn" [class.tab-active]="activeTab === 'certifications'" (click)="activeTab = 'certifications'"><i class="bi bi-patch-check me-1"></i>Certifications</button>
-      <button class="tab-btn" [class.tab-active]="activeTab === 'transcripts'" (click)="activeTab = 'transcripts'"><i class="bi bi-file-text me-1"></i>Transcripts</button>
+    <!-- RENEWAL TRACKER (AC 11.2, 11.6) -->
+    <div class="renew-section mb-4" *ngIf="expiringCredentials.length > 0">
+      <div class="renew-title"><i class="bi bi-exclamation-triangle-fill me-2 text-warning"></i>Credential Renewal Tracker</div>
+      <div class="renew-list">
+        <div class="renew-item" *ngFor="let c of expiringCredentials">
+          <div>
+            <div class="renew-cred-name">{{ c.credentialType }}</div>
+            <div class="renew-cred-issuer text-muted small">{{ c.issuedBy }}</div>
+          </div>
+          <span class="renew-badge" [ngClass]="expiryClass(c.expiryDate)">{{ expiryLabel(c.expiryDate) }}</span>
+        </div>
+      </div>
     </div>
 
-    <!-- COURSES TAB -->
-    <div *ngIf="activeTab === 'courses'">
-      <!-- Category filter chips -->
-      <div class="chip-group mb-4">
-        <span *ngFor="let cat of categories" class="chip" [class.chip-active]="filterCategory === cat" (click)="filterCategory = cat">{{ cat }}</span>
+    <!-- TABS -->
+    <div class="tr-tabs mb-4">
+      <button class="tr-tab" [class.active]="activeTab==='courses'"    (click)="activeTab='courses'">
+        <i class="bi bi-grid-fill me-1"></i>Course Catalog
+      </button>
+      <button class="tr-tab" [class.active]="activeTab==='mandatory'"  (click)="activeTab='mandatory'">
+        <i class="bi bi-building me-1"></i>Org Mandatory
+        <span *ngIf="orgCourses.length > 0" class="tr-tab-count">{{ orgCourses.length }}</span>
+      </button>
+      <button class="tr-tab" [class.active]="activeTab==='transcript'" (click)="activeTab='transcript'">
+        <i class="bi bi-file-earmark-text me-1"></i>My Transcript
+      </button>
+      <button class="tr-tab" [class.active]="activeTab==='career'"     (click)="activeTab='career'">
+        <i class="bi bi-graph-up-arrow me-1"></i>Career Growth
+      </button>
+    </div>
+
+    <!-- ═══ TAB: COURSE CATALOG (AC 11.1, 11.3) ═══ -->
+    <div *ngIf="activeTab==='courses'">
+      <div class="category-filter mb-3">
+        <button *ngFor="let cat of categories" class="cat-btn" [class.active]="filterCategory===cat"
+                (click)="filterCategory=cat">{{ cat }}</button>
       </div>
 
       <div class="row g-3">
-        <div class="col-md-6" *ngFor="let course of filteredCourses">
-          <div class="course-card">
+        <div class="col-md-6 col-lg-4" *ngFor="let course of filteredStaticCourses">
+          <div class="course-card" [class.course-done]="isCompleted(course.title)">
+            <div class="course-cat-badge">{{ course.category }}</div>
+            <div class="course-title">{{ course.title }}</div>
+            <div class="course-meta">
+              <span><i class="bi bi-person-video me-1"></i>{{ course.provider }}</span>
+              <span><i class="bi bi-clock me-1"></i>{{ course.duration }}</span>
+              <span class="course-credits"><i class="bi bi-award me-1"></i>{{ course.credits }} CEUs</span>
+            </div>
+            <div class="course-footer">
+              <span *ngIf="isCompleted(course.title)" class="done-chip">
+                <i class="bi bi-check-circle-fill me-1"></i>Completed
+              </span>
+              <button *ngIf="!isCompleted(course.title)" class="btn-complete"
+                      (click)="markComplete(course)"
+                      [disabled]="completingTitle === course.title">
+                <span *ngIf="completingTitle !== course.title"><i class="bi bi-check2 me-1"></i>Mark Complete</span>
+                <span *ngIf="completingTitle === course.title"><span class="spinner-border spinner-border-sm me-1"></span>Saving…</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: ORG MANDATORY (AC 11.1, 11.3, 12.4) ═══ -->
+    <div *ngIf="activeTab==='mandatory'">
+      <div *ngIf="orgCourses.length === 0" class="tr-empty">
+        <i class="bi bi-building fs-2 d-block mb-2"></i>
+        No mandatory courses assigned by your organisation yet.
+      </div>
+      <div class="row g-3">
+        <div class="col-md-6" *ngFor="let course of orgCourses">
+          <div class="course-card org-card" [class.course-done]="isCompleted(course.title)">
             <div class="d-flex justify-content-between align-items-start mb-2">
-              <div>
-                <span *ngIf="course.mandatory" class="mandatory-tag">Required</span>
-                <span class="category-tag">{{ course.category }}</span>
-              </div>
-              <span class="course-status" [ngClass]="statusClass(course.status)">{{ course.status }}</span>
+              <div class="course-cat-badge org-badge">{{ course.category }}</div>
+              <span *ngIf="course.mandatory" class="mandatory-chip">Mandatory</span>
             </div>
-            <h6 class="course-title">{{ course.title }}</h6>
-            <p class="course-provider"><i class="bi bi-building me-1"></i>{{ course.provider }}</p>
-            <div class="d-flex gap-3 mb-3">
-              <small class="meta-pill"><i class="bi bi-clock me-1"></i>{{ course.duration }}</small>
-              <small class="meta-pill"><i class="bi bi-award me-1"></i>{{ course.credits }} credits</small>
-              <small class="meta-pill"><i class="bi bi-calendar me-1"></i>Due {{ course.dueDate }}</small>
+            <div class="course-title">{{ course.title }}</div>
+            <div class="course-desc text-muted small" *ngIf="course.description">{{ course.description }}</div>
+            <div class="course-meta mt-2">
+              <span class="course-credits"><i class="bi bi-award me-1"></i>{{ course.creditPoints }} CEUs</span>
             </div>
-            <!-- Progress bar -->
-            <div class="progress-wrap mb-3" *ngIf="course.status !== 'Not Started'">
-              <div class="d-flex justify-content-between mb-1">
-                <small style="color:#4e6e68;font-size:0.78rem;">Progress</small>
-                <small style="color:#0f6b51;font-weight:600;font-size:0.78rem;">{{ course.progress }}%</small>
-              </div>
-              <div class="progress-bar-bg">
-                <div class="progress-bar-fill" [style.width.%]="course.progress"></div>
-              </div>
+            <div class="course-footer mt-2">
+              <span *ngIf="isCompleted(course.title)" class="done-chip">
+                <i class="bi bi-check-circle-fill me-1"></i>Completed
+              </span>
+              <button *ngIf="!isCompleted(course.title)" class="btn-complete btn-org-complete"
+                      (click)="markComplete({title: course.title, category: course.category, creditPoints: course.creditPoints}, 'ORG', course.id)"
+                      [disabled]="completingTitle === course.title">
+                <span *ngIf="completingTitle !== course.title"><i class="bi bi-check2 me-1"></i>Mark Complete</span>
+                <span *ngIf="completingTitle === course.title"><span class="spinner-border spinner-border-sm me-1"></span>Saving…</span>
+              </button>
             </div>
-            <button class="btn btn-course w-100"
-              [class.btn-course-done]="course.status === 'Completed'"
-              [disabled]="course.status === 'Completed'"
-              (click)="enrollCourse(course)">
-              <i class="bi me-1" [ngClass]="course.status === 'Completed' ? 'bi-check-circle-fill' : course.status === 'In Progress' ? 'bi-play-fill' : 'bi-plus-circle'"></i>
-              {{ course.status === 'Completed' ? 'Completed' : course.status === 'In Progress' ? 'Continue' : 'Enroll' }}
-            </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- CERTIFICATIONS TAB -->
-    <div *ngIf="activeTab === 'certifications'">
-      <div class="section-card">
-        <h6 class="section-title"><i class="bi bi-patch-check me-2"></i>My Certifications</h6>
-        <div class="cert-row" *ngFor="let cert of certifications">
-          <div class="cert-icon" [ngClass]="certClass(cert.daysLeft)">
-            <i class="bi bi-patch-check-fill"></i>
+    <!-- ═══ TAB: TRANSCRIPT (AC 11.4, 11.7) ═══ -->
+    <div *ngIf="activeTab==='transcript'">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div class="text-muted small">{{ completions.length }} course(s) completed &nbsp;|&nbsp; {{ totalCredits }} total CEUs</div>
+        <button class="btn-transcript" (click)="downloadTranscript()" [disabled]="completions.length === 0">
+          <i class="bi bi-download me-1"></i>Download Transcript PDF
+        </button>
+      </div>
+
+      <div *ngIf="completions.length === 0" class="tr-empty">
+        <i class="bi bi-journal-x fs-2 d-block mb-2"></i>
+        No completions yet. Complete a course to build your transcript.
+      </div>
+
+      <div class="transcript-row" *ngFor="let c of completions">
+        <div class="tr-left">
+          <div class="tr-course-name">{{ c.courseName }}</div>
+          <div class="tr-meta">
+            <span class="tr-cat-chip">{{ c.category }}</span>
+            <span *ngIf="c.source==='ORG'" class="tr-org-chip">Org Required</span>
           </div>
-          <div class="flex-grow-1">
-            <p class="mb-0 fw-semibold" style="font-size:0.92rem;">{{ cert.name }}</p>
-            <small class="text-muted">{{ cert.issuedBy }} &bull; Issued {{ cert.issuedOn }}</small>
+        </div>
+        <div class="tr-right">
+          <div class="tr-credits">{{ c.creditPoints }} CEUs</div>
+          <div class="tr-date text-muted small">{{ formatDate(c.completedAt) }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: CAREER GROWTH (AC 11.5) ═══ -->
+    <div *ngIf="activeTab==='career'">
+      <div class="row g-4">
+        <div class="col-lg-7">
+          <div class="career-section-title mb-3"><i class="bi bi-graph-up-arrow me-2"></i>Career Pathways</div>
+          <div class="career-card" *ngFor="let path of CAREER_PATHS">
+            <div class="career-icon">{{ path.icon }}</div>
+            <div class="career-info">
+              <div class="career-role">{{ path.role }}</div>
+              <div class="career-skills">
+                <span *ngFor="let s of path.skills" class="career-skill-chip">{{ s }}</span>
+              </div>
+              <div class="career-salary text-muted small">Avg: {{ path.avg }}</div>
+            </div>
           </div>
-          <div class="text-end">
-            <span class="cert-badge" [ngClass]="certClass(cert.daysLeft)">{{ certLabel(cert.daysLeft) }}</span>
-            <p class="mb-0 mt-1" style="font-size:0.75rem;color:#6a8a84;">Expires {{ cert.expiresOn }}</p>
+        </div>
+        <div class="col-lg-5">
+          <div class="career-section-title mb-3"><i class="bi bi-lightbulb me-2"></i>Professional Tips</div>
+          <div class="tip-card" *ngFor="let tip of MENTORSHIP_TIPS; let i = index">
+            <span class="tip-num">{{ i + 1 }}</span>
+            <span class="tip-text">{{ tip }}</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- TRANSCRIPTS TAB -->
-    <div *ngIf="activeTab === 'transcripts'">
-      <div class="section-card">
-        <h6 class="section-title"><i class="bi bi-file-text me-2"></i>Professional Development Transcript</h6>
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <p class="text-muted small mb-0">Completed courses contributing to your professional record</p>
-          <button class="btn btn-outline-small"><i class="bi bi-download me-1"></i>Download PDF</button>
-        </div>
-        <div *ngFor="let c of courses" class="transcript-row" [class.d-none]="c.status !== 'Completed'">
-          <div class="transcript-check"><i class="bi bi-check-circle-fill" style="color:#1aa37a;"></i></div>
-          <div class="flex-grow-1">
-            <p class="mb-0 fw-semibold" style="font-size:0.9rem;">{{ c.title }}</p>
-            <small class="text-muted">{{ c.provider }} &bull; {{ c.credits }} credits &bull; {{ c.duration }}</small>
-          </div>
-          <span class="credit-chip">+{{ c.credits }} CEU</span>
-        </div>
-        <div class="transcript-total mt-3 pt-3">
-          <strong style="color:#0f6b51;">Total Credits Earned: {{ totalCredits }} CEU</strong>
-        </div>
-      </div>
-    </div>
-
+    </ng-container>
   </div>
 </div>

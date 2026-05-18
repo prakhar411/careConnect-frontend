@@ -41,18 +41,41 @@
     </div>
 
     <!-- Stats -->
-    <div class="row g-3 mb-4">
+    <div class="row g-3 mb-3">
       <div class="col-6 col-md-3">
         <div class="stat-card"><i class="bi bi-clock-history stat-icon"></i><p class="stat-num">{{ totalHoursThisMonth }}</p><p class="stat-lbl">Hours This Month</p></div>
       </div>
       <div class="col-6 col-md-3">
-        <div class="stat-card"><i class="bi bi-check-circle stat-icon"></i><p class="stat-num">{{ completedShifts }}</p><p class="stat-lbl">Shifts Completed</p></div>
+        <div class="stat-card"><i class="bi bi-check-circle stat-icon"></i><p class="stat-num">{{ completedShifts }}</p><p class="stat-lbl">Appts Completed</p></div>
       </div>
       <div class="col-6 col-md-3">
-        <div class="stat-card"><i class="bi bi-calendar-event stat-icon"></i><p class="stat-num">{{ upcomingShifts.length }}</p><p class="stat-lbl">Upcoming Shifts</p></div>
+        <div class="stat-card"><i class="bi bi-calendar-event stat-icon"></i><p class="stat-num">{{ upcomingShifts.length }}</p><p class="stat-lbl">Upcoming</p></div>
       </div>
       <div class="col-6 col-md-3">
-        <div class="stat-card"><i class="bi bi-x-circle stat-icon" style="color:#e05252;"></i><p class="stat-num" style="color:#e05252;">{{ blackoutDates.length }}</p><p class="stat-lbl">Blackout Dates</p></div>
+        <div class="stat-card"><i class="bi bi-people-fill stat-icon" style="color:#0d6efd;"></i><p class="stat-num" style="color:#0d6efd;">{{ activeAppointments }}</p><p class="stat-lbl">Active Patients</p></div>
+      </div>
+    </div>
+
+    <!-- Earnings metrics (AC 6.4 — auto-calculated from confirmed shifts) -->
+    <div class="earnings-bar mb-4">
+      <div class="earn-item">
+        <div class="earn-label"><i class="bi bi-currency-rupee me-1"></i>This Month</div>
+        <div class="earn-val earn-green">{{ formatAmount(thisMonthEarnings) }}</div>
+      </div>
+      <div class="earn-divider"></div>
+      <div class="earn-item">
+        <div class="earn-label"><i class="bi bi-graph-up me-1"></i>Total Confirmed</div>
+        <div class="earn-val">{{ formatAmount(totalConfirmedEarnings) }}</div>
+      </div>
+      <div class="earn-divider"></div>
+      <div class="earn-item">
+        <div class="earn-label"><i class="bi bi-check2-all me-1"></i>Confirmed Shifts</div>
+        <div class="earn-val">{{ totalConfirmedShifts }}</div>
+      </div>
+      <div class="earn-divider"></div>
+      <div class="earn-item">
+        <div class="earn-label"><i class="bi bi-hourglass-split me-1"></i>Pending Confirmation</div>
+        <div class="earn-val earn-amber">{{ pendingShiftsCount }}</div>
       </div>
     </div>
 

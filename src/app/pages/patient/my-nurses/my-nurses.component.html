@@ -381,14 +381,20 @@
 
       <!-- Tab strip -->
       <div class="care-tabs mb-3">
-        <button class="care-tab" [class.active]="careTab==='vitals'"  (click)="careTab='vitals'">
+        <button class="care-tab" [class.active]="careTab==='vitals'"     (click)="careTab='vitals'">
           <i class="bi bi-heart-pulse me-1"></i>Vitals
         </button>
-        <button class="care-tab" [class.active]="careTab==='notes'"   (click)="careTab='notes'">
+        <button class="care-tab" [class.active]="careTab==='notes'"      (click)="careTab='notes'">
           <i class="bi bi-journal-text me-1"></i>Care Notes
         </button>
-        <button class="care-tab" [class.active]="careTab==='shifts'"  (click)="careTab='shifts'">
-          <i class="bi bi-calendar-check me-1"></i>Shifts
+        <button class="care-tab" [class.active]="careTab==='symptoms'"   (click)="careTab='symptoms'">
+          <i class="bi bi-activity me-1"></i>Symptoms
+        </button>
+        <button class="care-tab" [class.active]="careTab==='medications'" (click)="careTab='medications'">
+          <i class="bi bi-capsule me-1"></i>Medications
+        </button>
+        <button class="care-tab" [class.active]="careTab==='tips'"       (click)="careTab='tips'">
+          <i class="bi bi-lightbulb me-1"></i>Health Tips
         </button>
       </div>
 
@@ -463,24 +469,71 @@
         </div>
       </ng-container>
 
-      <!-- Shifts tab -->
-      <ng-container *ngIf="careTab==='shifts'">
-        <div *ngFor="let appt of appointmentsFor(selectedNurse.nurseId)">
-          <div class="shifts-appt-label">
-            {{ appt.careNeeds || 'Home Care' }} · {{ appt.appointmentDate | date:'d MMM y' }}
+      <!-- Symptoms tab (AC 8.3) -->
+      <ng-container *ngIf="!isLoadingCare && careTab==='symptoms'">
+        <div class="symptom-form mb-3">
+          <div class="symptom-form-title"><i class="bi bi-activity me-1"></i>Report Symptoms</div>
+          <div class="symptom-chips mb-2">
+            <button *ngFor="let s of SYMPTOM_OPTIONS"
+                    class="symptom-chip"
+                    [class.selected]="selectedSymptoms.has(s)"
+                    (click)="toggleSymptom(s)">{{ s }}</button>
           </div>
-          <div class="shift-row" *ngFor="let s of shiftsFor(appt.id)">
-            <div class="shift-row-left">
-              <i class="bi bi-clock-history me-2" style="color:#1aa37a;"></i>
-              <span class="shift-date">{{ s.shiftDate | date:'d MMM y' }}</span>
-              <span class="shift-rate ms-2">{{ formatAmount(s.ratePerShift) }}</span>
-            </div>
-            <span class="shift-status-badge" [ngClass]="shiftStatusClass(s.status)">{{ shiftStatusLabel(s.status) }}</span>
-          </div>
-          <div *ngIf="shiftsFor(appt.id).length === 0" class="text-muted small py-1 ps-2">No shifts yet.</div>
+          <textarea class="care-input" rows="2" [(ngModel)]="symptomDesc"
+                    placeholder="Additional details (optional)…" maxlength="300"></textarea>
+          <div *ngIf="symptomError" class="care-err mt-1">{{ symptomError }}</div>
+          <div *ngIf="symptomSuccess" class="care-ok mt-1"><i class="bi bi-check-circle-fill me-1"></i>Symptom report sent to your nurse.</div>
+          <button class="care-save-btn mt-2" (click)="submitSymptomReport()" [disabled]="isSavingSymptom">
+            <span *ngIf="!isSavingSymptom"><i class="bi bi-send-fill me-1"></i>Send Report</span>
+            <span *ngIf="isSavingSymptom"><span class="spinner-border spinner-border-sm me-1"></span>Sending…</span>
+          </button>
         </div>
-        <p *ngIf="appointmentsFor(selectedNurse.nurseId).length === 0" class="text-muted small">No appointments yet.</p>
+        <div class="symptom-history-title" *ngIf="symptoms.length > 0">Previous Reports</div>
+        <div class="symptom-history-item" *ngFor="let s of symptoms">
+          <div class="shi-date">{{ formatRecordDate(s.createdAt) }}</div>
+          <div class="shi-title">{{ s.title }}</div>
+          <div class="shi-desc" *ngIf="s.description">{{ s.description }}</div>
+        </div>
+        <div *ngIf="symptoms.length === 0" class="care-empty"><i class="bi bi-activity"></i> No symptom reports yet.</div>
       </ng-container>
+
+      <!-- Medications tab (AC 8.4) -->
+      <ng-container *ngIf="!isLoadingCare && careTab==='medications'">
+        <div *ngIf="medications.length === 0" class="care-empty">
+          <i class="bi bi-capsule"></i> No medications recorded yet.<br>
+          <small class="text-muted">Add medications from your <a routerLink="/patient-medical-records" style="color:#1aa37a;">Medical Records</a> page.</small>
+        </div>
+        <div class="med-card" *ngFor="let m of medications">
+          <div class="med-icon"><i class="bi bi-capsule-pill"></i></div>
+          <div class="med-info">
+            <div class="med-name">{{ m.title || m.fileName }}</div>
+            <div class="med-notes" *ngIf="m.description">{{ m.description }}</div>
+            <div class="med-date">Added {{ formatRecordDate(m.createdAt) }}</div>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Health Tips tab (AC 8.7) -->
+      <ng-container *ngIf="careTab==='tips'">
+        <div class="tips-section">
+          <div class="tips-header">
+            <span class="tips-icon">{{ getHealthTips(selectedNurse).icon }}</span>
+            <div>
+              <div class="tips-title">Personalized Health Tips</div>
+              <div class="tips-sub text-muted small">Based on your care requirements</div>
+            </div>
+          </div>
+          <div class="tip-item" *ngFor="let tip of getHealthTips(selectedNurse).tips; let i = index">
+            <span class="tip-num">{{ i + 1 }}</span>
+            <span class="tip-text">{{ tip }}</span>
+          </div>
+          <div class="tips-disclaimer">
+            <i class="bi bi-info-circle me-1"></i>
+            These are general health tips. Always follow your nurse's and doctor's specific instructions.
+          </div>
+        </div>
+      </ng-container>
+
     </div>
 
     <!-- Appointment + Shift History -->

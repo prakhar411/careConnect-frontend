@@ -281,5 +281,106 @@
 
     </ng-container>
 
+    <!-- ══ MANDATORY TRAINING MANAGEMENT (US11 / US12 AC12.4) ══ -->
+    <div class="dash-card mt-4">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div class="dash-card-title mb-0"><i class="bi bi-mortarboard-fill me-2"></i>Mandatory Training Courses ({{ orgCourses.length }})</div>
+        <button class="btn-add-course" (click)="courseFormOpen = !courseFormOpen">
+          <i class="bi bi-plus-lg me-1"></i>Add Course
+        </button>
+      </div>
+
+      <div *ngIf="courseSuccessMsg" class="alert alert-success py-2 small mb-3">
+        <i class="bi bi-check-circle-fill me-2"></i>{{ courseSuccessMsg }}
+      </div>
+
+      <!-- Add course form -->
+      <div class="course-add-form mb-3" *ngIf="courseFormOpen">
+        <form [formGroup]="courseForm" (ngSubmit)="addCourse()">
+          <div class="row g-3">
+            <!-- Course title dropdown -->
+            <div class="col-12">
+              <label class="field-label">Course Title *</label>
+              <select class="field-input" formControlName="title"
+                      (change)="onCourseSelect()"
+                      [class.input-err]="courseForm.get('title')?.touched && courseForm.get('title')?.invalid">
+                <option value="">— Select a course —</option>
+                <option *ngFor="let c of PREDEFINED_COURSES" [value]="c.title">{{ c.title }}</option>
+              </select>
+              <small class="err" *ngIf="courseForm.get('title')?.touched && courseForm.get('title')?.hasError('required')">Please select a course.</small>
+            </div>
+
+            <!-- Category (auto-filled, readonly) -->
+            <div class="col-md-6">
+              <label class="field-label">Category</label>
+              <select class="field-input" formControlName="category">
+                <option value="">Auto-filled on title select</option>
+                <option *ngFor="let cat of COURSE_CATEGORIES" [value]="cat">{{ cat }}</option>
+              </select>
+              <small class="text-muted" style="font-size:0.72rem;">Auto-filled when you select a course above</small>
+            </div>
+
+            <!-- CEU Credits dropdown -->
+            <div class="col-md-6">
+              <label class="field-label">CEU Credits *</label>
+              <select class="field-input" formControlName="creditPoints">
+                <option *ngFor="let c of CEU_OPTIONS" [value]="c">{{ c }} CEU{{ c > 1 ? 's' : '' }}</option>
+              </select>
+              <small class="text-muted" style="font-size:0.72rem;">Auto-filled; you can override if needed</small>
+            </div>
+
+            <!-- Description with validation -->
+            <div class="col-12">
+              <label class="field-label d-flex justify-content-between">
+                <span>Description <span class="text-muted" style="font-weight:400;">(optional — 10–150 chars)</span></span>
+                <span [style.color]="descLen > 130 ? '#c0392b' : '#9ca3af'" style="font-size:0.72rem;">{{ descLen }}/150</span>
+              </label>
+              <textarea class="field-input" formControlName="description" rows="2"
+                        placeholder="Briefly describe what this training covers and why it is required… (min 10 chars if filled)"
+                        maxlength="150"
+                        [class.input-err]="courseForm.get('description')?.touched && courseForm.get('description')?.invalid"></textarea>
+              <small class="err" *ngIf="courseForm.get('description')?.touched && courseForm.get('description')?.hasError('minlength')">Description must be at least 10 characters.</small>
+              <small class="err" *ngIf="courseForm.get('description')?.touched && courseForm.get('description')?.hasError('maxlength')">Description cannot exceed 150 characters.</small>
+            </div>
+
+            <div class="col-12 d-flex align-items-center gap-3">
+              <label class="d-flex align-items-center gap-2" style="cursor:pointer;font-size:0.84rem;font-weight:600;">
+                <input type="checkbox" formControlName="mandatory"> Mark as Mandatory
+              </label>
+            </div>
+          </div>
+          <div *ngIf="courseErrorMsg" class="alert alert-danger py-2 small mt-2">{{ courseErrorMsg }}</div>
+          <div class="d-flex gap-2 mt-3">
+            <button type="submit" class="btn-save" [disabled]="isSavingCourse">
+              <span *ngIf="!isSavingCourse">Save Course</span>
+              <span *ngIf="isSavingCourse">Saving…</span>
+            </button>
+            <button type="button" class="btn-cancel-sm" (click)="courseFormOpen=false; courseForm.reset({mandatory:true,creditPoints:1})">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Course list -->
+      <div *ngIf="orgCourses.length === 0 && !courseFormOpen" class="text-center py-4 text-muted" style="font-size:0.88rem;">
+        <i class="bi bi-mortarboard fs-3 d-block mb-2" style="color:#c8ddd8;"></i>
+        No mandatory courses added yet. Nurses will see them in their Training page.
+      </div>
+
+      <div class="org-course-row" *ngFor="let c of orgCourses">
+        <div class="ocr-left">
+          <div class="ocr-title">{{ c.title }}</div>
+          <div class="ocr-meta">
+            <span class="ocr-cat">{{ c.category }}</span>
+            <span class="ocr-credits"><i class="bi bi-award me-1"></i>{{ c.creditPoints }} CEUs</span>
+            <span *ngIf="c.mandatory" class="ocr-mandatory">Mandatory</span>
+          </div>
+          <div class="ocr-desc text-muted small" *ngIf="c.description">{{ c.description }}</div>
+        </div>
+        <button class="btn-delete-sm" (click)="deleteCourse(c.id)" title="Delete">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+    </div>
+
   </div>
 </div>

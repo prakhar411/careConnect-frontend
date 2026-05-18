@@ -51,6 +51,13 @@
 .record-card { background: white; border-radius: 18px; padding: 1.1rem 1.25rem; box-shadow: 0 4px 14px -4px rgba(0,20,15,0.08); border-left: 3px solid transparent; transition: border-color 0.2s; }
 .record-card:hover { border-left-color: #0f5241; }
 .rec-icon { width: 42px; height: 42px; border-radius: 12px; background: #e3f6ef; color: #0f5241; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+.rec-icon-red { background: #fde8e8 !important; color: #c0392b !important; }
+.cap-banner { background: #fff4e0; border: 1px solid #fcd34d; border-radius: 8px; padding: 6px 10px; font-size: 0.78rem; color: #92400e; }
+.btn-status-sm { border: none; border-radius: 20px; padding: 3px 10px; font-size: 0.72rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.btn-compliant    { background: #d4edda; color: #155724; }
+.btn-noncompliant { background: #fde8e8; color: #c0392b; }
+.btn-delete-sm { background: none; border: 1px solid #e5e7eb; border-radius: 8px; padding: 3px 8px; color: #9ca3af; cursor: pointer; }
+.btn-delete-sm:hover { background: #fde8e8; color: #c0392b; border-color: #fca5a5; }
 .rec-nurse { font-size: 0.95rem; font-weight: 700; color: #0f2d22; margin: 0 0 2px; }
 .rec-req { font-size: 0.82rem; color: #4e6e68; margin: 0 0 4px; }
 .rec-meta { font-size: 0.77rem; color: #6a8c80; }

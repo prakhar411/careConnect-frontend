@@ -80,10 +80,38 @@ export class MyNursesComponent implements OnInit, OnDestroy, AfterViewChecked {
   reconcileSuccess: Record<number, boolean> = {};
 
   // ── Care Progress ─────────────────────────────────────────────────────────
-  careTab: 'vitals' | 'notes' | 'shifts' = 'vitals';
-  vitals:    any[] = [];
-  careNotes: any[] = [];
+  careTab: 'vitals' | 'notes' | 'symptoms' | 'medications' | 'tips' = 'vitals';
+  vitals:      any[] = [];
+  careNotes:   any[] = [];
+  medications: any[] = [];
+  symptoms:    any[] = [];
   isLoadingCare = false;
+
+  // Symptom reporting (AC 8.3)
+  selectedSymptoms = new Set<string>();
+  symptomDesc      = '';
+  isSavingSymptom  = false;
+  symptomError     = '';
+  symptomSuccess   = false;
+
+  readonly SYMPTOM_OPTIONS = [
+    'Fever', 'Chest Pain', 'Shortness of Breath', 'Nausea / Vomiting',
+    'Dizziness', 'Headache', 'Fatigue', 'Loss of Appetite',
+    'Joint / Muscle Pain', 'Swelling', 'Irregular Heartbeat', 'Other'
+  ];
+
+  // Health tips (AC 8.7)
+  readonly HEALTH_TIPS: Record<string, { icon: string; tips: string[] }> = {
+    'Diabetes':         { icon: '💉', tips: ['Check blood sugar levels daily before meals', 'Avoid sugary drinks and processed foods', 'Take medication at the same time each day', 'Stay hydrated — at least 8 glasses of water', 'Wear comfortable, well-fitted shoes to prevent foot issues'] },
+    'Hypertension':     { icon: '❤️', tips: ['Reduce salt intake — aim for less than 5g per day', 'Take blood pressure medication as prescribed', 'Avoid smoking and limit alcohol', 'Practice deep breathing or meditation daily', 'Monitor blood pressure at home regularly'] },
+    'Heart Disease':    { icon: '🫀', tips: ['Follow your prescribed medication schedule strictly', 'Eat a heart-healthy diet — less saturated fat', 'Avoid strenuous activity without doctor approval', 'Report any new chest pain or shortness of breath immediately', 'Keep all cardiology appointments'] },
+    'Asthma':           { icon: '🫁', tips: ['Keep your inhaler accessible at all times', 'Identify and avoid your personal triggers', 'Do not skip preventive medication even if feeling well', 'Keep windows closed during high pollen days', 'Inform your nurse immediately if symptoms worsen'] },
+    'Elderly Care':     { icon: '🏠', tips: ['Remove trip hazards at home — rugs, cords, clutter', 'Ensure adequate lighting in all rooms', 'Take medications with a full glass of water', 'Stay socially connected to prevent isolation', 'Exercise gently — walking or stretching daily'] },
+    'Post-Surgery':     { icon: '🩹', tips: ['Keep the wound dry and clean as instructed', 'Do not lift heavy objects until cleared by doctor', 'Watch for signs of infection — redness, warmth, discharge', 'Take pain medication as prescribed — do not skip', 'Attend all follow-up appointments'] },
+    'Mental Health':    { icon: '🧠', tips: ['Maintain a regular sleep schedule', 'Reach out if you feel overwhelmed — do not isolate', 'Take prescribed medication consistently', 'Practice mindfulness or journaling daily', 'Physical activity significantly improves mood'] },
+    'Pediatric Care':   { icon: '👶', tips: ['Ensure child gets enough sleep for their age group', 'Maintain vaccination schedule', 'Monitor temperature — fever above 38.5°C needs attention', 'Keep medicines out of reach of children', 'Maintain a calm and reassuring environment'] },
+    'DEFAULT':          { icon: '💊', tips: ['Take all medications as prescribed — do not skip doses', 'Rest adequately and stay hydrated', 'Follow your nurse\'s care instructions closely', 'Report any new or worsening symptoms immediately', 'Maintain a healthy balanced diet'] }
+  };
 
   constructor(
     private auth:        AuthService,
@@ -173,32 +201,77 @@ export class MyNursesComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   openDetail(nurse: any): void {
-    this.selectedNurse = nurse;
-    this.careTab       = 'vitals';
-    this.vitals        = [];
-    this.careNotes     = [];
+    this.selectedNurse      = nurse;
+    this.careTab            = 'vitals';
+    this.vitals             = [];
+    this.careNotes          = [];
+    this.medications        = [];
+    this.symptoms           = [];
+    this.symptomError       = '';
+    this.symptomSuccess     = false;
+    this.selectedSymptoms   = new Set();
+    this.symptomDesc        = '';
     this.loadCareProgress();
   }
   closeDetail(): void { this.selectedNurse = null; }
 
   private loadCareProgress(): void {
     this.isLoadingCare = true;
-    let done = 0;
-    const check = () => { if (++done === 2) this.isLoadingCare = false; };
-
-    this.vitalSvc.getByPatient(this.myUserId).subscribe({
-      next: (data) => { this.vitals = (data || []).slice(0, 10); check(); },
-      error: () => check()
-    });
     this.medSvc.getByPatient(this.myUserId).subscribe({
       next: (data) => {
-        this.careNotes = (data || [])
-          .filter((r: any) => (r.recordType || '').toLowerCase() === 'care note')
-          .slice(0, 10);
-        check();
+        const all = data || [];
+        this.careNotes   = all.filter((r: any) => r.recordType === 'Care Note').slice(0, 15);
+        this.medications = all.filter((r: any) => r.recordType === 'Medication').slice(0, 15);
+        this.symptoms    = all.filter((r: any) => r.recordType === 'Symptom Report').slice(0, 15);
+        this.isLoadingCare = false;
       },
-      error: () => check()
+      error: () => { this.isLoadingCare = false; }
     });
+    this.vitalSvc.getByPatient(this.myUserId).subscribe({
+      next: (data) => { this.vitals = (data || []).slice(0, 10); },
+      error: () => {}
+    });
+  }
+
+  toggleSymptom(s: string): void {
+    if (this.selectedSymptoms.has(s)) this.selectedSymptoms.delete(s);
+    else this.selectedSymptoms.add(s);
+    this.symptomError = '';
+  }
+
+  submitSymptomReport(): void {
+    if (this.selectedSymptoms.size === 0) {
+      this.symptomError = 'Please select at least one symptom.'; return;
+    }
+    const title = Array.from(this.selectedSymptoms).join(', ');
+    this.isSavingSymptom = true;
+    this.symptomError    = '';
+    this.medSvc.upload(this.myUserId, this.myUserId, 'Symptom Report', title, this.symptomDesc || undefined)
+      .subscribe({
+        next: (saved) => {
+          this.symptoms.unshift(saved);
+          this.selectedSymptoms = new Set();
+          this.symptomDesc      = '';
+          this.isSavingSymptom  = false;
+          this.symptomSuccess   = true;
+          setTimeout(() => this.symptomSuccess = false, 3000);
+        },
+        error: (err: Error) => { this.symptomError = err.message; this.isSavingSymptom = false; }
+      });
+  }
+
+  getHealthTips(nurse: any): { icon: string; tips: string[] } {
+    const appts = this.appointmentsFor(nurse.nurseId);
+    const condition = (appts[0]?.medicalCondition || '').trim();
+    const key = Object.keys(this.HEALTH_TIPS).find(k =>
+      k !== 'DEFAULT' && condition.toLowerCase().includes(k.toLowerCase())
+    );
+    return this.HEALTH_TIPS[key || 'DEFAULT'];
+  }
+
+  formatRecordDate(d: string): string {
+    if (!d) return '—';
+    return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
   }
 
   latestVital(field: string): string {

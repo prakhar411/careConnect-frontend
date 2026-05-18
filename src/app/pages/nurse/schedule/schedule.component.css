@@ -13,6 +13,15 @@
 .main { margin-left: 280px; background: #f8fafc; min-height: 100vh; transition: margin-left 0.2s; }
 @media (max-width: 767.98px) { .fixed-sidebar { transform: translateX(-100%); width: 260px; } .main { margin-left: 0 !important; padding: 1rem !important; } }
 
+/* Earnings bar (AC 6.4) */
+.earnings-bar { background:#fff; border-radius:16px; padding:14px 20px; box-shadow:0 4px 14px -4px rgba(0,32,32,0.08); display:flex; align-items:center; gap:0; flex-wrap:wrap; }
+.earn-item { flex:1; min-width:140px; text-align:center; padding:6px 12px; }
+.earn-label { font-size:0.75rem; color:#6a8a84; font-weight:600; margin-bottom:4px; }
+.earn-val { font-size:1.2rem; font-weight:800; color:#1a3b3a; }
+.earn-green { color:#0f6b51; }
+.earn-amber { color:#b45309; }
+.earn-divider { width:1px; height:40px; background:#e8f3ef; flex-shrink:0; }
+
 .stat-card { background:white;border-radius:20px;padding:1.25rem;text-align:center;box-shadow:0 6px 16px -6px rgba(0,32,32,0.08); }
 .stat-icon { font-size:1.6rem;color:#1aa37a;display:block;margin-bottom:8px; }
 .stat-num { font-size:1.8rem;font-weight:800;color:#1a3b3a;margin:0;line-height:1.2; }

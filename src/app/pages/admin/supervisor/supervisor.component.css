@@ -61,6 +61,10 @@
 }
 .sv-filter-btn:hover  { background: #e9ecef; }
 .sv-filter-btn.active { background: #0d6efd; color: #fff; border-color: #0d6efd; }
+.satisfaction-banner { background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 10px; padding: 10px 16px; font-size: 0.85rem; color: #92400e; }
+.perf-rating-green { color: #155724; font-weight: 700; }
+.perf-rating-amber { color: #d97706; font-weight: 700; }
+.perf-rating-red   { color: #c0392b; font-weight: 700; }
 
 /* ── Stat Row ─────────────────────────────────────────────────────────── */
 .sv-stat-row {

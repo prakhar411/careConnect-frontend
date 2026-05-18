@@ -102,7 +102,6 @@ export class SupervisorComponent implements OnInit {
   }
 
   private buildPerformance(): void {
-    // Build performance summary from workload data
     this.performance = this.workload.map(n => ({
       nurseName:     n.nurseName,
       specialization:n.specialization,
@@ -111,8 +110,30 @@ export class SupervisorComponent implements OnInit {
       activeJobs:    n.activeJobs,
       completedJobs: n.completedJobs,
       totalJobs:     n.totalJobs,
-      status:        n.workloadStatus
+      status:        n.workloadStatus,
+      nurseRating:   n.nurseRating
     }));
+  }
+
+  ratingStars(rating: number | null): string {
+    if (!rating) return '—';
+    const full  = Math.floor(rating);
+    const half  = rating - full >= 0.5 ? 1 : 0;
+    return '★'.repeat(full) + (half ? '½' : '') + ` (${rating.toFixed(1)})`;
+  }
+
+  ratingClass(rating: number | null): string {
+    if (!rating) return '';
+    if (rating >= 4) return 'perf-rating-green';
+    if (rating >= 3) return 'perf-rating-amber';
+    return 'perf-rating-red';
+  }
+
+  get satisfactionSummary(): string {
+    const rated = this.performance.filter(n => n.nurseRating != null);
+    if (!rated.length) return 'No ratings yet';
+    const high = rated.filter(n => n.nurseRating >= 4).length;
+    return `${high}/${rated.length} nurses rated ≥ 4★`;
   }
 
   // ── Workload ──────────────────────────────────────────────────────────────

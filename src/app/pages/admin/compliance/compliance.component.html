@@ -66,9 +66,14 @@
         <h4 class="page-title">Compliance</h4>
         <p class="page-subtitle">Track and manage nurse compliance requirements</p>
       </div>
-      <button class="btn-primary-action" (click)="formOpen = !formOpen">
-        <i class="bi bi-plus-lg me-1"></i> Add Record
-      </button>
+      <div class="d-flex gap-2">
+        <button class="btn-primary-action" (click)="generateReport()">
+          <i class="bi bi-printer me-1"></i> Generate Report
+        </button>
+        <button class="btn-primary-action" style="background:#1F3864;" (click)="formOpen = !formOpen">
+          <i class="bi bi-plus-lg me-1"></i> Add Record
+        </button>
+      </div>
     </div>
 
     <!-- TOAST -->
@@ -142,13 +147,7 @@
             <select class="field-input" formControlName="requirement"
                     [class.input-err]="complianceForm.get('requirement')?.touched && complianceForm.get('requirement')?.invalid">
               <option value="">Select requirement</option>
-              <option>Annual Health Check</option>
-              <option>BLS Certification</option>
-              <option>CPR Certification</option>
-              <option>Hepatitis B Vaccination</option>
-              <option>Background Check</option>
-              <option>HIPAA Training</option>
-              <option>Drug Screening</option>
+              <option *ngFor="let r of REQUIREMENT_TYPES" [value]="r">{{ r }}</option>
             </select>
             <small class="err" *ngIf="complianceForm.get('requirement')?.touched && complianceForm.get('requirement')?.hasError('required')">Required.</small>
           </div>
@@ -166,11 +165,22 @@
               <option value="NON_COMPLIANT">Non-Compliant</option>
             </select>
           </div>
-          <div class="col-md-4">
-            <label class="field-label">Notes <span style="color:#9ab8b0;font-weight:400;">(optional)</span></label>
-            <input class="field-input" formControlName="notes" placeholder="Optional notes" maxlength="50"
-                   [class.input-err]="complianceForm.get('notes')?.touched && complianceForm.get('notes')?.invalid">
-            <small class="err" *ngIf="complianceForm.get('notes')?.touched && complianceForm.get('notes')?.hasError('maxlength')">Notes must not exceed 50 characters.</small>
+          <div class="col-12">
+            <label class="field-label">
+              <span *ngIf="complianceForm.get('status')?.value === 'NON_COMPLIANT'">
+                <i class="bi bi-exclamation-triangle-fill me-1 text-danger"></i>Corrective Action Plan (CAP) *
+              </span>
+              <span *ngIf="complianceForm.get('status')?.value !== 'NON_COMPLIANT'">
+                Notes <span style="color:#9ab8b0;font-weight:400;">(optional)</span>
+              </span>
+            </label>
+            <textarea class="field-input" formControlName="notes" rows="2"
+                      [placeholder]="complianceForm.get('status')?.value === 'NON_COMPLIANT'
+                        ? 'Describe corrective actions required, responsible person, and timeline…'
+                        : 'Optional notes…'"
+                      maxlength="200"
+                      [class.input-err]="complianceForm.get('notes')?.touched && complianceForm.get('notes')?.invalid"></textarea>
+            <small class="err" *ngIf="complianceForm.get('notes')?.touched && complianceForm.get('notes')?.hasError('maxlength')">Notes must not exceed 200 characters.</small>
           </div>
         </div>
         <div class="d-flex gap-2 mt-3">
@@ -196,18 +206,42 @@
 
     <!-- RECORDS LIST -->
     <div *ngFor="let rec of filteredRecords" class="record-card mb-3">
-      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <div class="d-flex align-items-center gap-3">
-          <div class="rec-icon"><i class="bi bi-shield-check"></i></div>
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+        <div class="d-flex align-items-start gap-3">
+          <div class="rec-icon" [class.rec-icon-red]="isNonCompliant(rec.status)">
+            <i class="bi" [ngClass]="isNonCompliant(rec.status) ? 'bi-exclamation-triangle-fill' : 'bi-shield-check'"></i>
+          </div>
           <div>
             <p class="rec-nurse">{{ rec.nurseName }}</p>
             <p class="rec-req">{{ rec.requirement }}</p>
-            <p class="rec-meta"><i class="bi bi-calendar3 me-1"></i>Due: {{ rec.dueDate }}
-              <span *ngIf="rec.notes" class="ms-3"><i class="bi bi-chat-text me-1"></i>{{ rec.notes }}</span>
+            <p class="rec-meta">
+              <i class="bi bi-calendar3 me-1"></i>Due: {{ rec.dueDate }}
+              <span *ngIf="rec.createdAt" class="ms-3 text-muted" style="font-size:0.74rem;">
+                <i class="bi bi-clock me-1"></i>Added {{ formatDate(rec.createdAt) }}
+              </span>
+            </p>
+            <!-- CAP banner for Non-Compliant -->
+            <div *ngIf="isNonCompliant(rec.status) && rec.notes" class="cap-banner mt-2">
+              <i class="bi bi-clipboard2-check-fill me-1"></i>
+              <strong>CAP:</strong> {{ rec.notes }}
+            </div>
+            <p class="rec-meta" *ngIf="!isNonCompliant(rec.status) && rec.notes">
+              <i class="bi bi-chat-text me-1"></i>{{ rec.notes }}
             </p>
           </div>
         </div>
-        <span class="status-badge" [ngClass]="getStatusClass(rec.status)">{{ rec.status }}</span>
+        <div class="d-flex flex-column align-items-end gap-2">
+          <span class="status-badge" [ngClass]="getStatusClass(rec.status)">{{ rec.status }}</span>
+          <div class="d-flex gap-1">
+            <button class="btn-status-sm btn-compliant" *ngIf="rec.status !== 'COMPLIANT'"
+                    (click)="updateStatus(rec.id, 'COMPLIANT')">✓ Compliant</button>
+            <button class="btn-status-sm btn-noncompliant" *ngIf="rec.status !== 'NON_COMPLIANT'"
+                    (click)="updateStatus(rec.id, 'NON_COMPLIANT')">✗ Non-Compliant</button>
+            <button class="btn-delete-sm" (click)="deleteRecord(rec.id)" title="Delete">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 

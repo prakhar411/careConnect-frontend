@@ -1,9 +1,10 @@
 import { AuthService } from '../../../services/auth.service';
 import { AppointmentService } from '../../../services/appointment.service';
 import { NotificationService } from '../../../services/notification.service';
+import { ShiftService } from '../../../services/shift.service';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Subscription, forkJoin } from 'rxjs';
 
 interface Shift {
   date: string;
@@ -32,6 +33,13 @@ export class ScheduleComponent implements OnInit, OnDestroy {
   upcomingShifts: Shift[] = [];
   history:        Shift[] = [];
 
+  // ── Earnings metrics (AC 6.4) ─────────────────────────────────────────────
+  totalConfirmedEarnings = 0;
+  thisMonthEarnings      = 0;
+  totalConfirmedShifts   = 0;
+  pendingShiftsCount     = 0;
+  activeAppointments     = 0;
+
   get totalHoursThisMonth() {
     return this.history.filter(h => h.status === 'Completed').reduce((s, h) => s + h.hours, 0);
   }
@@ -40,6 +48,7 @@ export class ScheduleComponent implements OnInit, OnDestroy {
   constructor(
     private auth:        AuthService,
     private apptService: AppointmentService,
+    private shiftSvc:    ShiftService,
     private fb:          FormBuilder,
     private notifSvc:    NotificationService
   ) {}
@@ -54,14 +63,16 @@ export class ScheduleComponent implements OnInit, OnDestroy {
     }
     if (!userId) { this.isLoading = false; return; }
 
-    this.apptService.getByNurse(userId).subscribe({
-      next: (data) => {
+    forkJoin({
+      appointments: this.apptService.getByNurse(userId),
+      shifts:       this.shiftSvc.getByNurse(userId)
+    }).subscribe({
+      next: ({ appointments, shifts }) => {
         const now = new Date();
-        const appointments = data || [];
 
-        appointments.forEach((appt: any) => {
-          const date   = new Date(appt.appointmentDate);
-          const shift  = this.buildShift(appt, date, now);
+        (appointments || []).forEach((appt: any) => {
+          const date  = new Date(appt.appointmentDate);
+          const shift = this.buildShift(appt, date, now);
           if (date >= now && appt.status !== 'CANCELLED') {
             this.upcomingShifts.push(shift);
           } else {
@@ -69,9 +80,14 @@ export class ScheduleComponent implements OnInit, OnDestroy {
           }
         });
 
-        // Sort upcoming ascending, history descending
         this.upcomingShifts.sort((a, b) => a.date.localeCompare(b.date));
         this.history.sort((a, b) => b.date.localeCompare(a.date));
+
+        this.activeAppointments = (appointments || []).filter((a: any) =>
+          ['CONFIRMED', 'IN_PROGRESS'].includes((a.status || '').toUpperCase())
+        ).length;
+
+        this.calcEarnings(shifts || []);
         this.isLoading = false;
       },
       error: () => { this.isLoading = false; }
@@ -95,6 +111,30 @@ export class ScheduleComponent implements OnInit, OnDestroy {
 
   private formatTime(date: Date): string {
     return date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+  }
+
+  private calcEarnings(shifts: any[]): void {
+    const now       = new Date();
+    const thisMonth = now.getMonth();
+    const thisYear  = now.getFullYear();
+
+    const confirmed = shifts.filter((s: any) => s.status === 'CONFIRMED');
+    this.totalConfirmedShifts   = confirmed.length;
+    this.pendingShiftsCount     = shifts.filter((s: any) => s.status === 'PENDING_CONFIRMATION').length;
+    this.totalConfirmedEarnings = confirmed.reduce((sum: number, s: any) =>
+      sum + (s.finalRate || s.originalRate || 0), 0);
+
+    this.thisMonthEarnings = confirmed
+      .filter((s: any) => {
+        if (!s.shiftDate) return false;
+        const d = new Date(s.shiftDate);
+        return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+      })
+      .reduce((sum: number, s: any) => sum + (s.finalRate || s.originalRate || 0), 0);
+  }
+
+  formatAmount(n: number): string {
+    return '₹' + Number(n).toLocaleString('en-IN');
   }
 
   toggleAvailability() { this.isAvailable = !this.isAvailable; }

@@ -131,6 +131,16 @@ export class AdminService {
       .pipe(map((r: any) => r.data), catchError(this.handleError));
   }
 
+  privilegeCredential(id: number): Observable<any> {
+    return this.http.patch(`${this.API}/credentials/${id}/privilege`, {})
+      .pipe(map((r: any) => r.data), catchError(this.handleError));
+  }
+
+  sendRenewalReminder(id: number): Observable<any> {
+    return this.http.post(`${this.API}/credentials/${id}/remind`, {})
+      .pipe(map((r: any) => r.data), catchError(this.handleError));
+  }
+
   private handleError(err: HttpErrorResponse): Observable<never> {
     let message = 'Something went wrong. Please try again.';
     if (err.status === 0) {
