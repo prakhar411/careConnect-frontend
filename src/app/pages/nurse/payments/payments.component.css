@@ -33,18 +33,23 @@
 /* ── Payment cards ───────────────────────────────────────────────────────── */
 .pay-card     { background: #fff; border-radius: 10px; padding: 18px 20px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; border-left: 4px solid #e0eeea; }
 .pay-card-left  { display: flex; align-items: flex-start; gap: 14px; flex: 1; min-width: 220px; }
-.pay-card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.pay-card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
 .pay-icon-wrap  { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
 .patient-icon   { background: #e3f6ef; color: #1aa37a; }
 .org-icon       { background: #eff6ff; color: #3b82f6; }
 .pay-label      { font-weight: 600; color: #1a2332; font-size: 0.95rem; }
 .pay-sublabel   { color: #5a7a9a; font-size: 0.82rem; margin-top: 2px; }
-.pay-amount     { font-size: 1.15rem; font-weight: 700; color: #0f1c2e; }
+.pay-amount     { font-size: 1.15rem; font-weight: 700; color: #0f1c2e; white-space: nowrap; }
 .pay-method     { font-size: 0.77rem; color: #5a7a9a; }
 .pay-ref        { font-size: 0.72rem; color: #0f6b51; background: #f0fdf4; padding: 1px 8px; border-radius: 10px; font-weight: 600; letter-spacing: 0.3px; }
 .btn-dl-receipt-n { background: #eef9f5; color: #1aa37a; border: 1.5px solid #a8d9c8; border-radius: 14px; padding: 4px 12px; font-size: 0.76rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.15s; }
 .btn-dl-receipt-n:hover { background: #d4f0e8; }
 .salary-card    { border-left-color: #3b82f6; }
+
+/* ── Salary status dot ───────────────────────────────────────── */
+.salary-status-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: middle; flex-shrink: 0; }
+.dot-green  { background: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,.18); }
+.dot-yellow { background: #d97706; box-shadow: 0 0 0 3px rgba(217,119,6,.18); }
 
 /* ── Reference Search Panel ──────────────────────────────────── */
 .ref-search-panel        { background: #f8fffd; border: 1.5px solid #d0eee4; border-radius: 16px; padding: 18px 20px; margin-top: 16px; }
@@ -91,8 +96,8 @@
 .badge-failed { background: #fee2e2; color: #991b1b; }
 
 /* ── Salary slip ─────────────────────────────────────────────────────────── */
-.slip-btn     { background: none; border: 1px solid #d0e8e0; border-radius: 6px; padding: 3px 10px; font-size: 0.78rem; color: #1aa37a; cursor: pointer; margin-top: 4px; transition: all 0.2s; }
-.slip-btn:hover { background: #f0fdf8; }
+.slip-btn     { background: #eef9f5; border: 1.5px solid #a8d9c8; border-radius: 8px; padding: 5px 12px; font-size: 0.78rem; font-weight: 600; color: #0f6b51; cursor: pointer; margin-top: 6px; transition: all 0.15s; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+.slip-btn:hover { background: #d4f0e8; border-color: #7fc4ae; }
 .salary-slip  { width: 100%; border-top: 1px solid #e8f4ee; margin-top: 12px; padding-top: 12px; }
 .slip-row     { display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.85rem; }
 .slip-divider { border-top: 1px dashed #d0e8e0; margin: 8px 0; }

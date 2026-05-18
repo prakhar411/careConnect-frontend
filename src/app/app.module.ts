@@ -18,6 +18,7 @@ import { ComplianceComponent } from './pages/admin/compliance/compliance.compone
 import { CredentialingComponent } from './pages/admin/credentialing/credentialing.component';
 import { TeamManagementComponent } from './pages/admin/team-management/team-management.component';
 import { StaffingAnalyticsComponent } from './pages/admin/staffing-analytics/staffing-analytics.component';
+import { SupervisorComponent } from './pages/admin/supervisor/supervisor.component';
 
 import { PatientDashboardComponent } from './pages/patient/patient-dashboard/patient-dashboard.component';
 import { BookAppointmentComponent } from './pages/patient/book-appointment/book-appointment.component';
@@ -25,6 +26,7 @@ import { MyAppointmentsComponent } from './pages/patient/my-appointments/my-appo
 import { MedicalRecordsComponent } from './pages/patient/medical-records/medical-records.component';
 import { SettingsComponent } from './pages/patient/settings/settings.component';
 import { MyNursesComponent } from './pages/patient/my-nurses/my-nurses.component';
+import { EmergencyRequestComponent } from './pages/patient/emergency-request/emergency-request.component';
 
 import { NurseDashboardComponent } from './pages/nurse/nurse-dashboard/nurse-dashboard.component';
 import { ProfileComponent } from './pages/nurse/profile/profile.component';
@@ -51,6 +53,7 @@ import { NotificationsComponent } from './pages/nurse/notifications/notification
     CredentialingComponent,
     TeamManagementComponent,
     StaffingAnalyticsComponent,
+    SupervisorComponent,
 
     PatientDashboardComponent,
     BookAppointmentComponent,
@@ -58,6 +61,7 @@ import { NotificationsComponent } from './pages/nurse/notifications/notification
     MedicalRecordsComponent,
     SettingsComponent,
     MyNursesComponent,
+    EmergencyRequestComponent,
 
     NurseDashboardComponent,
     ProfileComponent,

@@ -1,0 +1,699 @@
+<div class="d-flex">
+
+  <!-- SIDEBAR -->
+  <nav class="fixed-sidebar text-white p-3 d-none d-md-block">
+    <div class="sidebar-brand">
+      <i class="bi bi-heart-pulse-fill"></i>
+      <span>CareConnect</span>
+    </div>
+    <ul class="nav flex-column">
+      <li class="nav-item mb-1">
+        <a class="nav-link-custom" routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">
+          <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link-custom" routerLink="/admin-post-job" routerLinkActive="active">
+          <i class="bi bi-briefcase-fill"></i> Post Job
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link-custom" routerLink="/admin-applications" routerLinkActive="active">
+          <i class="bi bi-file-person-fill"></i> Applications
+        </a>
+      </li>
+      <div class="sidebar-divider"></div>
+      <li class="nav-item mb-1">
+        <a class="nav-link-custom" routerLink="/admin-compliance" routerLinkActive="active">
+          <i class="bi bi-shield-check"></i> Compliance
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link-custom" routerLink="/admin-credentialing" routerLinkActive="active">
+          <i class="bi bi-award-fill"></i> Credentialing
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link-custom" routerLink="/admin-team" routerLinkActive="active">
+          <i class="bi bi-people-fill"></i> Team
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link-custom" routerLink="/admin-analytics" routerLinkActive="active">
+          <i class="bi bi-bar-chart-fill"></i> Analytics
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link-custom" routerLink="/admin-supervisor" routerLinkActive="active">
+          <i class="bi bi-diagram-3-fill"></i> Supervisor
+        </a>
+      </li>
+      <div class="sidebar-divider mt-auto"></div>
+      <li class="nav-item">
+        <a class="nav-link-custom logout-link" style="cursor:pointer;" (click)="logout()">
+          <i class="bi bi-box-arrow-right"></i> Logout
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content p-4 w-100">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+      <div>
+        <h4 class="mb-0 fw-bold">Supervisor Tools</h4>
+        <small class="text-muted">Manage nurse workload and job assignments</small>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="isLoading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p class="mt-2 text-muted">Loading data…</p>
+    </div>
+
+    <ng-container *ngIf="!isLoading">
+
+      <!-- TAB NAV -->
+      <ul class="nav sv-tabs mb-4">
+        <li class="nav-item">
+          <button class="sv-tab-btn" [class.active]="activeTab==='workload'" (click)="activeTab='workload'">
+            <i class="bi bi-activity me-1"></i> Workload
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="sv-tab-btn" [class.active]="activeTab==='assignments'" (click)="activeTab='assignments'">
+            <i class="bi bi-clipboard2-check me-1"></i> Job Assignments
+            <span *ngIf="unassignedCount > 0" class="sv-badge-warn ms-1">{{unassignedCount}}</span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="sv-tab-btn" [class.active]="activeTab==='performance'" (click)="activeTab='performance'">
+            <i class="bi bi-bar-chart-line me-1"></i> Performance
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="sv-tab-btn" [class.active]="activeTab==='coverage'" (click)="activeTab='coverage'">
+            <i class="bi bi-arrow-left-right me-1"></i> Shift Coverage
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="sv-tab-btn" [class.active]="activeTab==='handoffs'" (click)="activeTab='handoffs'">
+            <i class="bi bi-chat-square-text me-1"></i> Handoffs
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="sv-tab-btn" [class.active]="activeTab==='escalations'" (click)="activeTab='escalations'">
+            <i class="bi bi-flag-fill me-1"></i> Escalations
+            <span *ngIf="openEscalationCount > 0" class="sv-badge-warn ms-1">{{openEscalationCount}}</span>
+          </button>
+        </li>
+      </ul>
+
+      <!-- ══════════════════════════════════════════════════════════
+           TAB: WORKLOAD
+           ══════════════════════════════════════════════════════════ -->
+      <div *ngIf="activeTab==='workload'">
+
+        <!-- Summary chips -->
+        <div class="sv-stat-row mb-4">
+          <div class="sv-stat-chip available">
+            <i class="bi bi-check-circle-fill"></i>
+            <div>
+              <span class="sv-stat-num">{{totalAvailable}}</span>
+              <span class="sv-stat-lbl">Available</span>
+            </div>
+          </div>
+          <div class="sv-stat-chip active">
+            <i class="bi bi-lightning-charge-fill"></i>
+            <div>
+              <span class="sv-stat-num">{{totalActive}}</span>
+              <span class="sv-stat-lbl">Active</span>
+            </div>
+          </div>
+          <div class="sv-stat-chip overloaded">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <div>
+              <span class="sv-stat-num">{{totalOverloaded}}</span>
+              <span class="sv-stat-lbl">Overloaded</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter -->
+        <div class="d-flex gap-2 mb-3 flex-wrap">
+          <button class="sv-filter-btn" [class.active]="workloadFilter==='ALL'"       (click)="workloadFilter='ALL'">All</button>
+          <button class="sv-filter-btn" [class.active]="workloadFilter==='AVAILABLE'" (click)="workloadFilter='AVAILABLE'">Available</button>
+          <button class="sv-filter-btn" [class.active]="workloadFilter==='ACTIVE'"    (click)="workloadFilter='ACTIVE'">Active</button>
+          <button class="sv-filter-btn" [class.active]="workloadFilter==='OVERLOADED'" (click)="workloadFilter='OVERLOADED'">Overloaded</button>
+        </div>
+
+        <!-- Nurse cards -->
+        <div *ngIf="filteredWorkload.length === 0" class="sv-empty">
+          <i class="bi bi-person-x"></i> No nurses found for this filter.
+        </div>
+
+        <div class="sv-card-grid">
+          <div class="sv-nurse-card" *ngFor="let n of filteredWorkload">
+            <div class="sv-card-top">
+              <div class="sv-nurse-avatar">{{n.nurseName?.charAt(0) | uppercase}}</div>
+              <div class="sv-nurse-info">
+                <div class="sv-nurse-name">{{n.nurseName}}</div>
+                <div class="sv-nurse-spec">{{n.specialization || '—'}}</div>
+              </div>
+              <span class="sv-status-badge" [ngClass]="workloadStatusClass(n.workloadStatus)">
+                {{n.workloadStatus}}
+              </span>
+            </div>
+
+            <div class="sv-card-meta">
+              <span><i class="bi bi-clock-history me-1"></i>{{n.experienceYears}} yrs</span>
+              <span><i class="bi bi-card-text me-1"></i>{{n.licenseNumber || '—'}}</span>
+            </div>
+
+            <div class="sv-workload-bar-wrap">
+              <div class="sv-workload-bar-track">
+                <div class="sv-workload-bar-fill" [ngClass]="workloadStatusClass(n.workloadStatus)"
+                     [style.width.%]="workloadBarWidth(n)"></div>
+              </div>
+            </div>
+
+            <div class="sv-card-stats">
+              <div class="sv-cs-item">
+                <span class="sv-cs-num">{{n.activeJobs}}</span>
+                <span class="sv-cs-lbl">Active</span>
+              </div>
+              <div class="sv-cs-sep"></div>
+              <div class="sv-cs-item">
+                <span class="sv-cs-num">{{n.completedJobs}}</span>
+                <span class="sv-cs-lbl">Completed</span>
+              </div>
+              <div class="sv-cs-sep"></div>
+              <div class="sv-cs-item">
+                <span class="sv-cs-num">{{n.totalJobs}}</span>
+                <span class="sv-cs-lbl">Total</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════
+           TAB: JOB ASSIGNMENTS
+           ══════════════════════════════════════════════════════════ -->
+      <div *ngIf="activeTab==='assignments'">
+
+        <!-- Summary -->
+        <div class="sv-stat-row mb-4">
+          <div class="sv-stat-chip available">
+            <i class="bi bi-person-fill-check"></i>
+            <div>
+              <span class="sv-stat-num">{{assignedCount}}</span>
+              <span class="sv-stat-lbl">Assigned</span>
+            </div>
+          </div>
+          <div class="sv-stat-chip overloaded">
+            <i class="bi bi-person-fill-exclamation"></i>
+            <div>
+              <span class="sv-stat-num">{{unassignedCount}}</span>
+              <span class="sv-stat-lbl">Unassigned</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter -->
+        <div class="d-flex gap-2 mb-3 flex-wrap">
+          <button class="sv-filter-btn" [class.active]="assignmentFilter==='ALL'"        (click)="assignmentFilter='ALL'">All</button>
+          <button class="sv-filter-btn" [class.active]="assignmentFilter==='UNASSIGNED'" (click)="assignmentFilter='UNASSIGNED'">Unassigned</button>
+          <button class="sv-filter-btn" [class.active]="assignmentFilter==='ASSIGNED'"   (click)="assignmentFilter='ASSIGNED'">Assigned</button>
+          <button class="sv-filter-btn" [class.active]="assignmentFilter==='ACTIVE'"     (click)="assignmentFilter='ACTIVE'">Active Jobs</button>
+          <button class="sv-filter-btn" [class.active]="assignmentFilter==='CLOSED'"     (click)="assignmentFilter='CLOSED'">Closed Jobs</button>
+        </div>
+
+        <!-- No data -->
+        <div *ngIf="filteredAssignments.length === 0" class="sv-empty">
+          <i class="bi bi-briefcase-x"></i> No jobs found.
+        </div>
+
+        <!-- Job assignment table -->
+        <div class="sv-table-wrap" *ngIf="filteredAssignments.length > 0">
+          <table class="sv-table">
+            <thead>
+              <tr>
+                <th>Job</th>
+                <th>Location</th>
+                <th>Salary</th>
+                <th>Deadline</th>
+                <th>Status</th>
+                <th>Assigned Nurse</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let j of filteredAssignments">
+                <td>
+                  <div class="sv-job-title">{{j.jobTitle}}</div>
+                  <div class="sv-job-dept text-muted small">{{j.department}} · {{j.jobType}}</div>
+                </td>
+                <td>{{j.location || '—'}}</td>
+                <td>{{formatSalary(j.salaryMin, j.salaryMax)}}</td>
+                <td>{{formatDeadline(j.deadline)}}</td>
+                <td>
+                  <span class="sv-job-status" [ngClass]="jobStatusClass(j.jobStatus)">
+                    {{j.jobStatus || '—'}}
+                  </span>
+                </td>
+                <td>
+                  <span *ngIf="j.assignedNurseName" class="sv-assigned-nurse">
+                    <i class="bi bi-person-fill me-1"></i>{{j.assignedNurseName}}
+                    <span class="text-muted small d-block">{{j.assignedNurseSpecialization}}</span>
+                  </span>
+                  <span *ngIf="!j.assignedNurseName" class="sv-unassigned-label">
+                    <i class="bi bi-dash-circle me-1"></i>Unassigned
+                  </span>
+                </td>
+                <td>
+                  <button class="sv-assign-btn" (click)="openAssignModal(j)"
+                          [disabled]="j.jobStatus === 'CLOSED'">
+                    <i class="bi" [ngClass]="isReassigning(j) ? 'bi-arrow-repeat' : 'bi-person-plus-fill'"></i>
+                    {{isReassigning(j) ? 'Reassign' : 'Assign'}}
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════
+           TAB: PERFORMANCE
+           ══════════════════════════════════════════════════════════ -->
+      <div *ngIf="activeTab==='performance'">
+
+        <!-- Sort controls -->
+        <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+          <span class="text-muted small">Sort by:</span>
+          <button class="sv-filter-btn" [class.active]="perfSort==='totalJobs'"     (click)="perfSort='totalJobs'">Total Jobs</button>
+          <button class="sv-filter-btn" [class.active]="perfSort==='activeJobs'"    (click)="perfSort='activeJobs'">Active Jobs</button>
+          <button class="sv-filter-btn" [class.active]="perfSort==='completedJobs'" (click)="perfSort='completedJobs'">Completed Jobs</button>
+        </div>
+
+        <!-- No data -->
+        <div *ngIf="sortedPerformance.length === 0" class="sv-empty">
+          <i class="bi bi-graph-down"></i> No performance data available.
+        </div>
+
+        <div class="sv-table-wrap" *ngIf="sortedPerformance.length > 0">
+          <table class="sv-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Nurse</th>
+                <th>Specialization</th>
+                <th>Experience</th>
+                <th>License</th>
+                <th>Active</th>
+                <th>Completed</th>
+                <th>Total</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of sortedPerformance; let i = index">
+                <td class="text-muted">{{i + 1}}</td>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="sv-perf-avatar">{{p.nurseName?.charAt(0) | uppercase}}</div>
+                    <span class="fw-semibold">{{p.nurseName}}</span>
+                  </div>
+                </td>
+                <td>{{p.specialization || '—'}}</td>
+                <td>{{p.experience}} yrs</td>
+                <td>{{p.license || '—'}}</td>
+                <td>
+                  <span class="sv-num-cell active-num">{{p.activeJobs}}</span>
+                </td>
+                <td>
+                  <span class="sv-num-cell completed-num">{{p.completedJobs}}</span>
+                </td>
+                <td>
+                  <span class="sv-num-cell total-num">{{p.totalJobs}}</span>
+                </td>
+                <td>
+                  <span class="sv-status-badge" [ngClass]="workloadStatusClass(p.status)">
+                    {{p.status}}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════
+           TAB: SHIFT COVERAGE (Team Roster)
+           ══════════════════════════════════════════════════════════ -->
+      <div *ngIf="activeTab==='coverage'">
+
+        <!-- Summary chips -->
+        <div class="sv-stat-row mb-4">
+          <div class="sv-stat-chip available">
+            <i class="bi bi-people-fill"></i>
+            <div>
+              <span class="sv-stat-num">{{filteredRoster.length}}</span>
+              <span class="sv-stat-lbl">Assigned Nurses</span>
+            </div>
+          </div>
+          <div class="sv-stat-chip active">
+            <i class="bi bi-building"></i>
+            <div>
+              <span class="sv-stat-num">{{departments.length}}</span>
+              <span class="sv-stat-lbl">Departments</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Department filter -->
+        <div class="d-flex gap-2 mb-3 flex-wrap align-items-center">
+          <span class="text-muted small">Department:</span>
+          <button class="sv-filter-btn" [class.active]="rosterDeptFilter===''" (click)="rosterDeptFilter=''">All</button>
+          <button class="sv-filter-btn" *ngFor="let d of departments"
+                  [class.active]="rosterDeptFilter===d" (click)="rosterDeptFilter=d">{{d}}</button>
+        </div>
+
+        <div *ngIf="filteredRoster.length === 0" class="sv-empty">
+          <i class="bi bi-person-x"></i> No assigned nurses in this department.
+        </div>
+
+        <div class="sv-table-wrap" *ngIf="filteredRoster.length > 0">
+          <table class="sv-table">
+            <thead>
+              <tr>
+                <th>Nurse</th>
+                <th>Workload</th>
+                <th>Current Department</th>
+                <th>Current Job</th>
+                <th>Duty Type</th>
+                <th>Location</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let n of filteredRoster">
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="sv-perf-avatar">{{n.nurseName?.charAt(0) | uppercase}}</div>
+                    <div>
+                      <div class="fw-semibold">{{n.nurseName}}</div>
+                      <div class="text-muted small">{{n.specialization}}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="sv-status-badge" [ngClass]="workloadStatusClass(n.workloadStatus)">
+                    {{n.workloadStatus}}
+                  </span>
+                </td>
+                <td>
+                  <span *ngIf="n.department" class="sv-dept-badge">{{n.department}}</span>
+                  <span *ngIf="!n.department" class="sv-unassigned-label">Not assigned</span>
+                </td>
+                <td>{{n.jobTitle || '—'}}</td>
+                <td>
+                  <span *ngIf="n.jobType" class="sv-duty-badge" [ngClass]="dutyTypeClass(n.jobType)">
+                    {{dutyTypeLabel(n.jobType)}}
+                  </span>
+                  <span *ngIf="!n.jobType" class="text-muted">—</span>
+                </td>
+                <td>{{n.location || '—'}}</td>
+                <td>
+                  <button class="sv-assign-btn" (click)="openRosterReassign(n)">
+                    <i class="bi bi-arrow-repeat me-1"></i>
+                    {{n.currentJob ? 'Reassign' : 'Assign'}}
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════
+           TAB: HANDOFF NOTES
+           ══════════════════════════════════════════════════════════ -->
+      <div *ngIf="activeTab==='handoffs'">
+        <div class="row g-3">
+
+          <!-- Send new handoff note -->
+          <div class="col-lg-5">
+            <div class="sv-panel">
+              <div class="sv-panel-title"><i class="bi bi-send me-2"></i>Send Handoff Note</div>
+
+              <label class="form-label fw-semibold small">Select Nurse *</label>
+              <select class="form-select form-select-sm mb-2" [(ngModel)]="handoffNurseId">
+                <option value="">— Choose nurse —</option>
+                <option *ngFor="let n of workload" [value]="n.nurseUserId">
+                  {{n.nurseName}} ({{n.workloadStatus}})
+                </option>
+              </select>
+
+              <label class="form-label fw-semibold small">Related Job (optional)</label>
+              <select class="form-select form-select-sm mb-2" [(ngModel)]="handoffJobId">
+                <option value="">— None —</option>
+                <option *ngFor="let j of jobAssignments" [value]="j.jobId">{{j.jobTitle}}</option>
+              </select>
+
+              <label class="form-label fw-semibold small">Note *</label>
+              <textarea class="form-control form-control-sm mb-3" rows="4" [(ngModel)]="handoffNote"
+                        placeholder="Enter care handoff instructions, patient status, or important notes…"></textarea>
+
+              <div *ngIf="handoffError"   class="alert alert-danger py-2 small mb-2">{{handoffError}}</div>
+              <div *ngIf="handoffSuccess" class="alert alert-success py-2 small mb-2">{{handoffSuccess}}</div>
+
+              <button class="btn btn-primary btn-sm w-100" (click)="sendHandoff()" [disabled]="isSendingHandoff">
+                <span *ngIf="isSendingHandoff" class="spinner-border spinner-border-sm me-1"></span>
+                <i class="bi bi-send me-1" *ngIf="!isSendingHandoff"></i> Send Note
+              </button>
+            </div>
+          </div>
+
+          <!-- History -->
+          <div class="col-lg-7">
+            <div class="sv-panel">
+              <div class="sv-panel-title"><i class="bi bi-clock-history me-2"></i>Sent Handoff Notes</div>
+              <div *ngIf="handoffs.length === 0" class="sv-empty" style="padding:24px">
+                <i class="bi bi-chat-square-x"></i> No handoff notes sent yet.
+              </div>
+              <div class="sv-handoff-list">
+                <div class="sv-handoff-item" *ngFor="let h of handoffs">
+                  <div class="sv-handoff-header">
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="sv-perf-avatar">{{h.nurseName?.charAt(0) | uppercase}}</div>
+                      <div>
+                        <span class="fw-semibold">{{h.nurseName}}</span>
+                        <span *ngIf="h.jobTitle" class="text-muted small ms-2">· {{h.jobTitle}}</span>
+                      </div>
+                    </div>
+                    <span class="text-muted small">{{h.sentAt | date:'dd MMM, hh:mm a'}}</span>
+                  </div>
+                  <p class="sv-handoff-note mb-0">{{h.note}}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════
+           TAB: ESCALATIONS
+           ══════════════════════════════════════════════════════════ -->
+      <div *ngIf="activeTab==='escalations'">
+        <div class="row g-3">
+
+          <!-- Raise escalation form -->
+          <div class="col-lg-5">
+            <div class="sv-panel">
+              <div class="sv-panel-title"><i class="bi bi-flag me-2"></i>Raise Escalation</div>
+
+              <label class="form-label fw-semibold small">Issue Type *</label>
+              <select class="form-select form-select-sm mb-2" [(ngModel)]="escIssueType">
+                <option value="">— Select type —</option>
+                <option *ngFor="let t of ISSUE_TYPES" [value]="t.value">{{t.label}}</option>
+              </select>
+
+              <label class="form-label fw-semibold small">Related Entity (optional)</label>
+              <div class="d-flex gap-2 mb-2">
+                <select class="form-select form-select-sm" [(ngModel)]="escEntityType" style="max-width:120px">
+                  <option value="">None</option>
+                  <option value="NURSE">Nurse</option>
+                  <option value="JOB">Job</option>
+                </select>
+                <select class="form-select form-select-sm" [(ngModel)]="escEntityId" *ngIf="escEntityType==='NURSE'">
+                  <option value="">— Choose —</option>
+                  <option *ngFor="let n of workload" [value]="n.nurseUserId">{{n.nurseName}}</option>
+                </select>
+                <select class="form-select form-select-sm" [(ngModel)]="escEntityId" *ngIf="escEntityType==='JOB'">
+                  <option value="">— Choose —</option>
+                  <option *ngFor="let j of jobAssignments" [value]="j.jobId">{{j.jobTitle}}</option>
+                </select>
+              </div>
+
+              <label class="form-label fw-semibold small">Description *</label>
+              <textarea class="form-control form-control-sm mb-3" rows="4" [(ngModel)]="escDescription"
+                        placeholder="Describe the issue in detail…"></textarea>
+
+              <div *ngIf="escalationError"   class="alert alert-danger py-2 small mb-2">{{escalationError}}</div>
+              <div *ngIf="escalationSuccess" class="alert alert-success py-2 small mb-2">{{escalationSuccess}}</div>
+
+              <button class="btn btn-danger btn-sm w-100" (click)="submitEscalation()" [disabled]="isEscalating">
+                <span *ngIf="isEscalating" class="spinner-border spinner-border-sm me-1"></span>
+                <i class="bi bi-flag me-1" *ngIf="!isEscalating"></i> Raise Escalation
+              </button>
+            </div>
+          </div>
+
+          <!-- Escalation list -->
+          <div class="col-lg-7">
+            <div class="sv-panel">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="sv-panel-title mb-0"><i class="bi bi-list-check me-2"></i>Escalation Log</div>
+                <div class="d-flex gap-2">
+                  <button class="sv-filter-btn" [class.active]="escalationFilter==='ALL'"      (click)="escalationFilter='ALL'">All</button>
+                  <button class="sv-filter-btn" [class.active]="escalationFilter==='OPEN'"     (click)="escalationFilter='OPEN'">Open</button>
+                  <button class="sv-filter-btn" [class.active]="escalationFilter==='RESOLVED'" (click)="escalationFilter='RESOLVED'">Resolved</button>
+                </div>
+              </div>
+
+              <div *ngIf="filteredEscalations.length === 0" class="sv-empty" style="padding:24px">
+                <i class="bi bi-flag-fill"></i> No escalations found.
+              </div>
+
+              <div class="sv-esc-list">
+                <div class="sv-esc-item" *ngFor="let e of filteredEscalations">
+                  <div class="sv-esc-header">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                      <span class="sv-esc-type">{{issueTypeLabel(e.issueType)}}</span>
+                      <span *ngIf="e.entityName" class="text-muted small">· {{e.entityType}}: {{e.entityName}}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                      <span class="sv-status-badge" [ngClass]="escalationStatusClass(e.status)">{{e.status}}</span>
+                      <button *ngIf="e.status==='OPEN'" class="sv-resolve-btn" (click)="resolveEscalation(e)">
+                        Resolve
+                      </button>
+                    </div>
+                  </div>
+                  <p class="sv-esc-desc mb-1">{{e.description}}</p>
+                  <span class="text-muted small">{{e.createdAt | date:'dd MMM yyyy, hh:mm a'}}</span>
+                  <span *ngIf="e.resolvedAt" class="text-success small ms-2">
+                    · Resolved {{e.resolvedAt | date:'dd MMM yyyy'}}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     ROSTER REASSIGN MODAL (move nurse to a different department/job)
+     ══════════════════════════════════════════════════════════════════ -->
+<div class="sv-modal-backdrop" *ngIf="rosterModal" (click)="closeRosterReassign()"></div>
+<div class="sv-modal" *ngIf="rosterModal">
+  <div class="sv-modal-header">
+    <h5 class="mb-0"><i class="bi bi-arrow-repeat me-2"></i>
+      {{rosterModal.currentJob ? 'Reassign to New Department' : 'Assign to Department'}}
+    </h5>
+    <button class="sv-modal-close" (click)="closeRosterReassign()">&times;</button>
+  </div>
+  <div class="sv-modal-body">
+    <div class="sv-modal-job-info mb-3">
+      <div class="fw-semibold">{{rosterModal.nurseName}}</div>
+      <div class="text-muted small">{{rosterModal.specialization}}</div>
+    </div>
+    <div *ngIf="rosterModal.currentJob" class="sv-current-nurse mb-3">
+      <span class="text-muted small">Currently in:</span>
+      <span class="ms-2 fw-semibold text-warning">
+        {{rosterModal.department}} — {{rosterModal.jobTitle}}
+        ({{dutyTypeLabel(rosterModal.jobType)}})
+      </span>
+    </div>
+    <label class="form-label fw-semibold">Select New Job / Department</label>
+    <select class="form-select sv-nurse-select mb-1" [(ngModel)]="selectedNewJobId">
+      <option value="">— Choose a job —</option>
+      <option *ngFor="let j of jobAssignments"
+              [value]="j.jobId"
+              [disabled]="j.jobId === rosterModal.jobId">
+        {{j.department}} · {{j.jobTitle}} · {{dutyTypeLabel(j.jobType)}}
+        <ng-container *ngIf="j.assignedNurseName"> (currently: {{j.assignedNurseName}})</ng-container>
+      </option>
+    </select>
+    <div *ngIf="rosterReassignError"   class="alert alert-danger py-2 mt-2">{{rosterReassignError}}</div>
+    <div *ngIf="rosterReassignSuccess" class="alert alert-success py-2 mt-2">{{rosterReassignSuccess}}</div>
+  </div>
+  <div class="sv-modal-footer">
+    <button class="btn btn-secondary btn-sm" (click)="closeRosterReassign()" [disabled]="isRosterReassigning">Cancel</button>
+    <button class="btn btn-primary btn-sm" (click)="confirmRosterReassign()"
+            [disabled]="isRosterReassigning || !selectedNewJobId">
+      <span *ngIf="isRosterReassigning" class="spinner-border spinner-border-sm me-1"></span>
+      Confirm
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     ASSIGN / REASSIGN MODAL
+     ══════════════════════════════════════════════════════════════════ -->
+<div class="sv-modal-backdrop" *ngIf="assignModal" (click)="closeAssignModal()"></div>
+<div class="sv-modal" *ngIf="assignModal">
+  <div class="sv-modal-header">
+    <h5 class="mb-0">
+      <i class="bi" [ngClass]="isReassigning(assignModal) ? 'bi-arrow-repeat' : 'bi-person-plus-fill'"></i>
+      {{isReassigning(assignModal) ? 'Reassign Nurse' : 'Assign Nurse'}}
+    </h5>
+    <button class="sv-modal-close" (click)="closeAssignModal()">&times;</button>
+  </div>
+
+  <div class="sv-modal-body">
+    <!-- Job info -->
+    <div class="sv-modal-job-info mb-3">
+      <div class="fw-semibold">{{assignModal.jobTitle}}</div>
+      <div class="text-muted small">{{assignModal.department}} · {{assignModal.location}}</div>
+    </div>
+
+    <!-- Currently assigned (for reassign) -->
+    <div *ngIf="isReassigning(assignModal)" class="sv-current-nurse mb-3">
+      <span class="text-muted small">Currently assigned:</span>
+      <span class="ms-2 fw-semibold text-warning">
+        <i class="bi bi-person-fill me-1"></i>{{assignModal.assignedNurseName}}
+      </span>
+      <span class="text-muted small ms-1">(will be removed)</span>
+    </div>
+
+    <!-- Select nurse -->
+    <label class="form-label fw-semibold">Select Nurse from your team</label>
+    <select class="form-select sv-nurse-select mb-1" [(ngModel)]="selectedNurseUserId">
+      <option value="">— Choose a nurse —</option>
+      <option *ngFor="let n of workload" [value]="n.nurseUserId">
+        {{n.nurseName}} · {{n.specialization}} · {{n.workloadStatus}}
+        ({{n.activeJobs}} active jobs)
+      </option>
+    </select>
+
+    <div *ngIf="assignError" class="alert alert-danger py-2 mt-2">{{assignError}}</div>
+    <div *ngIf="assignSuccess" class="alert alert-success py-2 mt-2">{{assignSuccess}}</div>
+  </div>
+
+  <div class="sv-modal-footer">
+    <button class="btn btn-secondary btn-sm" (click)="closeAssignModal()" [disabled]="isAssigning">Cancel</button>
+    <button class="btn btn-primary btn-sm" (click)="confirmAssign()" [disabled]="isAssigning || !selectedNurseUserId">
+      <span *ngIf="isAssigning" class="spinner-border spinner-border-sm me-1"></span>
+      {{isReassigning(assignModal) ? 'Confirm Reassign' : 'Confirm Assign'}}
+    </button>
+  </div>
+</div>

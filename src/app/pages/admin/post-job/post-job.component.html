@@ -43,6 +43,11 @@
           <i class="bi bi-bar-chart-fill"></i> Analytics
         </a>
       </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link-custom" routerLink="/admin-supervisor" routerLinkActive="active">
+          <i class="bi bi-diagram-3-fill"></i> Supervisor
+        </a>
+      </li>
       <div class="sidebar-divider mt-auto"></div>
       <li class="nav-item">
         <a class="nav-link-custom logout-link" style="cursor:pointer;" (click)="logout()">
@@ -245,27 +250,16 @@
 
           <!-- Salary -->
           <div class="form-card mb-4">
-            <div class="form-card-title"><i class="bi bi-currency-rupee me-2"></i>Salary Range <span style="font-size:0.78rem;font-weight:400;color:#8aaba4;">
-              (₹10,000 – ₹75,000/month)</span></div>
+            <div class="form-card-title"><i class="bi bi-currency-rupee me-2"></i>Salary<span style="font-size:0.78rem;font-weight:400;color:#8aaba4;">
+               (min - ₹25,000)</span></div>
             <div class="row g-3">
               <div class="col-md-6">
-                <label class="field-label">Minimum (₹/month)</label>
+                <label class="field-label">Salary (₹/month)</label>
                 <input type="number" class="field-input" formControlName="salaryMin"
-                       placeholder="e.g., 20000" min="10000" max="75000"
+                       placeholder="e.g., 35000" min="10000" max="200000"
                        [class.input-err]="f['salaryMin'].dirty && f['salaryMin'].invalid">
                 <small class="err" *ngIf="f['salaryMin'].dirty && f['salaryMin'].hasError('min')">Minimum salary is ₹10,000.</small>
-                <small class="err" *ngIf="f['salaryMin'].dirty && f['salaryMin'].hasError('max')">Maximum allowed is ₹75,000.</small>
-              </div>
-              <div class="col-md-6">
-                <label class="field-label">Maximum (₹/month)</label>
-                <input type="number" class="field-input" formControlName="salaryMax"
-                       placeholder="e.g., 50000" min="10000" max="75000"
-                       [class.input-err]="f['salaryMax'].dirty && f['salaryMax'].invalid">
-                <small class="err" *ngIf="f['salaryMax'].dirty && f['salaryMax'].hasError('min')">Minimum salary is ₹10,000.</small>
-                <small class="err" *ngIf="f['salaryMax'].dirty && f['salaryMax'].hasError('max')">Maximum allowed is ₹75,000.</small>
-              </div>
-              <div class="col-12" *ngIf="jobForm.hasError('salaryRange')">
-                <small class="err"><i class="bi bi-exclamation-circle me-1"></i>Maximum salary must be greater than or equal to the minimum.</small>
+                <small class="err" *ngIf="f['salaryMin'].dirty && f['salaryMin'].hasError('max')">Maximum allowed is ₹2,00,000.</small>
               </div>
             </div>
           </div>
@@ -535,19 +529,22 @@
                        placeholder="e.g. 30000" min="1000">
               </div>
               <div class="col-md-6">
-                <label class="field-label">HRA (₹) <span style="color:#9ab8b0;font-size:0.78rem;">(optional)</span></label>
+                <label class="field-label">HRA (₹) <span style="color:#9ab8b0;font-size:0.78rem;">max ₹15,000</span></label>
                 <input type="number" class="field-input" [(ngModel)]="hra"
-                       placeholder="e.g. 5000">
+                       placeholder="e.g. 5000" min="0" [max]="MAX_HRA" (change)="clampHra()">
+                <small class="err" *ngIf="+hra > MAX_HRA">Max HRA is ₹15,000.</small>
               </div>
               <div class="col-md-6">
-                <label class="field-label">Travel Allowance (₹) <span style="color:#9ab8b0;font-size:0.78rem;">(optional)</span></label>
+                <label class="field-label">Travel Allowance (₹) <span style="color:#9ab8b0;font-size:0.78rem;">max ₹3,000</span></label>
                 <input type="number" class="field-input" [(ngModel)]="travelAllowance"
-                       placeholder="e.g. 1000">
+                       placeholder="e.g. 1000" min="0" [max]="MAX_TA" (change)="clampTa()">
+                <small class="err" *ngIf="+travelAllowance > MAX_TA">Max Travel Allowance is ₹3,000.</small>
               </div>
               <div class="col-md-6">
-                <label class="field-label">Other Allowances (₹) <span style="color:#9ab8b0;font-size:0.78rem;">(optional)</span></label>
+                <label class="field-label">Other Allowances (₹) <span style="color:#9ab8b0;font-size:0.78rem;">max ₹5,000</span></label>
                 <input type="number" class="field-input" [(ngModel)]="otherAllowances"
-                       placeholder="e.g. 500">
+                       placeholder="e.g. 500" min="0" [max]="MAX_OTHER" (change)="clampOther()">
+                <small class="err" *ngIf="+otherAllowances > MAX_OTHER">Max Other Allowances is ₹5,000.</small>
               </div>
             </div>
 

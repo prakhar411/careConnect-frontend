@@ -198,20 +198,32 @@
           <div class="pay-card-left">
             <div class="pay-icon-wrap org-icon"><i class="bi bi-building"></i></div>
             <div>
-              <div class="pay-label">{{ p.orgName || 'Organization' }}</div>
+              <div class="pay-label">
+                <span class="salary-status-dot"
+                      [class.dot-green]="p.status === 'PROCESSED'"
+                      [class.dot-yellow]="p.status !== 'PROCESSED'"></span>
+                {{ p.orgName || 'Organization' }}
+              </div>
               <div class="pay-sublabel">
                 <i class="bi bi-calendar2-month me-1"></i>{{ p.salaryMonth }}
-                &nbsp;·&nbsp; via Bank Transfer
+                &nbsp;·&nbsp;
+                <span [class.text-success]="p.status==='PROCESSED'" [class.text-warning]="p.status!=='PROCESSED'">
+                  {{ p.status === 'PROCESSED' ? 'Credited' : 'Pending' }}
+                </span>
               </div>
             </div>
           </div>
           <div class="pay-card-right">
-            <div class="pay-amount text-success">{{ formatAmount(p.amount) }}</div>
-            <span class="pay-badge badge-paid">Paid</span>
-            <!-- Salary slip expand -->
-            <button class="slip-btn" (click)="p._open = !p._open">
-              <i class="bi" [class.bi-chevron-down]="!p._open" [class.bi-chevron-up]="p._open"></i>
+            <div class="pay-amount" [class.text-success]="p.status==='PROCESSED'" [class.text-warning]="p.status!=='PROCESSED'">
+              {{ formatAmount(p.amount) }}
+            </div>
+            <span class="pay-badge" [ngClass]="p.status === 'PROCESSED' ? 'badge-paid' : 'badge-pending'">
+              {{ p.status === 'PROCESSED' ? 'Credited' : 'Pending' }}
+            </span>
+            <!-- Salary slip expand (only when credited) -->
+            <button class="slip-btn" *ngIf="p.status === 'PROCESSED'" (click)="p._open = !p._open">
               Salary Slip
+              <i class="bi" [class.bi-chevron-down]="!p._open" [class.bi-chevron-up]="p._open"></i>
             </button>
           </div>
 
@@ -359,7 +371,7 @@
                     <div>
                       <label class="field-label mb-0">UPI IDs <span class="req-star">*</span></label>
                       <small class="d-block" style="color:#6a8c80;font-size:0.75rem;margin-top:2px;">
-                        10-digit mobile number + @suffix · Max 3 IDs
+                       Max 3 IDs
                       </small>
                     </div>
                     <span class="upi-count-badge">{{ upiList.length }}/3</span>
@@ -452,10 +464,10 @@
                     Maximum 3 UPI IDs added. Remove one to add another.
                   </div>
 
-                  <div class="info-note mt-3">
+                  <!-- <div class="info-note mt-3">
                     <i class="bi bi-info-circle me-1"></i>
                     Supported: @ybl · @paytm · @okaxis · @okhdfcbank · @oksbi · @slc
-                  </div>
+                  </div> -->
                 </div>
 
                 <!-- ── Bank Transfer ────────────────────── -->

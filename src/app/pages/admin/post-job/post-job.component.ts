@@ -1,17 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AdminService } from '../../../services/admin.service';
 import { AuthService } from '../../../services/auth.service';
 import { PaymentService } from '../../../services/payment.service';
 
-function salaryRangeValidator(): ValidatorFn {
-  return (group: AbstractControl): ValidationErrors | null => {
-    const min = parseFloat(group.get('salaryMin')?.value || '0');
-    const max = parseFloat(group.get('salaryMax')?.value || '0');
-    if (min && max && max < min) return { salaryRange: true };
-    return null;
-  };
-}
 
 @Component({
   selector: 'app-post-job',
@@ -158,14 +150,13 @@ export class PostJobComponent implements OnInit {
                          Validators.pattern("^[A-Za-z0-9 ,.\\/\\-()&!?:;']+$")]],
       workingConditions: [''],
       shiftDetails:    ['', Validators.required],
-      salaryMin:       ['', [Validators.min(10000), Validators.max(75000)]],
-      salaryMax:       ['', [Validators.min(10000), Validators.max(75000)]],
+      salaryMin:       ['', [Validators.min(10000), Validators.max(200000)]],
       priority:          ['Normal', Validators.required],
       deadline:          ['', Validators.required],
       isEmergency:          [false],
       emergencyCountryCode: ['+91'],
       emergencyPhone:       [''],
-    }, { validators: salaryRangeValidator() });
+    });
 
     // When isEmergency toggled, apply/clear contact validators
     this.jobForm.get('isEmergency')!.valueChanges.subscribe((val: boolean) => {
@@ -288,7 +279,7 @@ export class PostJobComponent implements OnInit {
       benefits:         Array.from(this.selectedBenefits).join(','),
       shiftDetails:     v.shiftDetails,
       salaryMin:        v.salaryMin ? parseFloat(v.salaryMin) : null,
-      salaryMax:        v.salaryMax ? parseFloat(v.salaryMax) : null,
+      salaryMax:        null,
       priority:          v.isEmergency ? 'Critical' : v.priority,
       deadline:          v.deadline ? v.deadline + ':00' : null,
       isEmergency:       !!v.isEmergency,
@@ -349,16 +340,24 @@ export class PostJobComponent implements OnInit {
     });
   }
 
+  readonly MAX_HRA    = 15000;
+  readonly MAX_TA     = 3000;
+  readonly MAX_OTHER  = 5000;
+
   selectNurseForSalary(nurse: any): void {
     this.selectedNurse    = nurse;
     this.salaryMonth      = '';
-    this.baseSalary       = '';
+    this.baseSalary       = String(nurse.jobSalaryMin || '');
     this.hra              = '';
     this.travelAllowance  = '';
     this.otherAllowances  = '';
     this.salarySuccessMsg = '';
     this.salaryErrorMsg   = '';
   }
+
+  clampHra():   void { const v = parseFloat(this.hra)           || 0; if (v > this.MAX_HRA)   this.hra           = String(this.MAX_HRA);   }
+  clampTa():    void { const v = parseFloat(this.travelAllowance) || 0; if (v > this.MAX_TA)  this.travelAllowance = String(this.MAX_TA);  }
+  clampOther(): void { const v = parseFloat(this.otherAllowances) || 0; if (v > this.MAX_OTHER) this.otherAllowances = String(this.MAX_OTHER); }
 
   get grossPreview(): number {
     return (parseFloat(this.baseSalary)   || 0)
@@ -376,11 +375,20 @@ export class PostJobComponent implements OnInit {
       this.salaryErrorMsg = 'Please select a nurse, month, and enter the base salary.';
       return;
     }
+    if ((parseFloat(this.hra) || 0) > this.MAX_HRA) {
+      this.salaryErrorMsg = `HRA cannot exceed ₹${this.MAX_HRA.toLocaleString('en-IN')}.`; return;
+    }
+    if ((parseFloat(this.travelAllowance) || 0) > this.MAX_TA) {
+      this.salaryErrorMsg = `Travel Allowance cannot exceed ₹${this.MAX_TA.toLocaleString('en-IN')}.`; return;
+    }
+    if ((parseFloat(this.otherAllowances) || 0) > this.MAX_OTHER) {
+      this.salaryErrorMsg = `Other Allowances cannot exceed ₹${this.MAX_OTHER.toLocaleString('en-IN')}.`; return;
+    }
     this.isProcessingSalary = true;
     this.salaryErrorMsg     = '';
     this.salarySuccessMsg   = '';
     this.paymentSvc.processMonthlySalary(this.userId, {
-      nurseUserId:      this.selectedNurse.nurseId,
+      nurseUserId:      this.selectedNurse.nurseUserId,
       salaryMonth:      this.salaryMonth,
       baseSalary:       parseFloat(this.baseSalary),
       hra:              parseFloat(this.hra)             || 0,

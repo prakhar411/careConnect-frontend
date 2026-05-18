@@ -386,7 +386,7 @@ export class PaymentsComponent implements OnInit, OnDestroy {
     const suffix = this.newUpiSuffix.trim().toLowerCase();
 
     if (!/^[6-9]\d{9}$/.test(number)) {
-      this.upiAddError = 'Mobile number must be 10 digits and start with 6, 7, 8, or 9.'; return;
+      this.upiAddError = 'Mobile number must be of 10 digits'; return;
     }
     if (!suffix || !this.UPI_SUFFIXES.includes(suffix)) {
       this.upiAddError = 'Please select a valid suffix from the list.'; return;

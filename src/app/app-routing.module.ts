@@ -16,6 +16,7 @@ import { ComplianceComponent } from './pages/admin/compliance/compliance.compone
 import { CredentialingComponent } from './pages/admin/credentialing/credentialing.component';
 import { TeamManagementComponent } from './pages/admin/team-management/team-management.component';
 import { StaffingAnalyticsComponent } from './pages/admin/staffing-analytics/staffing-analytics.component';
+import { SupervisorComponent } from './pages/admin/supervisor/supervisor.component';
 
 import { PatientDashboardComponent } from './pages/patient/patient-dashboard/patient-dashboard.component';
 import { BookAppointmentComponent } from './pages/patient/book-appointment/book-appointment.component';
@@ -23,6 +24,7 @@ import { MyAppointmentsComponent } from './pages/patient/my-appointments/my-appo
 import { MedicalRecordsComponent } from './pages/patient/medical-records/medical-records.component';
 import { SettingsComponent } from './pages/patient/settings/settings.component';
 import { MyNursesComponent } from './pages/patient/my-nurses/my-nurses.component';
+import { EmergencyRequestComponent } from './pages/patient/emergency-request/emergency-request.component';
 
 import { NurseDashboardComponent } from './pages/nurse/nurse-dashboard/nurse-dashboard.component';
 import { ProfileComponent } from './pages/nurse/profile/profile.component';
@@ -50,6 +52,7 @@ const routes: Routes = [
   { path: 'admin-credentialing', component: CredentialingComponent,     canActivate: [authGuard, roleGuard], data: { role: 'ORGANIZATION' } },
   { path: 'admin-team',          component: TeamManagementComponent,    canActivate: [authGuard, roleGuard], data: { role: 'ORGANIZATION' } },
   { path: 'admin-analytics',     component: StaffingAnalyticsComponent, canActivate: [authGuard, roleGuard], data: { role: 'ORGANIZATION' } },
+  { path: 'admin-supervisor',   component: SupervisorComponent,        canActivate: [authGuard, roleGuard], data: { role: 'ORGANIZATION' } },
 
   // Patient routes — must be logged in AND role = PATIENT
   { path: 'patient',                  component: PatientDashboardComponent, canActivate: [authGuard, roleGuard], data: { role: 'PATIENT' } },
@@ -58,6 +61,7 @@ const routes: Routes = [
   { path: 'patient-medical-records',  component: MedicalRecordsComponent,   canActivate: [authGuard, roleGuard], data: { role: 'PATIENT' } },
   { path: 'patient-settings',         component: SettingsComponent,         canActivate: [authGuard, roleGuard], data: { role: 'PATIENT' } },
   { path: 'patient-my-nurses',        component: MyNursesComponent,         canActivate: [authGuard, roleGuard], data: { role: 'PATIENT' } },
+  { path: 'patient-emergency',        component: EmergencyRequestComponent, canActivate: [authGuard, roleGuard], data: { role: 'PATIENT' } },
 
   // Nurse routes — must be logged in AND role = NURSE
   { path: 'nurse',                component: NurseDashboardComponent, canActivate: [authGuard, roleGuard], data: { role: 'NURSE' } },

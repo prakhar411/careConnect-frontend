@@ -1,4 +1,4 @@
-﻿<div class="d-flex">
+<div class="d-flex">
 
   <!-- SIDEBAR -->
   <nav class="fixed-sidebar text-white p-3 d-none d-md-block">
@@ -43,6 +43,11 @@
           <i class="bi bi-bar-chart-fill"></i> Analytics
         </a>
       </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link-custom" routerLink="/admin-supervisor" routerLinkActive="active">
+          <i class="bi bi-diagram-3-fill"></i> Supervisor
+        </a>
+      </li>
       <div class="sidebar-divider mt-auto"></div>
       <li class="nav-item">
         <a class="nav-link-custom logout-link" style="cursor:pointer;" (click)="logout()">
@@ -56,12 +61,17 @@
   <div class="main-content p-4 w-100">
 
     <!-- HEADER -->
-    <div class="mb-4">
-      <h4 class="page-title">Staffing Analytics</h4>
-      <p class="page-subtitle">Insights on hiring trends, nurse performance and specialization distribution</p>
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+      <div>
+        <h4 class="page-title">Staffing Analytics</h4>
+        <p class="page-subtitle">Hiring trends, cost analysis, retention and budget forecasts</p>
+      </div>
+      <button class="btn-print" (click)="printReport()" *ngIf="activeTab === 'budget'">
+        <i class="bi bi-printer-fill me-1"></i>Print / Export PDF
+      </button>
     </div>
 
-    <!-- KPI STATS -->
+    <!-- KPI CARDS -->
     <div class="row g-3 mb-4">
       <div class="col-6 col-md-3">
         <div class="stat-card">
@@ -92,74 +102,352 @@
       </div>
       <div class="col-6 col-md-3">
         <div class="stat-card">
-          <div class="stat-icon si-purple"><i class="bi bi-hourglass-split"></i></div>
+          <div class="stat-icon si-purple"><i class="bi bi-currency-rupee"></i></div>
           <div>
-            <div class="stat-num">{{ pendingApplications }}</div>
-            <div class="stat-lbl">Pending Applications</div>
+            <div class="stat-num">{{ fmt(totalSpend) }}</div>
+            <div class="stat-lbl">Total Spend (6 mo)</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- NO DATA STATE -->
-    <div *ngIf="!isLoading && !hasData" class="dash-card text-center py-5 text-muted mt-4">
+    <!-- TABS -->
+    <div class="tab-strip mb-4">
+      <button class="tab-btn" [class.tab-active]="activeTab==='overview'"  (click)="activeTab='overview'">
+        <i class="bi bi-bar-chart me-1"></i>Overview
+      </button>
+      <button class="tab-btn" [class.tab-active]="activeTab==='cost'"     (click)="activeTab='cost'">
+        <i class="bi bi-cash-stack me-1"></i>Cost Analysis
+      </button>
+      <button class="tab-btn" [class.tab-active]="activeTab==='retention'" (click)="activeTab='retention'">
+        <i class="bi bi-graph-up-arrow me-1"></i>Retention & Forecast
+      </button>
+      <button class="tab-btn" [class.tab-active]="activeTab==='budget'"   (click)="activeTab='budget'">
+        <i class="bi bi-file-earmark-bar-graph me-1"></i>Budget Report
+      </button>
+    </div>
+
+    <!-- LOADING -->
+    <div *ngIf="isLoading" class="text-center py-5 text-muted">
+      <div class="spinner-border text-success" role="status"></div>
+      <p class="mt-2">Loading analytics…</p>
+    </div>
+
+    <!-- NO DATA -->
+    <div *ngIf="!isLoading && !hasData" class="dash-card text-center py-5 text-muted">
       <i class="bi bi-bar-chart fs-1 d-block mb-3" style="color:#c8ddd8;"></i>
       <h6 style="color:#7a9e98;">No analytics data yet</h6>
       <p style="font-size:0.85rem;">Charts will appear once you approve nurse applications.</p>
     </div>
 
-    <div class="row g-4" *ngIf="!isLoading && hasData">
+    <!-- ══════ TAB 1: OVERVIEW ══════ -->
+    <div *ngIf="!isLoading && hasData && activeTab==='overview'">
+      <div class="row g-4">
 
-      <!-- Monthly Hires Bar Chart -->
-      <div class="col-md-7">
-        <div class="dash-card">
-          <div class="dash-card-title"><i class="bi bi-bar-chart"></i> Monthly Hires (Last 6 Months)</div>
-          <div class="bar-chart">
-            <div *ngFor="let item of monthlyHires" class="bar-col">
-              <div class="bar-label-top">{{ item.count }}</div>
-              <div class="bar-fill" [style.height.%]="getBarHeight(item.count)"></div>
-              <div class="bar-month">{{ item.month }}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Top Nurses -->
-      <div class="col-md-5">
-        <div class="dash-card">
-          <div class="dash-card-title"><i class="bi bi-trophy"></i> Most Active Nurses</div>
-          <div *ngFor="let nurse of topNurses; let i = index" class="top-nurse-row">
-            <div class="rank-badge rank-{{ i+1 }}">{{ i+1 }}</div>
-            <div class="flex-grow-1">
-              <p class="nurse-name-sm">{{ nurse.name }}</p>
-              <p class="nurse-spec-sm">{{ nurse.specialty }}</p>
-            </div>
-            <div class="text-end">
-              <p class="jobs-count">{{ nurse.jobs }} hire{{ nurse.jobs !== 1 ? 's' : '' }}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Specialization Distribution -->
-      <div class="col-12">
-        <div class="dash-card">
-          <div class="dash-card-title"><i class="bi bi-pie-chart"></i> Specialization Distribution</div>
-          <div class="spec-list">
-            <div *ngFor="let spec of specializations" class="spec-row">
-              <div class="spec-name">{{ spec.name }}</div>
-              <div class="spec-bar-wrap">
-                <div class="spec-bar-fill" [style.width.%]="spec.pct"></div>
-              </div>
-              <div class="spec-stats">
-                <span class="spec-count">{{ spec.count }}</span>
-                <span class="spec-pct">{{ spec.pct }}%</span>
+        <!-- Monthly Hires Bar Chart -->
+        <div class="col-md-7">
+          <div class="dash-card">
+            <div class="dash-card-title"><i class="bi bi-bar-chart"></i> Monthly Hires (Last 6 Months)</div>
+            <div class="bar-chart">
+              <div *ngFor="let item of monthlyHires" class="bar-col">
+                <div class="bar-label-top">{{ item.count }}</div>
+                <div class="bar-fill" [style.height.%]="getBarHeight(item.count)"></div>
+                <div class="bar-month">{{ item.month }}</div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
+        <!-- Top Nurses -->
+        <div class="col-md-5">
+          <div class="dash-card">
+            <div class="dash-card-title"><i class="bi bi-trophy"></i> Most Active Nurses</div>
+            <div *ngFor="let nurse of topNurses; let i = index" class="top-nurse-row">
+              <div class="rank-badge rank-{{ i+1 }}">{{ i+1 }}</div>
+              <div class="flex-grow-1">
+                <p class="nurse-name-sm">{{ nurse.name }}</p>
+                <p class="nurse-spec-sm">{{ nurse.specialty }}</p>
+              </div>
+              <div class="text-end">
+                <p class="jobs-count">{{ nurse.jobs }} hire{{ nurse.jobs !== 1 ? 's' : '' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Specialization Distribution -->
+        <div class="col-12">
+          <div class="dash-card">
+            <div class="dash-card-title"><i class="bi bi-pie-chart"></i> Specialization Distribution</div>
+            <div class="spec-list">
+              <div *ngFor="let spec of specializations" class="spec-row">
+                <div class="spec-name">{{ spec.name }}</div>
+                <div class="spec-bar-wrap">
+                  <div class="spec-bar-fill" [style.width.%]="spec.pct"></div>
+                </div>
+                <div class="spec-stats">
+                  <span class="spec-count">{{ spec.count }}</span>
+                  <span class="spec-pct">{{ spec.pct }}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
+
+    <!-- ══════ TAB 2: COST ANALYSIS ══════ -->
+    <div *ngIf="!isLoading && hasData && activeTab==='cost'">
+      <div class="row g-4">
+
+        <!-- Monthly Spend Chart -->
+        <div class="col-md-7">
+          <div class="dash-card">
+            <div class="dash-card-title"><i class="bi bi-bar-chart-fill"></i> Monthly Salary Spend (Last 6 Months)</div>
+            <div class="bar-chart">
+              <div *ngFor="let item of monthlyCosts" class="bar-col">
+                <div class="bar-label-top">{{ fmt(item.spend) }}</div>
+                <div class="bar-fill bar-fill-cost" [style.height.%]="getCostBarHeight(item.spend)"></div>
+                <div class="bar-month">{{ item.month }}</div>
+              </div>
+            </div>
+            <div class="cost-summary-row mt-3">
+              <div class="cs-chip">
+                <span class="cs-label">Total (6 mo)</span>
+                <span class="cs-val">{{ fmt(totalSpend) }}</span>
+              </div>
+              <div class="cs-chip">
+                <span class="cs-label">Avg / Month</span>
+                <span class="cs-val">{{ fmt(avgMonthlySpend) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Internal vs External -->
+        <div class="col-md-5">
+          <div class="dash-card">
+            <div class="dash-card-title"><i class="bi bi-diagram-2-fill"></i> Staffing Model Split</div>
+            <div class="split-label-row mb-1">
+              <span class="split-label-int">Salaried (Internal) — {{ internalCount }}</span>
+              <span class="split-label-ext">Contract (External) — {{ externalCount }}</span>
+            </div>
+            <div class="split-bar-track">
+              <div class="split-bar-int" [style.width.%]="internalPct"></div>
+              <div class="split-bar-ext" [style.width.%]="externalPct"></div>
+            </div>
+            <div class="split-pct-row">
+              <span class="pct-int">{{ internalPct }}%</span>
+              <span class="pct-ext">{{ externalPct }}%</span>
+            </div>
+
+            <div class="split-info-box mt-3">
+              <div class="sib-row">
+                <span class="sib-dot dot-int"></span>
+                <span class="sib-text">Salaried — nurses on ₹25k+ monthly packages</span>
+              </div>
+              <div class="sib-row">
+                <span class="sib-dot dot-ext"></span>
+                <span class="sib-text">Contract — project-based or lower-cost engagements</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Avg Salary by Specialization -->
+        <div class="col-12">
+          <div class="dash-card">
+            <div class="dash-card-title"><i class="bi bi-currency-rupee"></i> Average Salary by Specialization</div>
+            <div class="spec-list">
+              <div *ngFor="let s of avgSalaryBySpec" class="spec-row">
+                <div class="spec-name">{{ s.spec }}</div>
+                <div class="spec-bar-wrap">
+                  <div class="spec-bar-fill bar-fill-cost-h" [style.width.%]="s.pct"></div>
+                </div>
+                <div class="spec-stats">
+                  <span class="spec-count">{{ fmt(s.avg) }}</span>
+                  <span class="spec-pct">avg/mo</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══════ TAB 3: RETENTION & FORECAST ══════ -->
+    <div *ngIf="!isLoading && hasData && activeTab==='retention'">
+      <div class="row g-4">
+
+        <!-- Retention KPIs -->
+        <div class="col-md-4">
+          <div class="dash-card h-100">
+            <div class="dash-card-title"><i class="bi bi-person-heart"></i> Retention Metrics (AC4)</div>
+
+            <div class="metric-block">
+              <div class="metric-label">Retention Rate</div>
+              <div class="metric-val" [class.metric-good]="retentionRate>=60" [class.metric-warn]="retentionRate<60">
+                {{ retentionRate }}%
+              </div>
+              <div class="metric-track">
+                <div class="metric-fill" [class.mf-good]="retentionRate>=60" [class.mf-warn]="retentionRate<60"
+                     [style.width.%]="retentionRate"></div>
+              </div>
+              <div class="metric-hint">{{ retentionRate >= 60 ? 'Healthy' : 'Below target (60%)' }}</div>
+            </div>
+
+            <div class="metric-block mt-3">
+              <div class="metric-label">Avg Staff Tenure</div>
+              <div class="metric-val metric-good">{{ tenureLabel }}</div>
+              <div class="metric-hint">Since date of hire approval</div>
+            </div>
+
+            <div class="metric-block mt-3">
+              <div class="metric-label">Active vs Total Applications</div>
+              <div class="d-flex gap-3 mt-1">
+                <div class="mini-stat-box box-green">
+                  <div class="msb-num">{{ approvedApplications }}</div>
+                  <div class="msb-lbl">Approved</div>
+                </div>
+                <div class="mini-stat-box box-grey">
+                  <div class="msb-num">{{ pendingApplications }}</div>
+                  <div class="msb-lbl">Pending</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Forecast -->
+        <div class="col-md-4">
+          <div class="dash-card h-100">
+            <div class="dash-card-title"><i class="bi bi-graph-up-arrow"></i> Demand Forecast (AC3)</div>
+
+            <div class="forecast-block">
+              <div class="fb-label">Projected Hires — Next Month</div>
+              <div class="fb-num">{{ projectedNextMonth }}</div>
+              <div class="fb-hint">Based on 10% growth over last 3-month avg</div>
+            </div>
+
+            <div class="forecast-block mt-3" [class.gap-alert]="staffingGap > 0">
+              <div class="fb-label">Staffing Gap</div>
+              <div class="fb-num" [class.fb-red]="staffingGap > 0" [class.fb-green]="staffingGap === 0">
+                {{ staffingGap > 0 ? '+' + staffingGap + ' needed' : 'No gap' }}
+              </div>
+              <div class="fb-hint">Projected demand vs current approved staff</div>
+            </div>
+
+            <div class="forecast-trend mt-3">
+              <div class="ft-label">Last 3 Months Hire Trend</div>
+              <div class="ft-bars">
+                <div *ngFor="let m of monthlyHires.slice(-3)" class="ft-bar-col">
+                  <div class="ft-bar" [style.height.px]="clampPx(m.count)"></div>
+                  <div class="ft-lbl">{{ m.month }}<br>{{ m.count }}</div>
+                </div>
+                <div class="ft-bar-col ft-projected">
+                  <div class="ft-bar ft-bar-proj" [style.height.px]="clampPx(projectedNextMonth)"></div>
+                  <div class="ft-lbl">Proj.<br>{{ projectedNextMonth }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="col-md-4">
+          <div class="dash-card h-100">
+            <div class="dash-card-title"><i class="bi bi-lightbulb-fill"></i> Recommendations (AC6)</div>
+            <div *ngFor="let r of recommendations; let i = index" class="rec-item">
+              <div class="rec-num">{{ i + 1 }}</div>
+              <div class="rec-text">{{ r }}</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══════ TAB 4: BUDGET REPORT ══════ -->
+    <div *ngIf="!isLoading && hasData && activeTab==='budget'" class="print-area">
+      <div class="row g-4">
+
+        <!-- Budget bar chart -->
+        <div class="col-md-8">
+          <div class="dash-card">
+            <div class="dash-card-title">
+              <i class="bi bi-bar-chart-steps"></i> Monthly Spend & 3-Month Projection (AC7)
+              <span class="proj-legend ms-2"><span class="proj-dot"></span> Projected</span>
+            </div>
+            <div class="budget-bar-chart">
+              <div *ngFor="let r of budgetRows" class="budget-bar-col" [class.b-projected]="r.projected">
+                <div class="budget-bar-val">{{ fmt(r.spend) }}</div>
+                <div class="budget-bar-fill" [style.height.%]="getBudgetBarPct(r.spend)"
+                     [class.bfill-actual]="!r.projected" [class.bfill-proj]="r.projected"></div>
+                <div class="budget-bar-month">{{ r.month }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary box -->
+        <div class="col-md-4">
+          <div class="dash-card">
+            <div class="dash-card-title"><i class="bi bi-wallet2"></i> Financial Summary</div>
+            <div class="fin-row"><span class="fin-label">Total Spend (6 mo)</span><span class="fin-val">{{ fmt(totalSpend) }}</span></div>
+            <div class="fin-row"><span class="fin-label">Avg Monthly Spend</span><span class="fin-val">{{ fmt(avgMonthlySpend) }}</span></div>
+            <div class="fin-row"><span class="fin-label">Salaried Staff</span><span class="fin-val">{{ internalCount }}</span></div>
+            <div class="fin-row"><span class="fin-label">Contract Staff</span><span class="fin-val">{{ externalCount }}</span></div>
+            <div class="fin-row"><span class="fin-label">Retention Rate</span>
+              <span class="fin-val" [class.text-success]="retentionRate>=60" [class.text-warning]="retentionRate<60">
+                {{ retentionRate }}%
+              </span>
+            </div>
+            <div class="fin-row border-top pt-2 mt-1">
+              <span class="fin-label fw-bold">Projected Next Month</span>
+              <span class="fin-val fw-bold">{{ fmt(firstProjectedSpend) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Full table -->
+        <div class="col-12">
+          <div class="dash-card">
+            <div class="dash-card-title"><i class="bi bi-table"></i> Month-wise Salary Expenditure</div>
+            <table class="budget-table">
+              <thead>
+                <tr>
+                  <th>Month</th>
+                  <th class="text-end">Salary Spend</th>
+                  <th class="text-end">% of 6-mo Total</th>
+                  <th class="text-center">Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let r of budgetRows" [class.row-proj]="r.projected">
+                  <td>{{ r.month }}</td>
+                  <td class="text-end fw-600">{{ fmt(r.spend) }}</td>
+                  <td class="text-end">
+                    <div class="tbl-bar-wrap">
+                      <div class="tbl-bar-fill" [style.width.%]="getBudgetBarPct(r.spend)"
+                           [class.tbl-actual]="!r.projected" [class.tbl-proj]="r.projected"></div>
+                    </div>
+                    {{ r.spend > 0 ? (r.spend / maxBudget * 100 | number:'1.0-0') + '%' : '0%' }}
+                  </td>
+                  <td class="text-center">
+                    <span class="type-chip" [class.chip-actual]="!r.projected" [class.chip-proj]="r.projected">
+                      {{ r.projected ? 'Projected' : 'Actual' }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 </div>

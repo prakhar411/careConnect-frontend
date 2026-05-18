@@ -82,6 +82,16 @@ export class AppointmentService {
     }).pipe(map((r: any) => r.data), catchError(this.handleError));
   }
 
+  bookAppointment(patientUserId: number, payload: any): Observable<any> {
+    return this.http.post<any>(`${this.API}/patient/${patientUserId}`, payload)
+      .pipe(map((r: any) => r.data), catchError(this.handleError));
+  }
+
+  getEmergencyByPatient(patientUserId: number): Observable<any[]> {
+    return this.http.get<any>(`${this.API}/patient/${patientUserId}/emergency`)
+      .pipe(map((r: any) => r.data || []), catchError(this.handleError));
+  }
+
   reconcileByPatient(appointmentId: number, patientUserId: number): Observable<any> {
     return this.http.post<any>(`${this.API}/${appointmentId}/reconcile/patient`, null, {
       params: { patientUserId: String(patientUserId) }
@@ -91,6 +101,12 @@ export class AppointmentService {
   reconcileByNurse(appointmentId: number, nurseUserId: number): Observable<any> {
     return this.http.post<any>(`${this.API}/${appointmentId}/reconcile/nurse`, null, {
       params: { nurseUserId: String(nurseUserId) }
+    }).pipe(map((r: any) => r.data), catchError(this.handleError));
+  }
+
+  rateAppointment(appointmentId: number, patientUserId: number, rating: number, feedback: string): Observable<any> {
+    return this.http.patch<any>(`${this.API}/${appointmentId}/rate`, { rating, feedback }, {
+      params: { patientUserId: String(patientUserId) }
     }).pipe(map((r: any) => r.data), catchError(this.handleError));
   }
 

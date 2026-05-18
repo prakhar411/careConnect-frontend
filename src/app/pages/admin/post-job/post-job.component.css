@@ -39,9 +39,9 @@ textarea.field-input { resize: vertical; border-radius: 12px; }
 .active-critical { background: #fde8e8; border-color: #c0392b; color: #c0392b; }
 
 /* BUTTONS */
-.btn-post { background: #0f5241; color: white; border: none; border-radius: 20px; padding: 11px 0; font-size: 0.9rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.18s; }
+.btn-post { background: #0f5241; color: white; border: none; border-radius: 20px; padding: 11px 24px; font-size: 0.9rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.18s; }
 .btn-post:hover { background: #0a3d2e; }
-.btn-cancel-sm { background: white; color: #4e6e68; border: 1.5px solid #d4e5df; border-radius: 20px; padding: 9px 0; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.18s; display: block; text-align: center; }
+.btn-cancel-sm { background: white; color: #4e6e68; border: 1.5px solid #d4e5df; border-radius: 20px; padding: 9px 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.18s; display: inline-flex; align-items: center; justify-content: center; text-align: center; }
 .btn-cancel-sm:hover { background: #eef9f5; }
 
 /* TOAST */
