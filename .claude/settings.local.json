@@ -29,7 +29,8 @@
       "Bash(ls \"C:\\\\Users\\\\prakhar\\\\Music\\\\DOCUMENTS YAHA PE\" 2>/dev/null || echo \"directory empty or not found\")",
       "Read(//c/Users/prakhar/Music/DOCUMENTS YAHA PE/**)",
       "Bash(ls \"C:\\\\Users\\\\prakhar\\\\Music\\\\DOCUMENTS YAHA PE\\\\\")",
-      "Read(//c/Users/prakhar/Music/**)"
+      "Read(//c/Users/prakhar/Music/**)",
+      "PowerShell(Start-Sleep -Seconds 20; $result = curl.exe -s -o NUL -w \"%{http_code}\" http://localhost:8080/api/care-coordination/team-members; Write-Host \"HTTP: $result\")"
     ],
     "additionalDirectories": [
       "C:\\Users\\prakhar\\Music\\Angular\\CareConnect\\careConnect-backend\\src\\main\\java\\com\\careconnect\\entity",

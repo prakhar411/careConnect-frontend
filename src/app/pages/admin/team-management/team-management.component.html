@@ -123,18 +123,39 @@
 
             <!-- Role -->
             <div class="col-md-6">
-              <label class="field-label">Role / Designation *</label>
+              <label class="field-label">Role *</label>
               <select class="field-input" formControlName="role" [class.input-err]="f['role'].touched && f['role'].invalid">
                 <option value="">Select role</option>
-                <option>Hospital Administrator</option>
-                <option>HR Manager</option>
-                <option>Operations Manager</option>
-                <option>Compliance Officer</option>
-                <option>Finance Manager</option>
-                <option>Nursing Supervisor</option>
-                <option>Support Staff</option>
+                <option *ngFor="let r of STAFF_ROLES" [value]="r">{{ r }}</option>
               </select>
               <small class="err" *ngIf="f['role'].touched && f['role'].hasError('required')">Role is required.</small>
+            </div>
+
+            <!-- Department -->
+            <div class="col-md-6">
+              <label class="field-label">Department <span style="color:#9ab8b0;font-weight:400;">(optional)</span></label>
+              <select class="field-input" formControlName="department">
+                <option value="">Select department</option>
+                <option *ngFor="let d of DEPARTMENTS" [value]="d">{{ d }}</option>
+              </select>
+            </div>
+
+            <!-- Designation -->
+            <div class="col-md-6">
+              <label class="field-label">Post / Designation <span style="color:#9ab8b0;font-weight:400;">(optional)</span></label>
+              <select class="field-input" formControlName="designation">
+                <option value="">Select designation</option>
+                <option *ngFor="let d of DESIGNATIONS" [value]="d">{{ d }}</option>
+              </select>
+            </div>
+
+            <!-- Qualification -->
+            <div class="col-md-6">
+              <label class="field-label">Qualification <span style="color:#9ab8b0;font-weight:400;">(optional)</span></label>
+              <select class="field-input" formControlName="qualification">
+                <option value="">Select qualification</option>
+                <option *ngFor="let q of QUALIFICATIONS" [value]="q">{{ q }}</option>
+              </select>
             </div>
 
             <!-- Email -->
@@ -241,8 +262,10 @@
               <tr>
                 <th>Member</th>
                 <th>Role</th>
-                <th>Email</th>
-                <th>Phone</th>
+                <th>Department</th>
+                <th>Designation</th>
+                <th>Qualification</th>
+                <th>Contact</th>
                 <th>Since</th>
                 <th>Status</th>
                 <th>Actions</th>
@@ -253,11 +276,21 @@
                 <td>
                   <div class="d-flex align-items-center gap-2">
                     <div class="member-avatar">{{ getInitials(m.name) }}</div>
-                    {{ m.name }}
+                    <div>
+                      <div style="font-weight:600;">{{ m.name }}</div>
+                      <div style="font-size:0.73rem;color:#6a8c80;">{{ m.email || '' }}</div>
+                    </div>
                   </div>
                 </td>
                 <td><span class="role-badge">{{ m.role }}</span></td>
-                <td>{{ m.email || '—' }}</td>
+                <td>{{ m.department || '—' }}</td>
+                <td>{{ m.designation || '—' }}</td>
+                <td>
+                  <span *ngIf="m.qualification" class="role-badge" style="background:#dbeafe;color:#1d4ed8;">
+                    {{ m.qualification }}
+                  </span>
+                  <span *ngIf="!m.qualification">—</span>
+                </td>
                 <td>{{ m.phone || '—' }}</td>
                 <td>{{ m.joinDate | date:'mediumDate' }}</td>
                 <td>

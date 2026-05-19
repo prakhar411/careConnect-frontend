@@ -334,6 +334,10 @@
             (click)="switchCareTab('notes')">
       <i class="bi bi-journal-text me-1"></i>Notes
     </button>
+    <button class="care-tab-btn" [class.care-tab-active]="carePanelTab === 'careteam'"
+            (click)="switchCareTab('careteam')">
+      <i class="bi bi-diagram-3 me-1"></i>Care Team
+    </button>
   </div>
 
   <!-- Tab Body -->
@@ -482,6 +486,116 @@
           <p class="note-h-body" *ngIf="n.notes">{{ n.notes }}</p>
         </div>
       </div>
+    </ng-container>
+
+    <!-- ── CARE TEAM TAB ──────────────────────────── -->
+    <ng-container *ngIf="carePanelTab === 'careteam'">
+
+      <div class="care-success mb-2" *ngIf="careTeamSuccess"><i class="bi bi-check-circle me-1"></i>{{ careTeamSuccess }}</div>
+      <div class="care-err mb-2"     *ngIf="careTeamError"><i class="bi bi-exclamation-circle me-1"></i>{{ careTeamError }}</div>
+
+      <p class="care-section-label">Current Care Team</p>
+      <div *ngIf="getCareTeam(carePanelPatient.patientUserId).length === 0"
+           style="color:#9ab8b2;font-size:0.82rem;margin-bottom:12px;padding:10px;background:#f8fafc;border-radius:10px;text-align:center;">
+        No specialists added yet.
+      </div>
+      <div *ngFor="let m of getCareTeam(carePanelPatient.patientUserId)" class="ct-member-row">
+        <div class="ct-avatar">{{ getInitials(m.memberName) }}</div>
+        <div class="ct-info">
+          <div class="ct-name">{{ m.memberName }}</div>
+          <div class="ct-role">{{ m.memberRole }}</div>
+        </div>
+        <button class="ct-remove-btn" (click)="removeFromCareTeam(m.id)"><i class="bi bi-x"></i></button>
+      </div>
+
+      <p class="care-section-label mt-3">Add from Org Team</p>
+      <div *ngIf="orgTeamMembers.length === 0" style="color:#9ab8b2;font-size:0.82rem;text-align:center;padding:10px;">
+        No active team members found.
+      </div>
+      <div *ngFor="let m of orgTeamMembers" class="ct-org-row">
+        <div class="ct-avatar ct-avatar-blue">{{ getInitials(m.name) }}</div>
+        <div class="ct-info">
+          <div class="ct-name">{{ m.name }}</div>
+          <div class="ct-role" style="color:#1d4ed8;">{{ m.role }}</div>
+        </div>
+        <button class="ct-add-btn" (click)="addToCareTeam(m)"
+                [disabled]="isAddingMember || isAlreadyInTeam(m.id)">
+          <span *ngIf="!isAlreadyInTeam(m.id)"><i class="bi bi-plus-lg me-1"></i>Add</span>
+          <span *ngIf="isAlreadyInTeam(m.id)" style="color:#9ab8b2;">✓ Added</span>
+        </button>
+      </div>
+
+      <p class="care-section-label mt-3">Post Provider Note</p>
+      <div class="notes-form mb-2">
+        <div class="vital-field mb-2">
+          <label class="vital-label">Type</label>
+          <select class="vital-input" [(ngModel)]="noteType2" [ngModelOptions]="{standalone:true}">
+            <option *ngFor="let t of NOTE_TYPES" [value]="t.value">{{ t.label }}</option>
+          </select>
+        </div>
+        <div class="vital-field">
+          <label class="vital-label">Note *</label>
+          <textarea class="vital-input vital-textarea" [(ngModel)]="noteContent2"
+                    [ngModelOptions]="{standalone:true}"
+                    placeholder="Clinical update, referral reason, alert or follow-up…"
+                    rows="3" maxlength="500"></textarea>
+        </div>
+        <div class="care-err"     *ngIf="provNoteError"><i class="bi bi-exclamation-circle me-1"></i>{{ provNoteError }}</div>
+        <div class="care-success" *ngIf="provNoteSuccess"><i class="bi bi-check-circle me-1"></i>Note posted!</div>
+        <button class="care-save-btn" (click)="addProviderNote()" [disabled]="isSavingProvNote">
+          <span *ngIf="!isSavingProvNote"><i class="bi bi-send me-1"></i>Post Note</span>
+          <span *ngIf="isSavingProvNote">Posting…</span>
+        </button>
+      </div>
+
+      <div *ngFor="let n of getProviderNotes(carePanelPatient.patientUserId)" class="ct-note-row">
+        <div class="ct-note-header">
+          <span class="ct-note-type">{{ noteTypeLabel(n.noteType) }}</span>
+          <span class="ct-note-author">{{ n.authorName }}</span>
+          <span class="ct-note-date ms-auto">{{ n.createdAt | date:'d MMM y' }}</span>
+        </div>
+        <div class="ct-note-content">{{ n.content }}</div>
+      </div>
+
+      <!-- ── CARE GOALS ──────────────────────────── -->
+      <p class="care-section-label mt-3">Care Goals</p>
+      <div class="notes-form mb-2">
+        <div class="vital-field mb-2">
+          <label class="vital-label">Goal Description *</label>
+          <input class="vital-input" [(ngModel)]="goalText" [ngModelOptions]="{standalone:true}"
+                 placeholder="e.g. Reduce BP below 130/80 within 2 weeks" maxlength="200">
+        </div>
+        <div class="vital-field">
+          <label class="vital-label">Target Date <span style="color:#9ab8b0;font-size:0.75rem;">(optional)</span></label>
+          <input type="date" class="vital-input" [(ngModel)]="goalTargetDate" [ngModelOptions]="{standalone:true}">
+        </div>
+        <div class="care-err"     *ngIf="goalError"><i class="bi bi-exclamation-circle me-1"></i>{{ goalError }}</div>
+        <div class="care-success" *ngIf="goalSuccess"><i class="bi bi-check-circle me-1"></i>Goal added!</div>
+        <button class="care-save-btn mt-2" (click)="addGoal()" [disabled]="isSavingGoal">
+          <span *ngIf="!isSavingGoal"><i class="bi bi-bullseye me-1"></i>Add Goal</span>
+          <span *ngIf="isSavingGoal">Saving…</span>
+        </button>
+      </div>
+
+      <div *ngFor="let g of getGoals(carePanelPatient.patientUserId)" class="ct-goal-row">
+        <div class="ct-goal-left">
+          <div class="ct-goal-text">{{ g.goalText }}</div>
+          <div class="ct-goal-meta">
+            <span [class]="goalStatusClass(g.status)" class="ct-goal-status">{{ g.status | titlecase }}</span>
+            <span *ngIf="g.targetDate" class="ct-note-date">Target: {{ g.targetDate | date:'d MMM y' }}</span>
+          </div>
+        </div>
+        <div class="d-flex gap-1 flex-shrink-0">
+          <button *ngFor="let s of GOAL_STATUSES" class="ct-status-btn"
+                  [class.active]="g.status === s"
+                  (click)="updateGoalStatus(g, s)"
+                  [title]="s">
+            {{ s === 'PENDING' ? '⏳' : s === 'IN_PROGRESS' ? '🔄' : '✅' }}
+          </button>
+          <button class="ct-remove-btn" (click)="deleteGoal(g.id)"><i class="bi bi-x"></i></button>
+        </div>
+      </div>
+
     </ng-container>
 
   </div>

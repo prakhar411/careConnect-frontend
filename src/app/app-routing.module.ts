@@ -25,6 +25,7 @@ import { MedicalRecordsComponent } from './pages/patient/medical-records/medical
 import { SettingsComponent } from './pages/patient/settings/settings.component';
 import { MyNursesComponent } from './pages/patient/my-nurses/my-nurses.component';
 import { EmergencyRequestComponent } from './pages/patient/emergency-request/emergency-request.component';
+import { PatientCarePlanComponent } from './pages/patient/patient-care-plan/patient-care-plan.component';
 
 import { NurseDashboardComponent } from './pages/nurse/nurse-dashboard/nurse-dashboard.component';
 import { ProfileComponent } from './pages/nurse/profile/profile.component';
@@ -62,6 +63,7 @@ const routes: Routes = [
   { path: 'patient-settings',         component: SettingsComponent,         canActivate: [authGuard, roleGuard], data: { role: 'PATIENT' } },
   { path: 'patient-my-nurses',        component: MyNursesComponent,         canActivate: [authGuard, roleGuard], data: { role: 'PATIENT' } },
   { path: 'patient-emergency',        component: EmergencyRequestComponent, canActivate: [authGuard, roleGuard], data: { role: 'PATIENT' } },
+  { path: 'patient-care-plan',        component: PatientCarePlanComponent,  canActivate: [authGuard, roleGuard], data: { role: 'PATIENT' } },
 
   // Nurse routes — must be logged in AND role = NURSE
   { path: 'nurse',                component: NurseDashboardComponent, canActivate: [authGuard, roleGuard], data: { role: 'NURSE' } },

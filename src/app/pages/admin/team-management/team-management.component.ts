@@ -24,6 +24,31 @@ export class TeamManagementComponent implements OnInit {
   memberForm: FormGroup;
   private orgUserId!: number;
 
+  readonly STAFF_ROLES = [
+    'Doctor', 'Senior Consultant', 'Junior Doctor', 'Resident Doctor',
+    'Specialist', 'Medical Officer', 'Head of Department',
+    'Hospital Administrator', 'HR Manager', 'Operations Manager',
+    'Compliance Officer', 'Finance Manager', 'Nursing Supervisor', 'Support Staff'
+  ];
+
+  readonly DEPARTMENTS = [
+    'Cardiology', 'Neurology', 'Orthopedics', 'Pediatrics', 'Emergency',
+    'Radiology', 'Pathology', 'Oncology', 'Dermatology', 'Psychiatry',
+    'General Medicine', 'Surgery', 'Gynecology', 'ENT', 'Ophthalmology',
+    'Administration', 'HR', 'Finance', 'Operations'
+  ];
+
+  readonly DESIGNATIONS = [
+    'Head of Department', 'Senior Consultant', 'Consultant',
+    'Associate Consultant', 'Medical Officer', 'Junior Doctor',
+    'Resident Doctor', 'Senior Manager', 'Manager', 'Executive', 'Staff'
+  ];
+
+  readonly QUALIFICATIONS = [
+    'MBBS', 'MBBS MD', 'MBBS MS', 'MD', 'MS', 'MCh', 'DM',
+    'BDS', 'MDS', 'BPharm', 'MPharm', 'BPT', 'MPT', 'MBA', 'Other'
+  ];
+
   readonly COUNTRY_CODES = [
     { label: '🇮🇳 +91 India',     code: '+91'  },
     { label: '🇺🇸 +1  USA/Canada', code: '+1'   },
@@ -82,6 +107,9 @@ export class TeamManagementComponent implements OnInit {
       lastName:        ['', [Validators.required, Validators.minLength(3), Validators.maxLength(30),
                              Validators.pattern('^[A-Za-z.]+$')]],
       role:            ['', Validators.required],
+      department:      [''],
+      designation:     [''],
+      qualification:   [''],
       email:           ['', [Validators.required, Validators.email,
                              Validators.pattern('^[a-zA-Z0-9._%+\\-]+@(gmail|yahoo|outlook|infosys)\\.(com|in|org)$')]],
       phoneCountryCode:['+91'],
@@ -164,11 +192,14 @@ export class TeamManagementComponent implements OnInit {
     const fullName = [v.firstName.trim(), v.middleName?.trim() || '', v.lastName.trim()]
                      .filter(Boolean).join(' ');
     const payload = {
-      name:     fullName,
-      role:     v.role,
-      email:    v.email.trim().toLowerCase(),
-      phone:    (v.phoneCountryCode || '+91') + v.phone,
-      joinDate: v.joinDate,
+      name:          fullName,
+      role:          v.role,
+      department:    v.department  || null,
+      designation:   v.designation || null,
+      qualification: v.qualification || null,
+      email:         v.email.trim().toLowerCase(),
+      phone:         (v.phoneCountryCode || '+91') + v.phone,
+      joinDate:      v.joinDate,
     };
 
     this.adminService.addTeamMember(this.orgUserId, payload).subscribe({

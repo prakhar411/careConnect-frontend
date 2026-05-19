@@ -1,0 +1,229 @@
+<div class="d-flex">
+
+  <!-- SIDEBAR -->
+  <nav class="fixed-sidebar text-white p-3 d-none d-md-block">
+    <div class="sidebar-brand">
+      <i class="bi bi-heart-pulse-fill"></i>
+      <span>CareConnect</span>
+    </div>
+    <ul class="nav flex-column">
+      <li class="nav-item mb-1">
+        <a class="nav-link-custom" routerLink="/patient"><i class="bi bi-speedometer2"></i> Dashboard</a>
+      </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link-custom" routerLink="/patient-book-appointment"><i class="bi bi-calendar-plus"></i> Book Nurse</a>
+      </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link-custom" routerLink="/patient-appointments"><i class="bi bi-journal-bookmark-fill"></i> My Appointments</a>
+      </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link-custom" routerLink="/patient-my-nurses"><i class="bi bi-people-fill"></i> My Nurses</a>
+      </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link-custom active" routerLink="/patient-care-plan"><i class="bi bi-diagram-3-fill"></i> Care Team</a>
+      </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link-custom" routerLink="/patient-medical-records"><i class="bi bi-journal-medical"></i> Medical Records</a>
+      </li>
+      <li class="nav-item mb-1">
+        <a class="nav-link-custom" routerLink="/patient-emergency"
+           style="background:rgba(220,38,38,.18);border:1px solid rgba(220,38,38,.35);">
+          <i class="bi bi-exclamation-octagon-fill" style="color:#f87171;"></i>
+          <span style="color:#fca5a5;font-weight:700;">Emergency SOS</span>
+        </a>
+      </li>
+      <div class="sidebar-divider"></div>
+      <li class="nav-item mt-2">
+        <a class="nav-link-custom" routerLink="/patient-settings"><i class="bi bi-gear"></i> Settings</a>
+      </li>
+      <div class="sidebar-divider mt-auto"></div>
+      <li class="nav-item">
+        <a class="nav-link-custom" style="cursor:pointer;" (click)="logout()"><i class="bi bi-box-arrow-right"></i> Logout</a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main-content p-4 w-100">
+
+    <!-- HEADER -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <h5 class="page-title mb-0"><i class="bi bi-diagram-3-fill me-2" style="color:#0f5241;"></i>My Care Team</h5>
+        <p class="page-subtitle">Your coordinated care plan and provider updates</p>
+      </div>
+    </div>
+
+    <!-- LOADING -->
+    <div *ngIf="isLoading" class="text-center py-5">
+      <div class="spinner-border" style="color:#0f5241;"></div>
+    </div>
+
+    <ng-container *ngIf="!isLoading">
+
+      <!-- SUMMARY CHIPS -->
+      <div class="summary-bar mb-4">
+        <div class="sum-chip">
+          <span class="sum-num">{{ careTeam.length }}</span>
+          <span class="sum-lbl">Care Providers</span>
+        </div>
+        <div class="sum-divider"></div>
+        <div class="sum-chip">
+          <span class="sum-num">{{ careGoals.length }}</span>
+          <span class="sum-lbl">Care Goals</span>
+        </div>
+        <div class="sum-divider"></div>
+        <div class="sum-chip">
+          <span class="sum-num c-green">{{ achievedGoals }}</span>
+          <span class="sum-lbl">Goals Achieved</span>
+        </div>
+        <div class="sum-divider"></div>
+        <div class="sum-chip">
+          <span class="sum-num" [style.color]="followUpTasks.length > 0 ? '#b45309' : '#0f6b51'">
+            {{ followUpTasks.length }}
+          </span>
+          <span class="sum-lbl">Follow-Up Tasks</span>
+        </div>
+      </div>
+
+      <!-- TABS -->
+      <div class="plan-tabs mb-3">
+        <button class="plan-tab" [class.active]="activeTab==='team'" (click)="activeTab='team'">
+          <i class="bi bi-people-fill me-1"></i> Care Team
+          <span class="tab-count" *ngIf="careTeam.length">{{ careTeam.length }}</span>
+        </button>
+        <button class="plan-tab" [class.active]="activeTab==='goals'" (click)="activeTab='goals'">
+          <i class="bi bi-bullseye me-1"></i> Care Goals
+          <span class="tab-count" *ngIf="careGoals.length">{{ careGoals.length }}</span>
+        </button>
+        <button class="plan-tab" [class.active]="activeTab==='notes'" (click)="activeTab='notes'">
+          <i class="bi bi-journal-text me-1"></i> Provider Updates
+          <span class="tab-count" *ngIf="providerNotes.length">{{ providerNotes.length }}</span>
+        </button>
+        <button class="plan-tab" [class.active]="activeTab==='followup'" (click)="activeTab='followup'">
+          <i class="bi bi-check2-circle me-1"></i> Follow-Up Tasks
+          <span class="tab-count amber" *ngIf="followUpTasks.length">{{ followUpTasks.length }}</span>
+        </button>
+      </div>
+
+      <!-- ── CARE TEAM TAB ── -->
+      <div *ngIf="activeTab==='team'">
+        <div class="row g-3" *ngIf="careTeam.length > 0">
+          <div class="col-md-6 col-lg-4" *ngFor="let m of careTeam">
+            <div class="team-card">
+              <div class="team-avatar">{{ getInitials(m.memberName) }}</div>
+              <div class="team-info">
+                <div class="team-name">{{ m.memberName }}</div>
+                <div class="team-role">{{ m.memberRole }}</div>
+                <div class="team-added">Added by {{ m.addedByNurseName || 'Nurse' }} · {{ formatDate(m.createdAt) }}</div>
+              </div>
+              <div class="team-badge">
+                <i class="bi bi-shield-check-fill" style="color:#0f5241;font-size:1.2rem;"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="careTeam.length === 0" class="empty-state">
+          <i class="bi bi-people" style="font-size:2.5rem;color:#d4e5df;"></i>
+          <p class="mt-2 mb-0" style="color:#9ab8b2;font-size:0.88rem;">No specialists added to your care team yet.</p>
+          <p style="color:#b0c8c4;font-size:0.8rem;">Your nurse will add relevant specialists here.</p>
+        </div>
+      </div>
+
+      <!-- ── CARE GOALS TAB ── -->
+      <div *ngIf="activeTab==='goals'">
+
+        <!-- Progress bar -->
+        <div *ngIf="careGoals.length > 0" class="goals-progress-bar mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span style="font-size:0.82rem;font-weight:600;color:#0f2d22;">
+              {{ achievedGoals }} of {{ careGoals.length }} goals achieved
+            </span>
+            <span style="font-size:0.82rem;color:#0f6b51;font-weight:700;">
+              {{ careGoals.length > 0 ? ((achievedGoals / careGoals.length) * 100 | number:'1.0-0') : 0 }}%
+            </span>
+          </div>
+          <div class="gp-outer">
+            <div class="gp-inner" [style.width.%]="careGoals.length > 0 ? (achievedGoals / careGoals.length) * 100 : 0"></div>
+          </div>
+          <div class="d-flex gap-2 mt-2 flex-wrap">
+            <span class="gs-achieved gs-chip">✅ {{ achievedGoals }} Achieved</span>
+            <span class="gs-progress gs-chip">🔄 {{ inProgressGoals }} In Progress</span>
+            <span class="gs-pending gs-chip">⏳ {{ careGoals.length - achievedGoals - inProgressGoals }} Pending</span>
+          </div>
+        </div>
+
+        <div *ngIf="careGoals.length > 0">
+          <div class="goal-card" *ngFor="let g of careGoals">
+            <div class="goal-card-left">
+              <i class="bi" [class]="goalStatusIcon(g.status)"
+                 [style.color]="g.status==='ACHIEVED' ? '#0f6b51' : g.status==='IN_PROGRESS' ? '#b45309' : '#9ab8b2'"
+                 style="font-size:1.1rem;flex-shrink:0;"></i>
+              <div>
+                <div class="goal-text">{{ g.goalText }}</div>
+                <div class="goal-meta">
+                  <span [class]="goalStatusClass(g.status)" class="gs-chip">{{ g.status | titlecase }}</span>
+                  <span *ngIf="g.targetDate" class="goal-date">
+                    <i class="bi bi-calendar3 me-1"></i>Target: {{ g.targetDate | date:'d MMM y' }}
+                  </span>
+                  <span class="goal-by">Added by {{ g.addedByNurseName }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="careGoals.length === 0" class="empty-state">
+          <i class="bi bi-bullseye" style="font-size:2.5rem;color:#d4e5df;"></i>
+          <p class="mt-2 mb-0" style="color:#9ab8b2;font-size:0.88rem;">No care goals set yet.</p>
+          <p style="color:#b0c8c4;font-size:0.8rem;">Your nurse will add treatment goals here.</p>
+        </div>
+      </div>
+
+      <!-- ── PROVIDER UPDATES TAB ── -->
+      <div *ngIf="activeTab==='notes'">
+        <div *ngIf="providerNotes.length > 0">
+          <div class="note-card" *ngFor="let n of providerNotes">
+            <div class="note-header">
+              <div class="note-avatar">{{ getInitials(n.authorName) }}</div>
+              <div class="note-meta">
+                <span class="note-author">{{ n.authorName }}</span>
+                <span class="note-role-chip">{{ n.authorRole }}</span>
+                <span class="note-type-chip" [style.background]="noteTypeColor(n.noteType) + '18'"
+                      [style.color]="noteTypeColor(n.noteType)">
+                  {{ noteTypeLabel(n.noteType) }}
+                </span>
+              </div>
+              <div class="note-date">{{ formatDate(n.createdAt) }}</div>
+            </div>
+            <div class="note-content">{{ n.content }}</div>
+          </div>
+        </div>
+        <div *ngIf="providerNotes.length === 0" class="empty-state">
+          <i class="bi bi-journal-text" style="font-size:2.5rem;color:#d4e5df;"></i>
+          <p class="mt-2 mb-0" style="color:#9ab8b2;font-size:0.88rem;">No provider updates yet.</p>
+          <p style="color:#b0c8c4;font-size:0.8rem;">Clinical updates from your care team will appear here.</p>
+        </div>
+      </div>
+
+      <!-- ── FOLLOW-UP TASKS TAB ── -->
+      <div *ngIf="activeTab==='followup'">
+        <div *ngIf="followUpTasks.length > 0">
+          <div class="task-card" *ngFor="let t of followUpTasks">
+            <div class="task-icon"><i class="bi bi-clipboard2-check-fill"></i></div>
+            <div class="task-body">
+              <div class="task-content">{{ t.content }}</div>
+              <div class="task-meta">Assigned by {{ t.authorName }} · {{ formatDate(t.createdAt) }}</div>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="followUpTasks.length === 0" class="empty-state">
+          <i class="bi bi-check2-circle" style="font-size:2.5rem;color:#d4e5df;"></i>
+          <p class="mt-2 mb-0" style="color:#9ab8b2;font-size:0.88rem;">No follow-up tasks assigned yet.</p>
+          <p style="color:#b0c8c4;font-size:0.8rem;">Your nurse will assign follow-up tasks here.</p>
+        </div>
+      </div>
+
+    </ng-container>
+  </div>
+</div>

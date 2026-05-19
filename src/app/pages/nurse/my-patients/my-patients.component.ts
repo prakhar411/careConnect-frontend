@@ -7,8 +7,9 @@ import { ShiftService } from '../../../services/shift.service';
 import { NotificationService } from '../../../services/notification.service';
 import { MedicalRecordService } from '../../../services/medical-record.service';
 import { VitalSignService } from '../../../services/vital-sign.service';
+import { CareCoordinationService } from '../../../services/care-coordination.service';
 
-type CareTab = 'records' | 'vitals' | 'notes';
+type CareTab = 'records' | 'vitals' | 'notes' | 'careteam';
 
 @Component({
   selector: 'app-my-patients',
@@ -88,6 +89,38 @@ export class MyPatientsComponent implements OnInit, OnDestroy, AfterViewChecked 
   noteSuccess  = false;
   noteRecords: Record<number, any[]> = {};
 
+  // ── Care Team ──────────────────────────────────────────────────────────────
+  careTeamMap:       Record<number, any[]> = {};
+  orgTeamMembers:    any[] = [];
+  isLoadingCareTeam = new Set<number>();
+  isAddingMember    = false;
+  careTeamError     = '';
+  careTeamSuccess   = '';
+
+  providerNotes:       Record<number, any[]> = {};
+  noteContent2         = '';
+  noteType2            = 'CLINICAL_UPDATE';
+  isSavingProvNote     = false;
+  provNoteError        = '';
+  provNoteSuccess      = false;
+
+  readonly NOTE_TYPES = [
+    { value: 'CLINICAL_UPDATE', label: 'Clinical Update' },
+    { value: 'REFERRAL',        label: 'Referral'        },
+    { value: 'ALERT',           label: 'Alert'           },
+    { value: 'FOLLOW_UP',       label: 'Follow-Up Task'  },
+  ];
+
+  // ── Care Goals ─────────────────────────────────────────────────────────────
+  careGoals:      Record<number, any[]> = {};
+  goalText        = '';
+  goalTargetDate  = '';
+  isSavingGoal    = false;
+  goalError       = '';
+  goalSuccess     = false;
+
+  readonly GOAL_STATUSES = ['PENDING', 'IN_PROGRESS', 'ACHIEVED'];
+
   // Chat state
   chatPatient: any   = null;
   messages:    any[] = [];
@@ -110,7 +143,8 @@ export class MyPatientsComponent implements OnInit, OnDestroy, AfterViewChecked 
     private shiftSvc:     ShiftService,
     private notifSvc:     NotificationService,
     private recordSvc:    MedicalRecordService,
-    private vitalSvc:     VitalSignService
+    private vitalSvc:     VitalSignService,
+    private careSvc:      CareCoordinationService
   ) {}
 
   ngOnInit(): void {
@@ -256,9 +290,10 @@ export class MyPatientsComponent implements OnInit, OnDestroy, AfterViewChecked 
     this.carePanelPatient = patient;
     this.carePanelTab     = tab;
     this.resetCareforms();
-    if (tab === 'records') this.loadRecordsFor(patient.patientUserId);
-    if (tab === 'vitals')  this.loadVitalsFor(patient.patientUserId);
-    if (tab === 'notes')   this.loadNotesFor(patient.patientUserId);
+    if (tab === 'records')  this.loadRecordsFor(patient.patientUserId);
+    if (tab === 'vitals')   this.loadVitalsFor(patient.patientUserId);
+    if (tab === 'notes')    this.loadNotesFor(patient.patientUserId);
+    if (tab === 'careteam') this.loadCareTeam(patient.patientUserId);
   }
 
   closeCarePanel(): void {
@@ -271,19 +306,30 @@ export class MyPatientsComponent implements OnInit, OnDestroy, AfterViewChecked 
     this.resetCareforms();
     const pid = this.carePanelPatient?.patientUserId;
     if (!pid) return;
-    if (tab === 'records' && !this.patientRecords[pid]) this.loadRecordsFor(pid);
-    if (tab === 'vitals'  && !this.patientVitals[pid])  this.loadVitalsFor(pid);
-    if (tab === 'notes'   && !this.noteRecords[pid])    this.loadNotesFor(pid);
+    if (tab === 'records'  && !this.patientRecords[pid]) this.loadRecordsFor(pid);
+    if (tab === 'vitals'   && !this.patientVitals[pid])  this.loadVitalsFor(pid);
+    if (tab === 'notes'    && !this.noteRecords[pid])    this.loadNotesFor(pid);
+    if (tab === 'careteam')                              this.loadCareTeam(pid);
   }
 
   private resetCareforms(): void {
-    this.vitals       = { bloodPressure: '', pulseRate: '', temperature: '', spo2: '', weight: '', notes: '' };
-    this.vitalsError  = '';
+    this.vitals        = { bloodPressure: '', pulseRate: '', temperature: '', spo2: '', weight: '', notes: '' };
+    this.vitalsError   = '';
     this.vitalsSuccess = false;
-    this.noteTitle    = '';
-    this.noteContent  = '';
-    this.noteError    = '';
-    this.noteSuccess  = false;
+    this.noteTitle     = '';
+    this.noteContent   = '';
+    this.noteError     = '';
+    this.noteSuccess   = false;
+    this.noteContent2  = '';
+    this.noteType2     = 'CLINICAL_UPDATE';
+    this.provNoteError = '';
+    this.provNoteSuccess = false;
+    this.careTeamError   = '';
+    this.careTeamSuccess = '';
+    this.goalText        = '';
+    this.goalTargetDate  = '';
+    this.goalError       = '';
+    this.goalSuccess     = false;
   }
 
   // ── EHR Records ───────────────────────────────────────────────────────────
@@ -456,6 +502,172 @@ export class MyPatientsComponent implements OnInit, OnDestroy, AfterViewChecked 
         this.isSavingNote = false;
       }
     });
+  }
+
+  // ── Care Team ─────────────────────────────────────────────────────────────
+
+  loadCareTeam(patientUserId: number): void {
+    this.isLoadingCareTeam.add(patientUserId);
+    this.careTeamError = '';
+    this.careSvc.getTeam(patientUserId).subscribe({
+      next: (data) => {
+        this.careTeamMap[patientUserId] = data || [];
+        this.isLoadingCareTeam.delete(patientUserId);
+      },
+      error: () => { this.isLoadingCareTeam.delete(patientUserId); }
+    });
+    if (this.orgTeamMembers.length === 0) {
+      this.careSvc.getAllTeamMembers().subscribe({
+        next: (data) => { this.orgTeamMembers = (data || []).filter((m: any) => m.status === 'Active'); },
+        error: () => {}
+      });
+    }
+    this.loadProviderNotes(patientUserId);
+    this.loadGoals(patientUserId);
+  }
+
+  getCareTeam(patientUserId: number): any[] { return this.careTeamMap[patientUserId] || []; }
+
+  addToCareTeam(member: any): void {
+    const pid = this.carePanelPatient?.patientUserId;
+    if (!pid) return;
+    this.isAddingMember = true;
+    this.careTeamError  = '';
+    this.careSvc.addToTeam(pid, {
+      teamMemberId:  member.id,
+      nurseUserId:   this.myUserId,
+      nurseName:     this.myName
+    }).subscribe({
+      next: (entry) => {
+        if (!this.careTeamMap[pid]) this.careTeamMap[pid] = [];
+        this.careTeamMap[pid].push(entry);
+        this.isAddingMember  = false;
+        this.careTeamSuccess = member.name + ' added to care team!';
+        setTimeout(() => this.careTeamSuccess = '', 3000);
+      },
+      error: (err: Error) => { this.careTeamError = err.message; this.isAddingMember = false; }
+    });
+  }
+
+  removeFromCareTeam(entryId: number): void {
+    const pid = this.carePanelPatient?.patientUserId;
+    if (!pid) return;
+    this.careSvc.removeFromTeam(entryId).subscribe({
+      next: () => {
+        this.careTeamMap[pid] = (this.careTeamMap[pid] || []).filter((m: any) => m.id !== entryId);
+      },
+      error: () => {}
+    });
+  }
+
+  isAlreadyInTeam(memberId: number): boolean {
+    const pid = this.carePanelPatient?.patientUserId;
+    if (!pid) return false;
+    return (this.careTeamMap[pid] || []).some((m: any) => m.teamMemberId === memberId);
+  }
+
+  loadProviderNotes(patientUserId: number): void {
+    this.careSvc.getNotes(patientUserId).subscribe({
+      next: (data) => { this.providerNotes[patientUserId] = data || []; },
+      error: () => {}
+    });
+  }
+
+  getProviderNotes(patientUserId: number): any[] { return this.providerNotes[patientUserId] || []; }
+
+  addProviderNote(): void {
+    if (!this.noteContent2.trim()) { this.provNoteError = 'Note content is required.'; return; }
+    const pid = this.carePanelPatient?.patientUserId;
+    if (!pid) return;
+    this.isSavingProvNote = true;
+    this.provNoteError    = '';
+    this.careSvc.addNote(pid, {
+      content:          this.noteContent2.trim(),
+      noteType:         this.noteType2,
+      authorNurseUserId: this.myUserId,
+      authorName:       this.myName,
+      authorRole:       'Nurse'
+    }).subscribe({
+      next: (note) => {
+        if (!this.providerNotes[pid]) this.providerNotes[pid] = [];
+        this.providerNotes[pid].unshift(note);
+        this.noteContent2     = '';
+        this.noteType2        = 'CLINICAL_UPDATE';
+        this.isSavingProvNote = false;
+        this.provNoteSuccess  = true;
+        setTimeout(() => this.provNoteSuccess = false, 3000);
+      },
+      error: (err: Error) => { this.provNoteError = err.message; this.isSavingProvNote = false; }
+    });
+  }
+
+  noteTypeLabel(type: string): string {
+    return this.NOTE_TYPES.find(t => t.value === type)?.label || type;
+  }
+
+  // ── Care Goals ─────────────────────────────────────────────────────────────
+
+  loadGoals(patientUserId: number): void {
+    this.careSvc.getGoals(patientUserId).subscribe({
+      next: (data) => { this.careGoals[patientUserId] = data || []; },
+      error: () => {}
+    });
+  }
+
+  getGoals(patientUserId: number): any[] { return this.careGoals[patientUserId] || []; }
+
+  addGoal(): void {
+    if (!this.goalText.trim()) { this.goalError = 'Goal description is required.'; return; }
+    const pid = this.carePanelPatient?.patientUserId;
+    if (!pid) return;
+    this.isSavingGoal = true;
+    this.goalError    = '';
+    this.careSvc.addGoal(pid, {
+      goalText:    this.goalText.trim(),
+      targetDate:  this.goalTargetDate || null,
+      nurseUserId: this.myUserId,
+      nurseName:   this.myName
+    }).subscribe({
+      next: (goal) => {
+        if (!this.careGoals[pid]) this.careGoals[pid] = [];
+        this.careGoals[pid].unshift(goal);
+        this.goalText       = '';
+        this.goalTargetDate = '';
+        this.isSavingGoal   = false;
+        this.goalSuccess    = true;
+        setTimeout(() => this.goalSuccess = false, 3000);
+      },
+      error: (err: Error) => { this.goalError = err.message; this.isSavingGoal = false; }
+    });
+  }
+
+  updateGoalStatus(goal: any, status: string): void {
+    this.careSvc.updateGoalStatus(goal.id, status).subscribe({
+      next: (updated) => { Object.assign(goal, updated); },
+      error: () => {}
+    });
+  }
+
+  deleteGoal(goalId: number): void {
+    const pid = this.carePanelPatient?.patientUserId;
+    if (!pid) return;
+    this.careSvc.deleteGoal(goalId).subscribe({
+      next: () => {
+        this.careGoals[pid] = (this.careGoals[pid] || []).filter((g: any) => g.id !== goalId);
+      },
+      error: () => {}
+    });
+  }
+
+  goalStatusClass(status: string): string {
+    return status === 'ACHIEVED'   ? 'gs-achieved'
+         : status === 'IN_PROGRESS' ? 'gs-progress'
+         : 'gs-pending';
+  }
+
+  getInitials(name: string): string {
+    if (!name) return '?';
+    return name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────
