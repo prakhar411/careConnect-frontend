@@ -28,6 +28,8 @@ import { SettingsComponent } from './pages/patient/settings/settings.component';
 import { MyNursesComponent } from './pages/patient/my-nurses/my-nurses.component';
 import { EmergencyRequestComponent } from './pages/patient/emergency-request/emergency-request.component';
 import { PatientCarePlanComponent } from './pages/patient/patient-care-plan/patient-care-plan.component';
+import { AdminLoginComponent } from './pages/admin-login/admin-login.component';
+import { PlatformAdminComponent } from './pages/platform-admin/platform-admin.component';
 
 import { NurseDashboardComponent } from './pages/nurse/nurse-dashboard/nurse-dashboard.component';
 import { ProfileComponent } from './pages/nurse/profile/profile.component';
@@ -64,6 +66,8 @@ import { NotificationsComponent } from './pages/nurse/notifications/notification
     MyNursesComponent,
     EmergencyRequestComponent,
     PatientCarePlanComponent,
+    AdminLoginComponent,
+    PlatformAdminComponent,
 
     NurseDashboardComponent,
     ProfileComponent,

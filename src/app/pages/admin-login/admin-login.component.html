@@ -1,0 +1,89 @@
+<div class="admin-login-page">
+
+  <!-- Back to Home -->
+  <button class="back-btn" (click)="goHome()">
+    <i class="bi bi-arrow-left me-1"></i> Back to Home
+  </button>
+
+  <div class="login-card">
+
+    <!-- Logo / Badge -->
+    <div class="admin-badge">
+      <i class="bi bi-shield-lock-fill"></i>
+    </div>
+
+    <h2 class="login-title">Platform Admin Portal</h2>
+    <p class="login-sub">Restricted access — Authorized administrators only</p>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" autocomplete="off">
+
+      <!-- Email -->
+      <div class="field-group">
+        <label class="field-label">
+          <i class="bi bi-envelope-fill me-1"></i>Admin Email
+        </label>
+        <input
+          class="field-input"
+          [class.input-err]="f['email'].touched && f['email'].invalid"
+          formControlName="email"
+          type="email"
+          placeholder="admin@careconnect.com"
+          autocomplete="off">
+        <small class="err" *ngIf="f['email'].touched && f['email'].hasError('required')">
+          Email is required.
+        </small>
+        <small class="err" *ngIf="f['email'].touched && (f['email'].hasError('email') || f['email'].hasError('pattern'))">
+          Enter a valid email address.
+        </small>
+      </div>
+
+      <!-- Password -->
+      <div class="field-group">
+        <label class="field-label">
+          <i class="bi bi-lock-fill me-1"></i>Password
+        </label>
+        <div class="pwd-wrap">
+          <input
+            class="field-input"
+            [class.input-err]="f['password'].touched && f['password'].invalid"
+            formControlName="password"
+            [type]="showPwd ? 'text' : 'password'"
+            placeholder="Enter admin password"
+            autocomplete="new-password">
+          <button type="button" class="pwd-eye" (click)="showPwd = !showPwd" tabindex="-1">
+            <i class="bi" [class.bi-eye]="!showPwd" [class.bi-eye-slash]="showPwd"></i>
+          </button>
+        </div>
+        <small class="err" *ngIf="f['password'].touched && f['password'].hasError('required')">
+          Password is required.
+        </small>
+        <small class="err" *ngIf="f['password'].touched && f['password'].hasError('minlength')">
+          Password must be at least 6 characters.
+        </small>
+      </div>
+
+      <!-- Error Message -->
+      <div class="error-banner" *ngIf="errorMsg">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ errorMsg }}
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="btn-login" [disabled]="isLoading">
+        <span *ngIf="!isLoading">
+          <i class="bi bi-box-arrow-in-right me-2"></i>Sign In to Admin Portal
+        </span>
+        <span *ngIf="isLoading" class="d-flex align-items-center justify-content-center gap-2">
+          <span class="spin"></span>Authenticating…
+        </span>
+      </button>
+
+    </form>
+
+    <p class="login-note">
+      <i class="bi bi-info-circle me-1"></i>
+      This portal is exclusively for CareConnect Platform Administrators.
+      Unauthorized access attempts are logged.
+    </p>
+
+  </div>
+</div>

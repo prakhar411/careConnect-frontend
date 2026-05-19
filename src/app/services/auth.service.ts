@@ -54,8 +54,9 @@ export class AuthService {
   }
 
   logout(): void {
+    const role = this.getRole();
     this.clearSession();
-    this.router.navigate(['/login']);
+    this.router.navigate([role === 'PLATFORM_ADMIN' ? '/admin-login' : '/login']);
   }
 
   getUser(): any {

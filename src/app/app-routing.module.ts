@@ -26,6 +26,8 @@ import { SettingsComponent } from './pages/patient/settings/settings.component';
 import { MyNursesComponent } from './pages/patient/my-nurses/my-nurses.component';
 import { EmergencyRequestComponent } from './pages/patient/emergency-request/emergency-request.component';
 import { PatientCarePlanComponent } from './pages/patient/patient-care-plan/patient-care-plan.component';
+import { AdminLoginComponent } from './pages/admin-login/admin-login.component';
+import { PlatformAdminComponent } from './pages/platform-admin/platform-admin.component';
 
 import { NurseDashboardComponent } from './pages/nurse/nurse-dashboard/nurse-dashboard.component';
 import { ProfileComponent } from './pages/nurse/profile/profile.component';
@@ -64,6 +66,10 @@ const routes: Routes = [
   { path: 'patient-my-nurses',        component: MyNursesComponent,         canActivate: [authGuard, roleGuard], data: { role: 'PATIENT' } },
   { path: 'patient-emergency',        component: EmergencyRequestComponent, canActivate: [authGuard, roleGuard], data: { role: 'PATIENT' } },
   { path: 'patient-care-plan',        component: PatientCarePlanComponent,  canActivate: [authGuard, roleGuard], data: { role: 'PATIENT' } },
+
+  // Platform Admin routes
+  { path: 'admin-login',     component: AdminLoginComponent },
+  { path: 'platform-admin',  component: PlatformAdminComponent, canActivate: [authGuard, roleGuard], data: { role: 'PLATFORM_ADMIN' } },
 
   // Nurse routes — must be logged in AND role = NURSE
   { path: 'nurse',                component: NurseDashboardComponent, canActivate: [authGuard, roleGuard], data: { role: 'NURSE' } },

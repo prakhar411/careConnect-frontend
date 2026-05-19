@@ -30,7 +30,13 @@
       "Read(//c/Users/prakhar/Music/DOCUMENTS YAHA PE/**)",
       "Bash(ls \"C:\\\\Users\\\\prakhar\\\\Music\\\\DOCUMENTS YAHA PE\\\\\")",
       "Read(//c/Users/prakhar/Music/**)",
-      "PowerShell(Start-Sleep -Seconds 20; $result = curl.exe -s -o NUL -w \"%{http_code}\" http://localhost:8080/api/care-coordination/team-members; Write-Host \"HTTP: $result\")"
+      "PowerShell(Start-Sleep -Seconds 20; $result = curl.exe -s -o NUL -w \"%{http_code}\" http://localhost:8080/api/care-coordination/team-members; Write-Host \"HTTP: $result\")",
+      "Bash(npx ng *)",
+      "PowerShell(Start-Sleep -Seconds 15; $r = curl.exe -s -o NUL -w \"%{http_code}\" http://localhost:8080/api/platform/stats; Write-Host \"HTTP: $r\")",
+      "PowerShell(& \"C:\\\\Program Files\\\\MySQL\\\\MySQL Server 8.0\\\\bin\\\\mysql.exe\" -u root -proot careconnect_db -e \"ALTER TABLE users MODIFY COLUMN role VARCHAR\\(20\\) NOT NULL;\" 2>&1; Write-Host \"Exit: $LASTEXITCODE\")",
+      "PowerShell(& \"C:\\\\Program Files\\\\MySQL\\\\MySQL Server 8.0\\\\bin\\\\mysql.exe\" -u root \"-pPrakhar@411\" careconnect_db -e \"ALTER TABLE users MODIFY COLUMN role VARCHAR\\(20\\) NOT NULL; SELECT COLUMN_NAME, COLUMN_TYPE FROM information_schema.columns WHERE table_schema='careconnect_db' AND table_name='users' AND column_name='role';\" 2>&1 | Where-Object { $_ -notmatch \"Warning\" })",
+      "PowerShell(Get-Process java -ErrorAction SilentlyContinue | Stop-Process -Force; Start-Sleep -Seconds 2; Start-Process java -ArgumentList \"-jar\",\"C:\\\\Users\\\\prakhar\\\\Music\\\\Angular\\\\CareConnect\\\\careConnect-backend\\\\target\\\\careconnect-backend-1.0.0.jar\" -WindowStyle Minimized; Start-Sleep -Seconds 25; $r = curl.exe -s -o NUL -w \"%{http_code}\" http://localhost:8080/api/platform/stats; Write-Host \"Platform stats: HTTP $r\")",
+      "PowerShell(& \"C:\\\\Program Files\\\\MySQL\\\\MySQL Server 8.0\\\\bin\\\\mysql.exe\" -u root \"-pPrakhar@411\" careconnect_db -e \"SELECT id, email, role, is_active, created_at FROM users WHERE role='PLATFORM_ADMIN';\" 2>&1 | Where-Object { $_ -notmatch \"Warning\" })"
     ],
     "additionalDirectories": [
       "C:\\Users\\prakhar\\Music\\Angular\\CareConnect\\careConnect-backend\\src\\main\\java\\com\\careconnect\\entity",

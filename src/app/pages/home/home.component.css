@@ -72,6 +72,9 @@ body {
 }
 .btn-solid:hover { background: #0e6f54; }
 
+.btn-admin { background:transparent; border:1.5px solid #30363d; color:#7d8590; border-radius:30px; padding:9px 18px; font-size:0.85rem; font-weight:600; cursor:pointer; transition:all 0.2s; display:inline-flex; align-items:center; font-family:inherit; }
+.btn-admin:hover { background:#161b22; border-color:#388bfd; color:#388bfd; }
+
 /* ── HERO ── */
 .hero {
   min-height: calc(100vh - 66px);

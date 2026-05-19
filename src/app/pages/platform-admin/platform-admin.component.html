@@ -1,0 +1,407 @@
+<div class="pa-layout">
+
+  <!-- SIDEBAR -->
+  <nav class="pa-sidebar">
+    <div class="pa-brand">
+      <i class="bi bi-shield-lock-fill"></i>
+      <span>Admin Portal</span>
+    </div>
+    <ul class="nav flex-column">
+      <li class="mb-1">
+        <a class="pa-nav" [class.active]="activeTab==='overview'" (click)="activeTab='overview'">
+          <i class="bi bi-speedometer2"></i> Overview
+        </a>
+      </li>
+      <li class="mb-1">
+        <a class="pa-nav" [class.active]="activeTab==='compliance'" (click)="activeTab='compliance'">
+          <i class="bi bi-clipboard2-check-fill"></i> Compliance & Audit
+        </a>
+      </li>
+      <li class="mb-1">
+        <a class="pa-nav" [class.active]="activeTab==='incidents'" (click)="activeTab='incidents'">
+          <i class="bi bi-exclamation-triangle-fill"></i> Incidents
+          <span *ngIf="openEscalations.length > 0" class="pa-badge">{{ openEscalations.length }}</span>
+        </a>
+      </li>
+      <li class="mb-1">
+        <a class="pa-nav" [class.active]="activeTab==='policies'" (click)="activeTab='policies'">
+          <i class="bi bi-file-earmark-text-fill"></i> Policies
+        </a>
+      </li>
+      <li class="mb-1">
+        <a class="pa-nav" [class.active]="activeTab==='security'" (click)="activeTab='security'">
+          <i class="bi bi-lock-fill"></i> Security & QA
+        </a>
+      </li>
+      <div class="pa-divider"></div>
+      <li>
+        <a class="pa-nav pa-logout" (click)="logout()">
+          <i class="bi bi-box-arrow-right"></i> Logout
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="pa-main">
+
+    <!-- LOADING -->
+    <div *ngIf="isLoading" class="text-center py-5">
+      <div class="spinner-border" style="color:#388bfd;"></div>
+      <p style="color:#7d8590;margin-top:12px;font-size:0.88rem;">Loading platform data…</p>
+    </div>
+
+    <ng-container *ngIf="!isLoading">
+
+      <!-- ══ OVERVIEW TAB ══ -->
+      <ng-container *ngIf="activeTab==='overview'">
+        <div class="pa-header">
+          <div>
+            <h4 class="pa-title">Platform Overview</h4>
+            <p class="pa-sub">Real-time metrics across all organizations and users</p>
+          </div>
+        </div>
+
+        <!-- KPI CARDS -->
+        <div class="row g-3 mb-4">
+          <div class="col-6 col-lg-3">
+            <div class="kpi-card">
+              <div class="kpi-icon kpi-blue"><i class="bi bi-heart-pulse-fill"></i></div>
+              <div class="kpi-num">{{ stats.totalNurses ?? 0 }}</div>
+              <div class="kpi-lbl">Total Nurses</div>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="kpi-card">
+              <div class="kpi-icon kpi-green"><i class="bi bi-person-heart"></i></div>
+              <div class="kpi-num">{{ stats.totalPatients ?? 0 }}</div>
+              <div class="kpi-lbl">Total Patients</div>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="kpi-card">
+              <div class="kpi-icon kpi-amber"><i class="bi bi-building-fill"></i></div>
+              <div class="kpi-num">{{ stats.totalOrgs ?? 0 }}</div>
+              <div class="kpi-lbl">Organizations</div>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="kpi-card">
+              <div class="kpi-icon kpi-purple"><i class="bi bi-calendar-check-fill"></i></div>
+              <div class="kpi-num">{{ stats.totalAppointments ?? 0 }}</div>
+              <div class="kpi-lbl">Appointments</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECOND ROW -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <div class="pa-card">
+              <div class="pa-card-title"><i class="bi bi-clipboard2-check me-2"></i>Compliance Health</div>
+              <div class="d-flex justify-content-between mb-2">
+                <span style="font-size:0.82rem;color:#7d8590;">Platform Compliance Rate</span>
+                <span style="font-weight:700;color:#2ea043;">{{ stats.complianceRate ?? 0 }}%</span>
+              </div>
+              <div class="comp-bar-outer">
+                <div class="comp-bar-inner" [style.width.%]="stats.complianceRate ?? 0"
+                     [style.background]="(stats.complianceRate ?? 0) >= 70 ? '#2ea043' : '#d29922'"></div>
+              </div>
+              <div class="d-flex gap-3 mt-2" style="font-size:0.8rem;">
+                <span style="color:#2ea043;font-weight:600;">✔ {{ stats.compliantCount ?? 0 }} Compliant</span>
+                <span style="color:#f85149;font-weight:600;">✘ {{ stats.nonCompliantCount ?? 0 }} Non-Compliant</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="pa-card">
+              <div class="pa-card-title"><i class="bi bi-people-fill me-2"></i>Platform Users ({{ allUsers.length }})</div>
+              <div class="d-flex gap-3 flex-wrap">
+                <div class="user-role-chip" style="background:#1f6feb22;color:#388bfd;">
+                  <i class="bi bi-heart-pulse me-1"></i>{{ stats.totalNurses ?? 0 }} Nurses
+                </div>
+                <div class="user-role-chip" style="background:#2ea04322;color:#2ea043;">
+                  <i class="bi bi-person-heart me-1"></i>{{ stats.totalPatients ?? 0 }} Patients
+                </div>
+                <div class="user-role-chip" style="background:#d2992222;color:#d29922;">
+                  <i class="bi bi-building me-1"></i>{{ stats.totalOrgs ?? 0 }} Orgs
+                </div>
+              </div>
+              <div class="mt-2" style="font-size:0.8rem;color:#7d8590;">
+                Hire Rate: <strong style="color:#e6edf3;">{{ stats.hireRate ?? 0 }}%</strong> &nbsp;|&nbsp;
+                Approved: <strong style="color:#e6edf3;">{{ stats.approvedApplications ?? 0 }}</strong> /
+                {{ stats.totalApplications ?? 0 }} Applications
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="pa-card">
+              <div class="pa-card-title"><i class="bi bi-award me-2"></i>Credentialing Status</div>
+              <div style="font-size:0.82rem;color:#f85149;">
+                <i class="bi bi-exclamation-circle me-1"></i>
+                {{ stats.expiredCredentials ?? 0 }} expired credentials need attention
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="pa-card">
+              <div class="pa-card-title"><i class="bi bi-exclamation-triangle me-2"></i>Open Incidents</div>
+              <div [style.color]="openEscalations.length > 0 ? '#f85149' : '#2ea043'" style="font-size:0.82rem;font-weight:600;">
+                {{ openEscalations.length > 0 ? openEscalations.length + ' open escalations require attention' : '✔ No open incidents' }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ALL USERS TABLE -->
+        <div class="pa-card">
+          <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+            <div class="pa-card-title mb-0"><i class="bi bi-people me-2"></i>All Platform Users</div>
+            <div class="d-flex gap-2 flex-wrap">
+              <button *ngFor="let r of ['ALL','NURSE','PATIENT','ORGANIZATION']"
+                      class="role-filter-btn"
+                      [class.active]="userRoleFilter === r"
+                      (click)="userRoleFilter = r">
+                {{ r === 'ALL' ? 'All' : r | titlecase }}
+              </button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="pa-table">
+              <thead>
+                <tr><th>#</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th></tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let u of filteredUsers; let i = index">
+                  <td style="color:#7d8590;">{{ i + 1 }}</td>
+                  <td>{{ u.email }}</td>
+                  <td>
+                    <span class="role-chip" [style.background]="roleColor(u.role) + '22'"
+                          [style.color]="roleColor(u.role)">{{ u.role }}</span>
+                  </td>
+                  <td>
+                    <span [class]="u.isActive ? 'status-ok' : 'status-bad'">
+                      {{ u.isActive ? '● Active' : '● Inactive' }}
+                    </span>
+                  </td>
+                  <td>{{ formatDate(u.createdAt) }}</td>
+                </tr>
+                <tr *ngIf="filteredUsers.length === 0">
+                  <td colspan="5" class="text-center" style="color:#7d8590;padding:20px;">No users found.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- ══ COMPLIANCE & AUDIT TAB ══ -->
+      <ng-container *ngIf="activeTab==='compliance'">
+        <div class="pa-header">
+          <div>
+            <h4 class="pa-title">Compliance & Audit Trail</h4>
+            <p class="pa-sub">All compliance records across all organizations (AC 20.1, 20.4)</p>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mb-3 flex-wrap">
+          <button *ngFor="let f of ['ALL','COMPLIANT','PENDING','NON_COMPLIANT']"
+                  class="role-filter-btn" [class.active]="complianceFilter === f"
+                  (click)="complianceFilter = f">{{ f | titlecase }}</button>
+        </div>
+
+        <div class="pa-card">
+          <table class="pa-table">
+            <thead>
+              <tr><th>Nurse</th><th>Requirement</th><th>Due Date</th><th>Status</th><th>Notes</th><th>Recorded</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let c of filteredCompliance">
+                <td><strong>{{ c.nurseName || '—' }}</strong></td>
+                <td>{{ c.requirement || '—' }}</td>
+                <td>{{ formatDate(c.dueDate) }}</td>
+                <td><span [class]="statusClass(c.status)" class="pa-badge-sm">{{ c.status }}</span></td>
+                <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ c.notes || '—' }}</td>
+                <td>{{ formatDate(c.createdAt) }}</td>
+              </tr>
+              <tr *ngIf="filteredCompliance.length === 0">
+                <td colspan="6" class="text-center" style="color:#7d8590;padding:20px;">No compliance records found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+
+      <!-- ══ INCIDENTS TAB ══ -->
+      <ng-container *ngIf="activeTab==='incidents'">
+        <div class="pa-header">
+          <div>
+            <h4 class="pa-title">Incidents & Escalations</h4>
+            <p class="pa-sub">All org escalations — investigate and track corrective actions (AC 20.3)</p>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-6">
+            <div class="kpi-card" style="border-left:3px solid #f85149;">
+              <div class="kpi-num" style="color:#f85149;">{{ openEscalations.length }}</div>
+              <div class="kpi-lbl">Open Incidents</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="kpi-card" style="border-left:3px solid #2ea043;">
+              <div class="kpi-num" style="color:#2ea043;">{{ escalations.length - openEscalations.length }}</div>
+              <div class="kpi-lbl">Resolved</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pa-card">
+          <table class="pa-table">
+            <thead>
+              <tr><th>Issue Type</th><th>Description</th><th>Status</th><th>Raised On</th><th>Resolved On</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let e of escalations">
+                <td><strong>{{ e.issueType }}</strong></td>
+                <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ e.description }}</td>
+                <td><span [class]="statusClass(e.status)" class="pa-badge-sm">{{ e.status }}</span></td>
+                <td>{{ formatDate(e.createdAt) }}</td>
+                <td>{{ e.resolvedAt ? formatDate(e.resolvedAt) : '—' }}</td>
+              </tr>
+              <tr *ngIf="escalations.length === 0">
+                <td colspan="5" class="text-center" style="color:#7d8590;padding:20px;">No escalations found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+
+      <!-- ══ POLICIES TAB ══ -->
+      <ng-container *ngIf="activeTab==='policies'">
+        <div class="pa-header">
+          <div>
+            <h4 class="pa-title">Platform Policies</h4>
+            <p class="pa-sub">Manage regulatory and compliance policies (AC 20.5)</p>
+          </div>
+          <button class="pa-btn-primary" (click)="policyFormOpen = !policyFormOpen">
+            <i class="bi bi-plus-lg me-1"></i>Add Policy
+          </button>
+        </div>
+
+        <div *ngIf="policySuccess" class="pa-success mb-3">
+          <i class="bi bi-check-circle-fill me-2"></i>{{ policySuccess }}
+        </div>
+
+        <!-- ADD POLICY FORM -->
+        <div class="pa-card mb-4" *ngIf="policyFormOpen">
+          <div class="pa-card-title mb-3"><i class="bi bi-file-earmark-plus me-2"></i>New Policy</div>
+          <form [formGroup]="policyForm" (ngSubmit)="addPolicy()">
+            <div class="row g-3">
+              <div class="col-md-8">
+                <label class="pa-field-label">Policy Title *</label>
+                <input class="pa-field-input" formControlName="title" placeholder="e.g. HIPAA Data Handling Policy 2026"
+                       [class.pa-input-err]="pf['title'].touched && pf['title'].invalid">
+                <small class="pa-err" *ngIf="pf['title'].touched && pf['title'].hasError('required')">Title is required.</small>
+                <small class="pa-err" *ngIf="pf['title'].touched && pf['title'].hasError('minlength')">Minimum 5 characters.</small>
+              </div>
+              <div class="col-md-4">
+                <label class="pa-field-label">Category *</label>
+                <select class="pa-field-input" formControlName="category">
+                  <option *ngFor="let c of POLICY_CATEGORIES" [value]="c">{{ c }}</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="pa-field-label">Effective Date <span style="color:#7d8590;">(optional)</span></label>
+                <input type="date" class="pa-field-input" formControlName="effectiveDate">
+              </div>
+              <div class="col-12">
+                <label class="pa-field-label">Policy Content *</label>
+                <textarea class="pa-field-input" formControlName="content" rows="4"
+                          placeholder="Describe the policy, guidelines, and compliance requirements…"
+                          maxlength="1000"
+                          [class.pa-input-err]="pf['content'].touched && pf['content'].invalid"></textarea>
+                <small class="pa-err" *ngIf="pf['content'].touched && pf['content'].hasError('required')">Content is required.</small>
+                <small class="pa-err" *ngIf="pf['content'].touched && pf['content'].hasError('minlength')">Minimum 10 characters.</small>
+              </div>
+            </div>
+            <div class="d-flex gap-2 mt-3">
+              <button type="submit" class="pa-btn-primary" [disabled]="isSavingPolicy">
+                <span *ngIf="!isSavingPolicy"><i class="bi bi-check-lg me-1"></i>Save Policy</span>
+                <span *ngIf="isSavingPolicy">Saving…</span>
+              </button>
+              <button type="button" class="pa-btn-outline" (click)="policyFormOpen=false;policyForm.reset({category:'GENERAL'})">
+                Cancel
+              </button>
+              <small class="pa-err ms-2 mt-2" *ngIf="policyError">{{ policyError }}</small>
+            </div>
+          </form>
+        </div>
+
+        <!-- POLICY LIST -->
+        <div *ngIf="policies.length === 0 && !policyFormOpen" class="pa-card text-center py-5" style="color:#7d8590;">
+          <i class="bi bi-file-earmark-text" style="font-size:2.5rem;opacity:0.3;display:block;margin-bottom:8px;"></i>
+          No policies added yet. Click "Add Policy" to get started.
+        </div>
+
+        <div *ngFor="let p of policies" class="policy-card">
+          <div class="policy-header">
+            <span class="policy-cat" [style.background]="'#1f6feb22'" [style.color]="'#388bfd'">{{ p.category }}</span>
+            <div class="policy-title">{{ p.title }}</div>
+            <span *ngIf="p.effectiveDate" style="font-size:0.76rem;color:#7d8590;margin-left:auto;white-space:nowrap;">
+              Effective: {{ p.effectiveDate }}
+            </span>
+            <button class="pa-del-btn" (click)="deletePolicy(p.id)"><i class="bi bi-trash3"></i></button>
+          </div>
+          <div class="policy-content">{{ p.content }}</div>
+          <div class="policy-meta">Added: {{ formatDate(p.createdAt) }}</div>
+        </div>
+      </ng-container>
+
+      <!-- ══ SECURITY & QA TAB ══ -->
+      <ng-container *ngIf="activeTab==='security'">
+        <div class="pa-header">
+          <div>
+            <h4 class="pa-title">Security & QA Report</h4>
+            <p class="pa-sub">Platform security compliance checklist (AC 20.7, 20.6)</p>
+          </div>
+          <button class="pa-btn-primary" (click)="generateReport()">
+            <i class="bi bi-printer-fill me-1"></i>Generate QA Report
+          </button>
+        </div>
+
+        <!-- Security Score -->
+        <div class="pa-card mb-4">
+          <div class="pa-card-title mb-3">Security Score</div>
+          <div class="d-flex align-items-center gap-3">
+            <div [class]="securityScore >= 70 ? 'sec-score sec-score-ok' : 'sec-score sec-score-warn'">
+              {{ securityScore }}%
+            </div>
+            <div style="flex:1;">
+              <div class="comp-bar-outer">
+                <div [class]="securityScore >= 70 ? 'comp-bar-inner comp-bar-ok' : 'comp-bar-inner comp-bar-warn'"
+                     [style.width.%]="securityScore"></div>
+              </div>
+              <div style="font-size:0.8rem;color:#7d8590;margin-top:4px;">
+                {{ implementedChecksCount }} of {{ SECURITY_CHECKS.length }} controls implemented
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Security Checklist -->
+        <div class="pa-card">
+          <div class="pa-card-title mb-3"><i class="bi bi-list-check me-2"></i>Security Controls</div>
+          <div *ngFor="let chk of SECURITY_CHECKS" class="sec-row">
+            <i [class]="secCheckIconClass(chk)" style="font-size:1rem;flex-shrink:0;"></i>
+            <span [class]="secCheckTextClass(chk)">{{ chk.item }}</span>
+            <span [class]="secCheckLabelClass(chk)" class="ms-auto">
+              {{ chk.status ? 'IMPLEMENTED' : 'PENDING' }}
+            </span>
+          </div>
+        </div>
+      </ng-container>
+
+    </ng-container>
+  </div>
+</div>

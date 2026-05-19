@@ -10,6 +10,7 @@ export class HomeComponent {
 
   constructor(private router: Router) {}
 
-  goLogin()    { this.router.navigate(['/login']); }
-  goRegister() { this.router.navigate(['/register']); }
+  goLogin()      { this.router.navigate(['/login']); }
+  goRegister()   { this.router.navigate(['/register']); }
+  goAdminLogin() { this.router.navigate(['/admin-login']); }
 }
