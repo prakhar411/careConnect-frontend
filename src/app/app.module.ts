@@ -40,6 +40,7 @@ import { PaymentsComponent } from './pages/nurse/payments/payments.component';
 import { TrainingComponent } from './pages/nurse/training/training.component';
 import { MyPatientsComponent } from './pages/nurse/my-patients/my-patients.component';
 import { NotificationsComponent } from './pages/nurse/notifications/notifications.component';
+import { TelehealthComponent } from './pages/nurse/telehealth/telehealth.component';
 
 @NgModule({
   declarations: [
@@ -78,6 +79,7 @@ import { NotificationsComponent } from './pages/nurse/notifications/notification
     TrainingComponent,
     MyPatientsComponent,
     NotificationsComponent,
+    TelehealthComponent,
   ],
   imports: [
     BrowserModule,

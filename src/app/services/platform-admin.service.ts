@@ -24,4 +24,10 @@ export class PlatformAdminService {
   getPolicies(): Observable<any[]>         { return this.extract(this.http.get(`${this.base}/policies`)); }
   addPolicy(body: any): Observable<any>    { return this.extract(this.http.post(`${this.base}/policies`, body)); }
   deletePolicy(id: number): Observable<any>{ return this.extract(this.http.delete(`${this.base}/policies/${id}`)); }
+  toggleUser(id: number): Observable<any>  { return this.extract(this.http.patch(`${this.base}/users/${id}/toggle`, {})); }
+  getAuditTrail(): Observable<any[]>       { return this.extract(this.http.get(`${this.base}/audit`)); }
+  getNurseProfiles(): Observable<any[]>    { return this.extract(this.http.get(`${this.base}/nurses`)); }
+  verifyNurse(id: number): Observable<any> { return this.extract(this.http.patch(`${this.base}/nurses/${id}/verify`, {})); }
+  getOrgs(): Observable<any[]>             { return this.extract(this.http.get(`${this.base}/orgs`)); }
+  verifyOrg(id: number): Observable<any>   { return this.extract(this.http.patch(`${this.base}/orgs/${id}/verify`, {})); }
 }

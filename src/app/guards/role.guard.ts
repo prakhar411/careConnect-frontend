@@ -3,9 +3,10 @@ import { CanActivateFn, Router, ActivatedRouteSnapshot } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
 const ROLE_HOME: Record<string, string> = {
-  ORGANIZATION: '/admin',
-  PATIENT:      '/patient',
-  NURSE:        '/nurse',
+  ORGANIZATION:    '/admin',
+  PATIENT:         '/patient',
+  NURSE:           '/nurse',
+  PLATFORM_ADMIN:  '/platform-admin',
 };
 
 export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {

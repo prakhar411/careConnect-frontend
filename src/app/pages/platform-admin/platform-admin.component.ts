@@ -4,7 +4,7 @@ import { forkJoin } from 'rxjs';
 import { AuthService }          from '../../services/auth.service';
 import { PlatformAdminService } from '../../services/platform-admin.service';
 
-type PlatformTab = 'overview' | 'compliance' | 'incidents' | 'policies' | 'security';
+type PlatformTab = 'overview' | 'compliance' | 'incidents' | 'policies' | 'security' | 'audit' | 'staff' | 'orgs';
 
 @Component({
   selector: 'app-platform-admin',
@@ -16,17 +16,23 @@ export class PlatformAdminComponent implements OnInit {
   activeTab: PlatformTab = 'overview';
   isLoading  = true;
 
-  stats:       any    = {};
-  compliance:  any[]  = [];
-  escalations: any[]  = [];
-  allUsers:    any[]  = [];
-  policies:    any[]  = [];
+  stats:         any    = {};
+  compliance:    any[]  = [];
+  escalations:   any[]  = [];
+  allUsers:      any[]  = [];
+  policies:      any[]  = [];
+  auditTrail:    any[]  = [];
+  nurseProfiles: any[]  = [];
+  orgs:          any[]  = [];
 
-  // User filter
-  userRoleFilter = 'ALL';
-
-  // Compliance filter
-  complianceFilter = 'ALL';
+  // Filters
+  userRoleFilter     = 'ALL';
+  complianceFilter   = 'ALL';
+  auditTypeFilter    = 'ALL';
+  staffOnboardFilter = 'ALL';
+  isTogglingUser     = new Set<number>();
+  isVerifyingNurse   = new Set<number>();
+  isVerifyingOrg     = new Set<number>();
 
   // Policy form
   policyFormOpen  = false;
@@ -74,19 +80,25 @@ export class PlatformAdminComponent implements OnInit {
   loadAll(): void {
     this.isLoading = true;
     forkJoin({
-      stats:       this.platformSvc.getStats(),
-      compliance:  this.platformSvc.getAllCompliance(),
-      escalations: this.platformSvc.getAllEscalations(),
-      users:       this.platformSvc.getAllUsers(),
-      policies:    this.platformSvc.getPolicies()
+      stats:         this.platformSvc.getStats(),
+      compliance:    this.platformSvc.getAllCompliance(),
+      escalations:   this.platformSvc.getAllEscalations(),
+      users:         this.platformSvc.getAllUsers(),
+      policies:      this.platformSvc.getPolicies(),
+      auditTrail:    this.platformSvc.getAuditTrail(),
+      nurseProfiles: this.platformSvc.getNurseProfiles(),
+      orgs:          this.platformSvc.getOrgs()
     }).subscribe({
-      next: ({ stats, compliance, escalations, users, policies }) => {
-        this.stats       = stats       || {};
-        this.compliance  = compliance  || [];
-        this.escalations = escalations || [];
-        this.allUsers    = users       || [];
-        this.policies    = policies    || [];
-        this.isLoading   = false;
+      next: ({ stats, compliance, escalations, users, policies, auditTrail, nurseProfiles, orgs }) => {
+        this.stats         = stats         || {};
+        this.compliance    = compliance    || [];
+        this.escalations   = escalations   || [];
+        this.allUsers      = users         || [];
+        this.policies      = policies      || [];
+        this.auditTrail    = auditTrail    || [];
+        this.nurseProfiles = nurseProfiles || [];
+        this.orgs          = orgs          || [];
+        this.isLoading     = false;
       },
       error: () => { this.isLoading = false; }
     });
@@ -106,6 +118,55 @@ export class PlatformAdminComponent implements OnInit {
 
   get openEscalations(): any[] {
     return this.escalations.filter(e => e.status === 'OPEN');
+  }
+
+  get filteredAudit(): any[] {
+    if (this.auditTypeFilter === 'ALL') return this.auditTrail;
+    return this.auditTrail.filter(a => a.eventType === this.auditTypeFilter);
+  }
+
+  get filteredNurses(): any[] {
+    if (this.staffOnboardFilter === 'ALL') return this.nurseProfiles;
+    return this.nurseProfiles.filter(n => n.onboardingStatus === this.staffOnboardFilter);
+  }
+
+  get nurseCompleteCount(): number  { return this.nurseProfiles.filter(n => n.onboardingStatus === 'COMPLETE').length; }
+  get nursePartialCount(): number   { return this.nurseProfiles.filter(n => n.onboardingStatus === 'PARTIAL').length; }
+  get nurseNoneCount(): number      { return this.nurseProfiles.filter(n => n.onboardingStatus === 'NONE').length; }
+
+  onboardingClass(status: string): string {
+    return status === 'COMPLETE' ? 'ob-complete'
+         : status === 'PARTIAL'  ? 'ob-partial'
+         : 'ob-none';
+  }
+
+  onboardingLabel(status: string): string {
+    return status === 'COMPLETE' ? '✔ Complete'
+         : status === 'PARTIAL'  ? '~ Partial'
+         : '✗ Not Started';
+  }
+
+  auditTypeColor(type: string): string {
+    return type === 'MEDICAL_RECORD' ? '#0f5241'
+         : type === 'COMPLIANCE'     ? '#1d4ed8'
+         : '#b45309';
+  }
+
+  auditTypeLabel(type: string): string {
+    return type === 'MEDICAL_RECORD' ? 'Medical Record'
+         : type === 'COMPLIANCE'     ? 'Compliance'
+         : 'Credential';
+  }
+
+  toggleUser(user: any): void {
+    this.isTogglingUser.add(user.id);
+    this.platformSvc.toggleUser(user.id).subscribe({
+      next: (updated) => {
+        user.isActive = updated.isActive;
+        this.isTogglingUser.delete(user.id);
+      },
+      error: () => { this.isTogglingUser.delete(user.id); }
+    });
   }
 
   get securityScore(): number {
@@ -227,6 +288,31 @@ export class PlatformAdminComponent implements OnInit {
   secCheckLabelClass(chk: any): string {
     return 'sec-status-label ' + (chk.status ? 'sec-lbl-ok' : 'sec-lbl-pending');
   }
+
+  verifyNurse(nurse: any): void {
+    this.isVerifyingNurse.add(nurse.id);
+    this.platformSvc.verifyNurse(nurse.id).subscribe({
+      next: (updated) => {
+        nurse.verifiedByAdmin = updated.verifiedByAdmin;
+        this.isVerifyingNurse.delete(nurse.id);
+      },
+      error: () => { this.isVerifyingNurse.delete(nurse.id); }
+    });
+  }
+
+  verifyOrg(org: any): void {
+    this.isVerifyingOrg.add(org.id);
+    this.platformSvc.verifyOrg(org.id).subscribe({
+      next: (updated) => {
+        org.verifiedByAdmin = updated.verifiedByAdmin;
+        this.isVerifyingOrg.delete(org.id);
+      },
+      error: () => { this.isVerifyingOrg.delete(org.id); }
+    });
+  }
+
+  get verifiedNurseCount(): number { return this.nurseProfiles.filter(n => n.verifiedByAdmin).length; }
+  get verifiedOrgCount(): number   { return this.orgs.filter(o => o.verifiedByAdmin).length; }
 
   logout(): void { this.auth.logout(); }
 }
