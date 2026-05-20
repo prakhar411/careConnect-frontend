@@ -21,15 +21,15 @@ export class AdminLoginComponent {
     private router: Router
   ) {
     this.form = this.fb.group({
-      email:    ['', [
+      username: ['CareConnectAdmin', [
         Validators.required,
-        Validators.email,
-        Validators.pattern('^[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}$')
+        Validators.minLength(3),
+        Validators.maxLength(50)
       ]],
       password: ['', [
         Validators.required,
         Validators.minLength(6),
-        Validators.maxLength(30)
+        Validators.maxLength(50)
       ]]
     });
   }
@@ -41,8 +41,8 @@ export class AdminLoginComponent {
     this.isLoading = true;
     this.errorMsg  = '';
 
-    const { email, password } = this.form.value;
-    this.auth.login(email.trim().toLowerCase(), password, 'PLATFORM_ADMIN').subscribe({
+    const { username, password } = this.form.value;
+    this.auth.login(username.trim(), password, 'PLATFORM_ADMIN').subscribe({
       next: (res: any) => {
         const data = res.data ?? res;
         if (data.role !== 'PLATFORM_ADMIN') {

@@ -17,23 +17,23 @@
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()" autocomplete="off">
 
-      <!-- Email -->
+      <!-- Username -->
       <div class="field-group">
         <label class="field-label">
-          <i class="bi bi-envelope-fill me-1"></i>Admin Email
+          <i class="bi bi-person-fill me-1"></i>Username
         </label>
         <input
           class="field-input"
-          [class.input-err]="f['email'].touched && f['email'].invalid"
-          formControlName="email"
-          type="email"
-          placeholder="admin@careconnect.com"
+          formControlName="username"
+          type="text"
+          readonly
+          style="cursor:default;opacity:0.8;user-select:none;"
           autocomplete="off">
-        <small class="err" *ngIf="f['email'].touched && f['email'].hasError('required')">
-          Email is required.
+        <small class="err" *ngIf="f['username'].touched && f['username'].hasError('required')">
+          Username is required.
         </small>
-        <small class="err" *ngIf="f['email'].touched && (f['email'].hasError('email') || f['email'].hasError('pattern'))">
-          Enter a valid email address.
+        <small class="err" *ngIf="f['username'].touched && f['username'].hasError('minlength')">
+          Username must be at least 3 characters.
         </small>
       </div>
 
