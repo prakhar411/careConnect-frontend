@@ -64,11 +64,18 @@
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
       <div>
         <h4 class="page-title">Team Management</h4>
-        <p class="page-subtitle">Hired nurses and management staff for your organization</p>
+        <p class="page-subtitle">Hired nurses, doctors, and management staff for your organization</p>
       </div>
-      <button class="btn-primary-action" (click)="addOpen = !addOpen">
-        <i class="bi bi-person-plus-fill me-1"></i> Add Staff
-      </button>
+      <div class="d-flex gap-2">
+        <button class="btn-primary-action" style="background:#1d4ed8;"
+                (click)="addMode='doctor'; addOpen=true; memberForm.reset({phoneCountryCode:'+91'})">
+          <i class="bi bi-person-badge-fill me-1"></i> Add Doctor
+        </button>
+        <button class="btn-primary-action"
+                (click)="addMode='staff'; addOpen=true; memberForm.reset({phoneCountryCode:'+91'})">
+          <i class="bi bi-person-plus-fill me-1"></i> Add Staff
+        </button>
+      </div>
     </div>
 
     <!-- LOADING -->
@@ -84,9 +91,12 @@
         <i class="bi bi-check-circle-fill me-2"></i> {{ successMsg }}
       </div>
 
-      <!-- ADD MANAGEMENT STAFF FORM -->
+      <!-- ADD FORM (Doctor or Staff) -->
       <div class="form-panel mb-4" *ngIf="addOpen">
-        <div class="form-panel-title"><i class="bi bi-person-plus me-2"></i>Add Management Staff</div>
+        <div class="form-panel-title">
+          <i [class]="addMode==='doctor' ? 'bi bi-person-badge me-2' : 'bi bi-person-plus me-2'"></i>
+          {{ addMode === 'doctor' ? 'Add Doctor / Specialist' : 'Add Management Staff' }}
+        </div>
         <form [formGroup]="memberForm" (ngSubmit)="onAdd()">
           <div class="row g-3">
 
@@ -126,7 +136,7 @@
               <label class="field-label">Role *</label>
               <select class="field-input" formControlName="role" [class.input-err]="f['role'].touched && f['role'].invalid">
                 <option value="">Select role</option>
-                <option *ngFor="let r of STAFF_ROLES" [value]="r">{{ r }}</option>
+                <option *ngFor="let r of activeRoles" [value]="r">{{ r }}</option>
               </select>
               <small class="err" *ngIf="f['role'].touched && f['role'].hasError('required')">Role is required.</small>
             </div>
@@ -197,7 +207,7 @@
               <span *ngIf="!isSaving">Add Member</span>
               <span *ngIf="isSaving">Saving…</span>
             </button>
-            <button type="button" class="btn-cancel-sm" (click)="addOpen = false; memberForm.reset()">Cancel</button>
+            <button type="button" class="btn-cancel-sm" (click)="addOpen = false; addMode = null; memberForm.reset()">Cancel</button>
             <small class="err ms-2" *ngIf="errorMsg">{{ errorMsg }}</small>
           </div>
         </form>
@@ -247,16 +257,85 @@
         </div>
       </div>
 
-      <!-- SECTION 2: MANAGEMENT TEAM -->
-      <div class="dash-card">
-        <div class="dash-card-title"><i class="bi bi-people-fill"></i> Management Staff ({{ teamMembers.length }})</div>
-
-        <div *ngIf="teamMembers.length === 0" class="text-center py-4 text-muted" style="font-size:0.88rem;">
-          <i class="bi bi-person-plus fs-3 d-block mb-2" style="color:#c8ddd8;"></i>
-          No management staff added yet. Click "Add Staff" to get started.
+      <!-- SECTION 2: DOCTORS & SPECIALISTS -->
+      <div class="dash-card mb-4">
+        <div class="dash-card-title">
+          <i class="bi bi-person-badge-fill"></i> Doctors &amp; Specialists ({{ doctorMembers.length }})
         </div>
 
-        <div class="table-responsive" *ngIf="teamMembers.length > 0">
+        <div *ngIf="doctorMembers.length === 0" class="text-center py-4 text-muted" style="font-size:0.88rem;">
+          <i class="bi bi-person-badge fs-3 d-block mb-2" style="color:#c8ddd8;"></i>
+          No doctors or specialists added yet. Click "Add Doctor" to get started.
+        </div>
+
+        <div class="table-responsive" *ngIf="doctorMembers.length > 0">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Doctor / Specialist</th>
+                <th>Role</th>
+                <th>Department</th>
+                <th>Designation</th>
+                <th>Qualification</th>
+                <th>Contact</th>
+                <th>Since</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let m of doctorMembers">
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="member-avatar" style="background:#dbeafe;color:#1d4ed8;">{{ getInitials(m.name) }}</div>
+                    <div>
+                      <div style="font-weight:600;">{{ m.name }}</div>
+                      <div style="font-size:0.73rem;color:#6a8c80;">{{ m.email || '' }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="role-badge" style="background:#dbeafe;color:#1d4ed8;">{{ m.role }}</span></td>
+                <td>{{ m.department || '—' }}</td>
+                <td>{{ m.designation || '—' }}</td>
+                <td>
+                  <span *ngIf="m.qualification" class="role-badge" style="background:#ede9fe;color:#6d28d9;">
+                    {{ m.qualification }}
+                  </span>
+                  <span *ngIf="!m.qualification">—</span>
+                </td>
+                <td>{{ m.phone || '—' }}</td>
+                <td>{{ m.joinDate | date:'mediumDate' }}</td>
+                <td>
+                  <span class="status-dot" [ngClass]="m.status === 'Active' ? 'dot-active' : 'dot-inactive'">
+                    <i class="bi bi-circle-fill me-1" style="font-size:0.45rem;"></i>{{ m.status }}
+                  </span>
+                </td>
+                <td class="d-flex gap-2">
+                  <button class="btn-toggle" (click)="toggleStatus(m)">
+                    {{ m.status === 'Active' ? 'Deactivate' : 'Activate' }}
+                  </button>
+                  <button class="btn-delete" (click)="deleteMember(m.id)">
+                    <i class="bi bi-trash3"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SECTION 3: ADMINISTRATIVE STAFF -->
+      <div class="dash-card">
+        <div class="dash-card-title">
+          <i class="bi bi-people-fill"></i> Administrative Staff ({{ staffMembers.length }})
+        </div>
+
+        <div *ngIf="staffMembers.length === 0" class="text-center py-4 text-muted" style="font-size:0.88rem;">
+          <i class="bi bi-person-plus fs-3 d-block mb-2" style="color:#c8ddd8;"></i>
+          No administrative staff added yet. Click "Add Staff" to get started.
+        </div>
+
+        <div class="table-responsive" *ngIf="staffMembers.length > 0">
           <table class="admin-table">
             <thead>
               <tr>
@@ -272,7 +351,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let m of teamMembers">
+              <tr *ngFor="let m of staffMembers">
                 <td>
                   <div class="d-flex align-items-center gap-2">
                     <div class="member-avatar">{{ getInitials(m.name) }}</div>

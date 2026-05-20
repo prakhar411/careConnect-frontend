@@ -179,8 +179,25 @@
             <p class="nurse-name">{{ appt.nurseName || 'No nurse assigned yet' }}</p>
             <p class="nurse-spec">{{ appt.careType }}</p>
             <div class="appt-meta">
-              <span><i class="bi bi-calendar3"></i> {{ appt.date }}</span>
+              <!-- Show latest shift date when shifts exist, otherwise booking date -->
+              <ng-container *ngIf="latestShiftDate(appt.id) as sd; else bookingDate">
+                <span class="shift-date-active">
+                  <i class="bi bi-check2-circle"></i> Last shift: {{ formatShiftDate(sd) }}
+                </span>
+              </ng-container>
+              <ng-template #bookingDate>
+                <span><i class="bi bi-calendar3"></i> {{ appt.date }}</span>
+              </ng-template>
               <span><i class="bi bi-clock"></i> {{ appt.time }}</span>
+            </div>
+            <!-- Shift progress chips for active appointments -->
+            <div class="shift-chips mt-1" *ngIf="shiftsDoneCount(appt.id) > 0 || pendingConfirmCount(appt.id) > 0">
+              <span class="sch-chip sch-done" *ngIf="shiftsDoneCount(appt.id) > 0">
+                <i class="bi bi-check2-square me-1"></i>{{ shiftsDoneCount(appt.id) }} shift{{ shiftsDoneCount(appt.id) !== 1 ? 's' : '' }} done
+              </span>
+              <span class="sch-chip sch-pending" *ngIf="pendingConfirmCount(appt.id) > 0">
+                <i class="bi bi-hourglass-split me-1"></i>{{ pendingConfirmCount(appt.id) }} awaiting nurse
+              </span>
             </div>
             <!-- Applicant badge for PENDING appointments -->
             <div *ngIf="appt.status === 'PENDING' && appt.applicantCount > 0" class="applicant-badge mt-2">

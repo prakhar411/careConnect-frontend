@@ -6,6 +6,7 @@ import { ShiftService } from '../../../services/shift.service';
 import { PaymentService } from '../../../services/payment.service';
 import { VitalSignService } from '../../../services/vital-sign.service';
 import { MedicalRecordService } from '../../../services/medical-record.service';
+import { TelehealthService } from '../../../services/telehealth.service';
 
 @Component({
   selector: 'app-my-nurses',
@@ -17,6 +18,7 @@ export class MyNursesComponent implements OnInit, OnDestroy, AfterViewChecked {
   @ViewChild('msgEnd') msgEnd!: ElementRef;
 
   isLoading        = true;
+  nurseTab: 'active' | 'previous' = 'active';
   allAppointments: any[] = [];
   selectedNurse: any = null;
 
@@ -25,12 +27,13 @@ export class MyNursesComponent implements OnInit, OnDestroy, AfterViewChecked {
   loadingShifts = new Set<number>();
 
   // Mark shift modal
-  shiftModal: any  = null;   // appointment being marked
-  shiftDate        = '';
-  shiftNotes       = '';
-  shiftDateError   = '';
-  isMarkingShift   = false;
-  shiftSuccess     = '';
+  shiftModal:        any     = null;
+  shiftDate                  = '';
+  shiftNotes                 = '';
+  shiftDateError             = '';
+  isMarkingShift             = false;
+  shiftSuccess               = '';
+  shiftAlreadyMarked         = false;
 
   // Negotiation within mark-shift modal
   wantsToNegotiate = false;
@@ -80,7 +83,11 @@ export class MyNursesComponent implements OnInit, OnDestroy, AfterViewChecked {
   reconcileSuccess: Record<number, boolean> = {};
 
   // ── Care Progress ─────────────────────────────────────────────────────────
-  careTab: 'vitals' | 'notes' | 'symptoms' | 'medications' | 'tips' = 'vitals';
+  careTab: 'vitals' | 'notes' | 'symptoms' | 'medications' | 'tips' | 'telehealth' = 'vitals';
+
+  // Telehealth
+  nurseMedia: any[] = [];
+  isLoadingTelehealth = false;
   vitals:      any[] = [];
   careNotes:   any[] = [];
   medications: any[] = [];
@@ -114,13 +121,14 @@ export class MyNursesComponent implements OnInit, OnDestroy, AfterViewChecked {
   };
 
   constructor(
-    private auth:        AuthService,
-    private apptService: AppointmentService,
-    private msgSvc:      MessageService,
-    private shiftSvc:    ShiftService,
-    private paymentSvc:  PaymentService,
-    private vitalSvc:    VitalSignService,
-    private medSvc:      MedicalRecordService
+    private auth:         AuthService,
+    private apptService:  AppointmentService,
+    private msgSvc:       MessageService,
+    private shiftSvc:     ShiftService,
+    private paymentSvc:   PaymentService,
+    private vitalSvc:     VitalSignService,
+    private medSvc:       MedicalRecordService,
+    private telehealthSvc: TelehealthService
   ) {}
 
   ngOnInit(): void {
@@ -194,15 +202,43 @@ export class MyNursesComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   hasActiveAppointment(nurseId: number): boolean {
-    const ACTIVE = ['PENDING', 'CONFIRMED', 'IN_PROGRESS'];
+    const ACTIVE = ['CONFIRMED', 'IN_PROGRESS'];
     return this.allAppointments.some(a =>
       a.nurseId === nurseId && ACTIVE.includes((a.status || '').toUpperCase())
     );
   }
 
+  hasConfirmedAppt(nurseId: number): boolean {
+    return this.hasActiveAppointment(nurseId);
+  }
+
+  get activeNurses(): any[] {
+    return this.assignedNurses.filter(n => this.hasActiveAppointment(n.nurseId));
+  }
+
+  get previousNurses(): any[] {
+    return this.assignedNurses.filter(n => {
+      if (this.hasActiveAppointment(n.nurseId)) return false;
+      const appts = this.appointmentsFor(n.nurseId);
+      // Show if any appointment was COMPLETED (work fully done)
+      const hasCompleted = appts.some(a => (a.status || '').toUpperCase() === 'COMPLETED');
+      // Show if any appointment was CANCELLED but had actual shifts
+      const hadShiftsOnCancelled = appts
+        .filter(a => (a.status || '').toUpperCase() === 'CANCELLED')
+        .some(a => (this.shiftsMap[a.id] || []).filter((s: any) => s.status !== 'REJECTED').length > 0);
+      return hasCompleted || hadShiftsOnCancelled;
+    });
+  }
+
+  completedShiftsFor(nurseId: number): number {
+    return this.appointmentsFor(nurseId)
+      .reduce((sum, a) => sum + (this.shiftsMap[a.id] || []).filter((s: any) => s.status === 'CONFIRMED').length, 0);
+  }
+
   openDetail(nurse: any): void {
     this.selectedNurse      = nurse;
     this.careTab            = 'vitals';
+    this.nurseMedia         = [];
     this.vitals             = [];
     this.careNotes          = [];
     this.medications        = [];
@@ -214,6 +250,17 @@ export class MyNursesComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.loadCareProgress();
   }
   closeDetail(): void { this.selectedNurse = null; }
+
+  loadTelehealth(nurseUserId: number): void {
+    this.isLoadingTelehealth = true;
+    this.nurseMedia = [];
+    this.telehealthSvc.getByNurse(nurseUserId).subscribe({
+      next: (data) => { this.nurseMedia = data || []; this.isLoadingTelehealth = false; },
+      error: () => { this.isLoadingTelehealth = false; }
+    });
+  }
+
+  telehealthFileUrl(fileName: string): string { return this.telehealthSvc.fileUrl(fileName); }
 
   private loadCareProgress(): void {
     this.isLoadingCare = true;
@@ -240,6 +287,10 @@ export class MyNursesComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   submitSymptomReport(): void {
+    if (!this.hasConfirmedAppt(this.selectedNurse?.nurseId)) {
+      this.symptomError = 'No active appointment with this nurse. Symptom reporting is only available for confirmed assignments.';
+      return;
+    }
     if (this.selectedSymptoms.size === 0) {
       this.symptomError = 'Please select at least one symptom.'; return;
     }
@@ -303,7 +354,7 @@ export class MyNursesComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   confirmedShiftsFor(appointmentId: number): any[] {
-    return this.shiftsFor(appointmentId).filter(s => s.status === 'CONFIRMED');
+    return this.shiftsFor(appointmentId).filter(s => s.status === 'CONFIRMED' && !s._locallyPaid);
   }
 
   pendingShiftsFor(appointmentId: number): any[] {
@@ -315,17 +366,36 @@ export class MyNursesComponent implements OnInit, OnDestroy, AfterViewChecked {
       .reduce((sum, s) => sum + (s.finalRate || s.originalRate || 0), 0);
   }
 
+  totalShiftsDone(appointmentId: number): number {
+    return this.shiftsFor(appointmentId).filter(s => s.status !== 'REJECTED').length;
+  }
+
+  bookingDays(appt: any): number | null {
+    if (!appt?.appointmentDate || !appt?.endDate) return null;
+    const start = new Date(appt.appointmentDate).getTime();
+    const end   = new Date(appt.endDate).getTime();
+    const days  = Math.ceil((end - start) / 86400000) + 1;
+    return days > 0 ? days : null;
+  }
+
+  remainingShifts(appt: any): number | null {
+    const days = this.bookingDays(appt);
+    if (days === null) return null;
+    return Math.max(0, days - this.totalShiftsDone(appt.id));
+  }
+
   // ── Mark Shift Modal ──────────────────────────────────────────────────────
 
   openShiftModal(appt: any): void {
-    this.shiftModal       = appt;
-    this.shiftDate        = this.today;
-    this.shiftNotes       = '';
-    this.shiftDateError   = '';
-    this.shiftSuccess     = '';
-    this.wantsToNegotiate = false;
-    this.negotiatedRate   = '';
-    this.negotiateError   = '';
+    this.shiftModal        = appt;
+    this.shiftDate         = this.today;
+    this.shiftNotes        = '';
+    this.shiftDateError    = '';
+    this.shiftSuccess      = '';
+    this.shiftAlreadyMarked = false;
+    this.wantsToNegotiate  = false;
+    this.negotiatedRate    = '';
+    this.negotiateError    = '';
   }
 
   closeShiftModal(): void { this.shiftModal = null; }
@@ -378,8 +448,9 @@ export class MyNursesComponent implements OnInit, OnDestroy, AfterViewChecked {
       notes:          this.shiftNotes
     }).subscribe({
       next: (newShift) => {
-        this.isMarkingShift  = false;
-        this.shiftSuccess    = successMsg;
+        this.isMarkingShift   = false;
+        this.shiftAlreadyMarked = true;
+        this.shiftSuccess     = successMsg;
         if (!this.shiftsMap[this.shiftModal.id]) this.shiftsMap[this.shiftModal.id] = [];
         this.shiftsMap[this.shiftModal.id].unshift(newShift);
         setTimeout(() => this.closeShiftModal(), 2500);
@@ -442,8 +513,15 @@ export class MyNursesComponent implements OnInit, OnDestroy, AfterViewChecked {
         const list = Array.isArray(payments) ? payments : [payments];
         this.paymentRefs = list.map((p: any) => p.referenceNumber).filter(Boolean);
         this.paySuccess  = 'Payment successful!';
-        // Refresh shifts + reload all appointments to update total
-        this.loadShiftsFor(this.payModal.appt.id);
+        // Immediately mark confirmed shifts as locally paid so due shows ₹0 right away
+        const apptId = this.payModal.appt.id;
+        if (this.shiftsMap[apptId]) {
+          this.shiftsMap[apptId] = this.shiftsMap[apptId].map((s: any) =>
+            s.status === 'CONFIRMED' ? { ...s, _locallyPaid: true } : s
+          );
+        }
+        // Background reload to get true state from backend
+        this.loadShiftsFor(apptId);
         this.apptService.getByPatient(this.myUserId).subscribe({
           next: (data) => { this.allAppointments = data || []; }
         });

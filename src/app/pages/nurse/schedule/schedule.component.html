@@ -10,6 +10,7 @@
       <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-schedule" routerLinkActive="active"><i class="bi bi-calendar3"></i> Schedule</a></li>
       <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-payments" routerLinkActive="active"><i class="bi bi-cash-stack"></i> Payments</a></li>
       <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-training" routerLinkActive="active"><i class="bi bi-mortarboard"></i> Training</a></li>
+      <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-telehealth" routerLinkActive="active"><i class="bi bi-camera-video-fill"></i> Telehealth</a></li>
       <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-notifications" routerLinkActive="active"><i class="bi bi-bell-fill"></i> Notifications<span *ngIf="unreadCount>0" style="background:#ef4444;color:white;border-radius:20px;font-size:.65rem;font-weight:700;padding:1px 7px;margin-left:auto;">{{unreadCount}}</span></a></li>
       <div class="sidebar-divider mt-auto"></div>
       <li class="nav-item">
@@ -88,8 +89,11 @@
           <div *ngFor="let shift of upcomingShifts" class="shift-row">
             <div class="shift-date-badge">{{ monthDay(shift.date) }}</div>
             <div class="flex-grow-1">
-              <p class="mb-0 fw-semibold" style="font-size:0.9rem;">{{ shift.shift }}</p>
-              <small class="text-muted"><i class="bi bi-hospital me-1"></i>{{ shift.facility }} &bull; {{ shift.hours }}hrs</small>
+              <p class="mb-0 fw-semibold" style="font-size:0.9rem;">{{ shift.facility }}</p>
+              <small class="text-muted">
+                <i class="bi bi-calendar3 me-1"></i>{{ shift.date }}
+                <span *ngIf="shift.rateInfo"> &bull; <i class="bi bi-currency-rupee"></i>{{ shift.rateInfo }}</span>
+              </small>
             </div>
             <span class="status-badge" [ngClass]="statusClass(shift.status)">{{ shift.status }}</span>
           </div>
@@ -101,12 +105,12 @@
           <h6 class="section-title"><i class="bi bi-clock-history me-2"></i>Assignment History</h6>
           <div class="table-responsive">
             <table class="w-100 hist-table">
-              <thead><tr><th>Date</th><th>Facility</th><th>Shift</th><th>Hours</th><th>Status</th></tr></thead>
+              <thead><tr><th>Date</th><th>Patient</th><th>Rate</th><th>Hours</th><th>Status</th></tr></thead>
               <tbody>
                 <tr *ngFor="let h of history">
                   <td>{{ h.date }}</td>
                   <td>{{ h.facility }}</td>
-                  <td>{{ h.shift }}</td>
+                  <td>{{ h.rateInfo || '—' }}</td>
                   <td>{{ h.hours }}h</td>
                   <td><span class="status-badge" [ngClass]="statusClass(h.status)">{{ h.status }}</span></td>
                 </tr>

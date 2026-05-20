@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../../../services/auth.service';
 import { AppointmentService } from '../../../services/appointment.service';
 import { PaymentService } from '../../../services/payment.service';
+import { ShiftService } from '../../../services/shift.service';
 
 @Component({
   selector: 'app-my-appointments',
@@ -27,8 +28,9 @@ export class MyAppointmentsComponent implements OnInit {
   selectedPayMethod        = 'UPI';  // UPI or BANK_TRANSFER
   isProcessingPayment      = false;
   paySuccess               = '';
-  appointments: any[] = [];    // stores full raw backend objects
-  rawAppointments: any[] = []; // kept for reference
+  appointments:    any[] = [];
+  rawAppointments: any[] = [];
+  shiftsMap: Record<number, any[]> = {};
 
   // Applicants panel
   applicantsTarget: any   = null;
@@ -62,9 +64,10 @@ export class MyAppointmentsComponent implements OnInit {
   minutes = ['00','15','30','45'];
 
   constructor(
-    private auth: AuthService,
+    private auth:       AuthService,
     private apptService: AppointmentService,
-    private paymentSvc: PaymentService
+    private paymentSvc: PaymentService,
+    private shiftSvc:   ShiftService
   ) {}
 
   ngOnInit(): void {
@@ -79,6 +82,20 @@ export class MyAppointmentsComponent implements OnInit {
       },
       error: () => { this.isLoading = false; }
     });
+
+    // Load all shifts for this patient, grouped by appointmentId
+    this.shiftSvc.getByPatient(userId).subscribe({
+      next: (shifts) => {
+        const map: Record<number, any[]> = {};
+        (shifts || []).forEach((s: any) => {
+          if (!map[s.appointmentId]) map[s.appointmentId] = [];
+          map[s.appointmentId].push(s);
+        });
+        this.shiftsMap = map;
+      },
+      error: () => {}
+    });
+
     this.loadPendingPayments(userId);
   }
 
@@ -335,6 +352,32 @@ export class MyAppointmentsComponent implements OnInit {
         this.isProcessingPayment = false;
       }
     });
+  }
+
+  // ── Shift helpers ─────────────────────────────────────────────────────────
+
+  shiftsFor(apptId: number): any[] {
+    return this.shiftsMap[apptId] || [];
+  }
+
+  latestShiftDate(apptId: number): string | null {
+    const done = this.shiftsFor(apptId)
+      .filter(s => s.status === 'CONFIRMED' || s.status === 'PENDING_CONFIRMATION')
+      .sort((a, b) => (b.shiftDate || '').localeCompare(a.shiftDate || ''));
+    return done.length > 0 ? done[0].shiftDate : null;
+  }
+
+  shiftsDoneCount(apptId: number): number {
+    return this.shiftsFor(apptId).filter(s => s.status !== 'REJECTED').length;
+  }
+
+  pendingConfirmCount(apptId: number): number {
+    return this.shiftsFor(apptId).filter(s => s.status === 'PENDING_CONFIRMATION').length;
+  }
+
+  formatShiftDate(d: string): string {
+    if (!d) return '—';
+    return new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
   }
 
   formatAmount(n: number): string {

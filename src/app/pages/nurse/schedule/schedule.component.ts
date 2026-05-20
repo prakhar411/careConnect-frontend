@@ -11,7 +11,8 @@ interface Shift {
   facility: string;
   shift: string;
   hours: number;
-  status: 'Upcoming' | 'Completed' | 'Cancelled';
+  status: 'Upcoming' | 'Completed' | 'Cancelled' | 'Pending';
+  rateInfo?: string;
 }
 
 @Component({
@@ -68,16 +69,50 @@ export class ScheduleComponent implements OnInit, OnDestroy {
       shifts:       this.shiftSvc.getByNurse(userId)
     }).subscribe({
       next: ({ appointments, shifts }) => {
-        const now = new Date();
+        const today = new Date().toISOString().split('T')[0];
 
+        // Build appointment lookup map
+        const apptMap = new Map<number, any>();
+        (appointments || []).forEach((a: any) => apptMap.set(a.id, a));
+
+        // Track which appointments already have shift entries
+        const coveredApptIds = new Set<number>();
+
+        // Build entries from actual shift records (these are the real marked shifts)
+        (shifts || []).forEach((s: any) => {
+          if (s.status === 'REJECTED') return;
+          const appt      = apptMap.get(s.appointmentId);
+          const patient   = appt?.patientName || 'Patient';
+          const isPast    = (s.shiftDate || '') < today;
+          const rate      = s.finalRate || s.ratePerShift || s.originalRate || 0;
+          const entry: Shift = {
+            date:     s.shiftDate || today,
+            facility: `Patient: ${patient}`,
+            shift:    s.shiftDate || '',
+            hours:    4,
+            status:   s.status === 'PENDING_CONFIRMATION' ? 'Pending'
+                    : isPast ? 'Completed' : 'Upcoming',
+            rateInfo: rate > 0 ? '₹' + Number(rate).toLocaleString('en-IN') : ''
+          };
+          if (isPast && s.status === 'CONFIRMED') this.history.push(entry);
+          else this.upcomingShifts.push(entry);
+          coveredApptIds.add(s.appointmentId);
+        });
+
+        // For appointments with NO shifts yet, show once based on appointmentDate
         (appointments || []).forEach((appt: any) => {
-          const date  = new Date(appt.appointmentDate);
-          const shift = this.buildShift(appt, date, now);
-          if (date >= now && appt.status !== 'CANCELLED') {
-            this.upcomingShifts.push(shift);
-          } else {
-            this.history.push(shift);
-          }
+          if (coveredApptIds.has(appt.id) || appt.status === 'CANCELLED') return;
+          const date   = new Date(appt.appointmentDate);
+          const isPast = appt.appointmentDate.slice(0, 10) < today;
+          const entry: Shift = {
+            date:     appt.appointmentDate.slice(0, 10),
+            facility: appt.patientName ? `Patient: ${appt.patientName}` : 'CareConnect',
+            shift:    this.formatTime(date),
+            hours:    appt.duration ? parseInt(appt.duration, 10) || 4 : 4,
+            status:   isPast ? 'Completed' : 'Upcoming'
+          };
+          if (isPast) this.history.push(entry);
+          else this.upcomingShifts.push(entry);
         });
 
         this.upcomingShifts.sort((a, b) => a.date.localeCompare(b.date));
@@ -92,21 +127,6 @@ export class ScheduleComponent implements OnInit, OnDestroy {
       },
       error: () => { this.isLoading = false; }
     });
-  }
-
-  private buildShift(appt: any, date: Date, now: Date): Shift {
-    const status: 'Upcoming' | 'Completed' | 'Cancelled' =
-      appt.status === 'CANCELLED' ? 'Cancelled'
-      : date >= now               ? 'Upcoming'
-      : 'Completed';
-
-    return {
-      date:     date.toISOString().slice(0, 10),
-      facility: appt.patientName ? `Patient: ${appt.patientName}` : 'CareConnect',
-      shift:    this.formatTime(date),
-      hours:    appt.duration ? parseInt(appt.duration, 10) || 4 : 4,
-      status
-    };
   }
 
   private formatTime(date: Date): string {
@@ -159,6 +179,7 @@ export class ScheduleComponent implements OnInit, OnDestroy {
   statusClass(s: string) {
     if (s === 'Upcoming')  return 'badge-upcoming';
     if (s === 'Completed') return 'badge-completed';
+    if (s === 'Pending')   return 'badge-pending-confirm';
     return 'badge-cancelled';
   }
 

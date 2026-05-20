@@ -1,0 +1,280 @@
+<div class="d-flex">
+
+  <!-- SIDEBAR -->
+  <nav class="fixed-sidebar text-white p-3 d-none d-md-block">
+    <div class="sidebar-brand">
+      <i class="bi bi-heart-pulse-fill"></i>
+      <span>CareConnect</span>
+    </div>
+    <ul class="nav flex-column">
+      <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-dashboard"      routerLinkActive="active"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+      <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-profile"        routerLinkActive="active"><i class="bi bi-person-badge"></i> My Profile</a></li>
+      <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-available-jobs" routerLinkActive="active"><i class="bi bi-briefcase"></i> Jobs</a></li>
+      <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-applications"   routerLinkActive="active"><i class="bi bi-journal-bookmark-fill"></i> Applications</a></li>
+      <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-my-patients"    routerLinkActive="active"><i class="bi bi-people-fill"></i> My Patients</a></li>
+      <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-schedule"       routerLinkActive="active"><i class="bi bi-calendar3"></i> Schedule</a></li>
+      <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-payments"       routerLinkActive="active"><i class="bi bi-cash-stack"></i> Payments</a></li>
+      <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-training"       routerLinkActive="active"><i class="bi bi-mortarboard"></i> Training</a></li>
+      <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-telehealth"     routerLinkActive="active"><i class="bi bi-camera-video-fill"></i> Telehealth</a></li>
+      <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-notifications"  routerLinkActive="active"><i class="bi bi-bell-fill"></i> Notifications</a></li>
+      <div class="sidebar-divider mt-auto"></div>
+      <li class="nav-item"><a class="nav-link-custom logout-link" style="cursor:pointer;" (click)="logout()"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+    </ul>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main-content p-4 w-100">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+      <div>
+        <h4 class="page-title">Telehealth Media Hub</h4>
+        <p class="page-subtitle">Record consultations, upload care videos, and share educational content with patients</p>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="th-btn th-btn-outline" [class.th-btn-active]="section==='gallery'"
+                (click)="section='gallery'">
+          <i class="bi bi-grid-3x3-gap-fill me-1"></i>My Media
+        </button>
+        <button class="th-btn" [class.th-btn-active]="section==='upload'"
+                (click)="section='upload'">
+          <i class="bi bi-cloud-arrow-up-fill me-1"></i>Upload File
+        </button>
+        <button class="th-btn th-btn-rec" [class.th-btn-active]="section==='record'"
+                (click)="section='record'">
+          <i class="bi bi-record-circle me-1"></i>Record Video
+        </button>
+      </div>
+    </div>
+
+    <!-- SUCCESS TOASTS -->
+    <div *ngIf="uploadSuccess || recordSuccess" class="th-toast mb-3">
+      <i class="bi bi-check-circle-fill me-2"></i>{{ uploadSuccess || recordSuccess }}
+    </div>
+
+    <!-- ══ GALLERY ══ -->
+    <ng-container *ngIf="section==='gallery'">
+      <div *ngIf="isLoading" class="text-center py-5">
+        <div class="spinner-border text-success"></div>
+        <p class="mt-2 text-muted">Loading media…</p>
+      </div>
+
+      <div *ngIf="!isLoading && myMedia.length === 0" class="th-empty">
+        <i class="bi bi-camera-video fs-1 d-block mb-3" style="color:#c8ddd8;"></i>
+        <p>No media uploaded yet.</p>
+        <p class="text-muted" style="font-size:0.85rem;">
+          Upload a file or record a video to share with your patients.
+        </p>
+      </div>
+
+      <div class="th-grid" *ngIf="!isLoading && myMedia.length > 0">
+        <div class="th-card" *ngFor="let m of myMedia">
+
+          <!-- Preview area -->
+          <div class="th-preview">
+            <video *ngIf="m.fileType === 'video'" [src]="fileUrl(m.fileName)"
+                   controls class="th-video" preload="metadata">
+            </video>
+            <img *ngIf="m.fileType === 'image'" [src]="fileUrl(m.fileName)"
+                 class="th-img" [alt]="m.title">
+            <div *ngIf="m.fileType === 'document'" class="th-doc-icon">
+              <i class="bi bi-file-earmark-text-fill"></i>
+              <a [href]="fileUrl(m.fileName)" target="_blank" class="th-doc-link">
+                Open Document
+              </a>
+            </div>
+          </div>
+
+          <!-- Card body -->
+          <div class="th-card-body">
+            <div class="th-cat-chip">
+              <i [class]="'bi ' + categoryIcon(m.category) + ' me-1'"></i>{{ m.category }}
+            </div>
+            <div class="th-card-title">{{ m.title }}</div>
+            <div class="th-card-meta">
+              <span><i class="bi bi-person-fill me-1"></i>{{ m.patientName }}</span>
+              <span class="ms-auto">{{ formatDate(m.createdAt) }}</span>
+            </div>
+            <div *ngIf="m.description" class="th-desc">{{ m.description }}</div>
+            <div class="d-flex gap-2 mt-2">
+              <a [href]="fileUrl(m.fileName)" target="_blank" class="th-btn-sm">
+                <i class="bi bi-box-arrow-up-right me-1"></i>Open
+              </a>
+              <button class="th-btn-sm th-btn-del" (click)="deleteMedia(m)">
+                <i class="bi bi-trash3"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ══ UPLOAD FILE ══ -->
+    <ng-container *ngIf="section==='upload'">
+      <div class="th-form-card">
+        <div class="th-form-title">
+          <i class="bi bi-cloud-arrow-up-fill me-2"></i>Upload Media for Patient
+        </div>
+
+        <form [formGroup]="uploadForm" (ngSubmit)="onUploadSubmit()">
+          <div class="row g-3">
+
+            <div class="col-12">
+              <label class="th-label">Select File *</label>
+              <div class="th-file-drop" (click)="fileInput.click()">
+                <i class="bi bi-cloud-arrow-up fs-2 mb-2" style="color:#1d8c6e;"></i>
+                <div *ngIf="!selectedFileName">
+                  Click to select or drag a file<br>
+                  <small style="color:#9ab8b0;">Accepts: video (MP4, WebM, MOV), image (JPG, PNG), PDF, DOC</small>
+                </div>
+                <div *ngIf="selectedFileName" class="th-selected-file">
+                  <i class="bi bi-file-check-fill me-2" style="color:#1d8c6e;"></i>{{ selectedFileName }}
+                </div>
+                <input #fileInput type="file" class="d-none"
+                       accept="video/*,image/*,.pdf,.doc,.docx"
+                       (change)="onFileSelect($event)">
+              </div>
+              <small class="th-err" *ngIf="uploadError && !selectedFile">{{ uploadError }}</small>
+            </div>
+
+            <div class="col-md-6">
+              <label class="th-label">Patient *</label>
+              <select class="th-input" formControlName="patientUserId"
+                      [class.th-input-err]="uf['patientUserId'].touched && uf['patientUserId'].invalid">
+                <option value="">Select patient</option>
+                <option *ngFor="let p of patients" [value]="p.id">{{ p.name }}</option>
+              </select>
+              <small class="th-err" *ngIf="uf['patientUserId'].touched && uf['patientUserId'].invalid">
+                Please select a patient.
+              </small>
+            </div>
+
+            <div class="col-md-6">
+              <label class="th-label">Category *</label>
+              <select class="th-input" formControlName="category">
+                <option *ngFor="let c of CATEGORIES" [value]="c">{{ c }}</option>
+              </select>
+            </div>
+
+            <div class="col-12">
+              <label class="th-label">Title *</label>
+              <input class="th-input" formControlName="title" placeholder="e.g. Post-discharge care instructions"
+                     [class.th-input-err]="uf['title'].touched && uf['title'].invalid">
+              <small class="th-err" *ngIf="uf['title'].touched && uf['title'].hasError('required')">Title is required.</small>
+              <small class="th-err" *ngIf="uf['title'].touched && uf['title'].hasError('minlength')">Minimum 3 characters.</small>
+            </div>
+
+            <div class="col-12">
+              <label class="th-label">Description <span style="color:#9ab8b0;font-weight:400;">(optional)</span></label>
+              <textarea class="th-input" formControlName="description" rows="3"
+                        placeholder="Brief notes about this media…" maxlength="300"></textarea>
+            </div>
+
+          </div>
+
+          <div class="d-flex gap-2 mt-3 align-items-center">
+            <button type="submit" class="th-btn" [disabled]="isUploading">
+              <span *ngIf="!isUploading"><i class="bi bi-cloud-arrow-up me-1"></i>Upload</span>
+              <span *ngIf="isUploading">Uploading…</span>
+            </button>
+            <button type="button" class="th-btn th-btn-outline" (click)="section='gallery'">Cancel</button>
+            <small class="th-err ms-2" *ngIf="uploadError && selectedFile">{{ uploadError }}</small>
+          </div>
+        </form>
+      </div>
+    </ng-container>
+
+    <!-- ══ RECORD VIDEO ══ -->
+    <ng-container *ngIf="section==='record'">
+      <div class="row g-4">
+        <!-- Camera panel -->
+        <div class="col-lg-6">
+          <div class="th-form-card">
+            <div class="th-form-title">
+              <i class="bi bi-record-circle me-2" style="color:#ef4444;"></i>Camera
+            </div>
+
+            <div class="th-camera-wrap">
+              <video #cameraPreview class="th-camera-video" autoplay muted playsinline></video>
+              <div *ngIf="isRecording" class="th-rec-badge">
+                <span class="rec-dot"></span> REC {{ formatTime(recordSeconds) }}
+              </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-3 justify-content-center">
+              <button class="th-btn th-btn-rec" *ngIf="!isRecording && !isStopped"
+                      (click)="startRecording()">
+                <i class="bi bi-record-circle me-1"></i>Start Recording
+              </button>
+              <button class="th-btn th-btn-stop" *ngIf="isRecording"
+                      (click)="stopRecording()">
+                <i class="bi bi-stop-circle me-1"></i>Stop Recording
+              </button>
+              <button class="th-btn th-btn-outline" *ngIf="isStopped"
+                      (click)="discardRecording()">
+                <i class="bi bi-arrow-counterclockwise me-1"></i>Re-record
+              </button>
+            </div>
+
+            <div class="th-camera-note">
+              <i class="bi bi-info-circle me-1"></i>
+              Browser will ask for camera &amp; microphone permission. Recordings save as WebM video.
+            </div>
+          </div>
+        </div>
+
+        <!-- Save form -->
+        <div class="col-lg-6">
+          <div class="th-form-card" [class.th-form-disabled]="!isStopped">
+            <div class="th-form-title">
+              <i class="bi bi-save me-2"></i>Save Recording
+              <span *ngIf="!isStopped" style="font-size:0.75rem;color:#9ab8b0;font-weight:400;margin-left:8px;">
+                (record a video first)
+              </span>
+            </div>
+
+            <form [formGroup]="recordForm" (ngSubmit)="onUploadRecording()">
+              <div class="row g-3">
+                <div class="col-12">
+                  <label class="th-label">Patient *</label>
+                  <select class="th-input" formControlName="patientUserId"
+                          [class.th-input-err]="rf['patientUserId'].touched && rf['patientUserId'].invalid">
+                    <option value="">Select patient</option>
+                    <option *ngFor="let p of patients" [value]="p.id">{{ p.name }}</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label class="th-label">Category *</label>
+                  <select class="th-input" formControlName="category">
+                    <option *ngFor="let c of CATEGORIES" [value]="c">{{ c }}</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label class="th-label">Title *</label>
+                  <input class="th-input" formControlName="title"
+                         placeholder="e.g. Consultation — 20 May 2026"
+                         [class.th-input-err]="rf['title'].touched && rf['title'].invalid">
+                  <small class="th-err" *ngIf="rf['title'].touched && rf['title'].hasError('required')">Title is required.</small>
+                </div>
+                <div class="col-12">
+                  <label class="th-label">Notes <span style="color:#9ab8b0;font-weight:400;">(optional)</span></label>
+                  <textarea class="th-input" formControlName="description" rows="2"
+                            placeholder="Session notes…" maxlength="300"></textarea>
+                </div>
+              </div>
+
+              <div class="d-flex gap-2 mt-3 align-items-center">
+                <button type="submit" class="th-btn" [disabled]="isUploadingRecord || !isStopped">
+                  <span *ngIf="!isUploadingRecord"><i class="bi bi-save me-1"></i>Save Recording</span>
+                  <span *ngIf="isUploadingRecord">Saving…</span>
+                </button>
+                <small class="th-err ms-2" *ngIf="recordError">{{ recordError }}</small>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+  </div>
+</div>

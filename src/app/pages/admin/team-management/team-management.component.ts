@@ -14,6 +14,7 @@ export class TeamManagementComponent implements OnInit {
 
   isLoading     = true;
   addOpen       = false;
+  addMode: 'doctor' | 'staff' | null = null;
   isSaving      = false;
   successMsg    = '';
   errorMsg      = '';
@@ -24,12 +25,29 @@ export class TeamManagementComponent implements OnInit {
   memberForm: FormGroup;
   private orgUserId!: number;
 
-  readonly STAFF_ROLES = [
+  readonly DOCTOR_ROLES = [
     'Doctor', 'Senior Consultant', 'Junior Doctor', 'Resident Doctor',
-    'Specialist', 'Medical Officer', 'Head of Department',
+    'Specialist', 'Medical Officer', 'Head of Department'
+  ];
+
+  readonly ADMIN_ROLES = [
     'Hospital Administrator', 'HR Manager', 'Operations Manager',
     'Compliance Officer', 'Finance Manager', 'Nursing Supervisor', 'Support Staff'
   ];
+
+  get activeRoles(): string[] {
+    return this.addMode === 'doctor' ? this.DOCTOR_ROLES : this.ADMIN_ROLES;
+  }
+
+  get doctorMembers(): any[] {
+    return this.teamMembers.filter(m => this.DOCTOR_ROLES.includes(m.role));
+  }
+
+  get staffMembers(): any[] {
+    return this.teamMembers.filter(m => !this.DOCTOR_ROLES.includes(m.role));
+  }
+
+  readonly STAFF_ROLES = [...this.DOCTOR_ROLES, ...this.ADMIN_ROLES];
 
   readonly DEPARTMENTS = [
     'Cardiology', 'Neurology', 'Orthopedics', 'Pediatrics', 'Emergency',
@@ -207,6 +225,7 @@ export class TeamManagementComponent implements OnInit {
         this.teamMembers.push(member);
         this.isSaving  = false;
         this.addOpen   = false;
+        this.addMode   = null;
         this.successMsg = 'Team member added successfully!';
         this.memberForm.reset({ phoneCountryCode: '+91' });
         setTimeout(() => this.successMsg = '', 3000);

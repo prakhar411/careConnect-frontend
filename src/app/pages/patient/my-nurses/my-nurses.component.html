@@ -62,9 +62,25 @@
   <!-- MAIN CONTENT -->
   <div class="main-content p-4 w-100">
 
-    <div class="mb-4">
+    <div class="mb-3">
       <h4 class="page-title">My Nurses</h4>
-      <p class="page-subtitle">All nurses assigned to your care</p>
+      <p class="page-subtitle">Your assigned and previous nursing staff</p>
+    </div>
+
+    <!-- Tab row -->
+    <div class="nurse-tab-row mb-4" *ngIf="!isLoading">
+      <button class="nurse-tab-btn" [class.nurse-tab-active]="nurseTab === 'active'"
+              (click)="nurseTab = 'active'">
+        <i class="bi bi-person-check-fill me-1"></i>
+        Active Nurses
+        <span class="nurse-tab-count" *ngIf="activeNurses.length > 0">{{ activeNurses.length }}</span>
+      </button>
+      <button class="nurse-tab-btn" [class.nurse-tab-active]="nurseTab === 'previous'"
+              (click)="nurseTab = 'previous'">
+        <i class="bi bi-clock-history me-1"></i>
+        Previous Nurses
+        <span class="nurse-tab-count nurse-tab-count-prev" *ngIf="previousNurses.length > 0">{{ previousNurses.length }}</span>
+      </button>
     </div>
 
     <!-- Loading -->
@@ -72,16 +88,26 @@
       <div class="spinner-border text-success" role="status"></div>
     </div>
 
-    <!-- Empty -->
+    <!-- Empty (no nurses at all) -->
     <div *ngIf="!isLoading && assignedNurses.length === 0" class="empty-card text-center py-5">
       <i class="bi bi-person-x-fill fs-1 d-block mb-3" style="color:#c8ddd8;"></i>
-      <h6 style="color:#7a9e98;">No nurses assigned yet</h6>
+      <h6 style="color:#7a9e98;">No nurses yet</h6>
+      <p class="small text-muted">Book an appointment — once a nurse is confirmed, they'll appear here.</p>
+    </div>
+
+    <!-- ── ACTIVE NURSES TAB ── -->
+    <div *ngIf="!isLoading && nurseTab === 'active'">
+
+    <!-- Empty state for active -->
+    <div *ngIf="activeNurses.length === 0" class="empty-card text-center py-5">
+      <i class="bi bi-person-dash-fill fs-1 d-block mb-3" style="color:#c8ddd8;"></i>
+      <h6 style="color:#7a9e98;">No active nurses</h6>
       <p class="small text-muted">Book an appointment — once a nurse is confirmed, they'll appear here.</p>
     </div>
 
     <!-- Nurse cards grid -->
-    <div class="nurses-grid" *ngIf="!isLoading && assignedNurses.length > 0">
-      <div class="nurse-card" *ngFor="let nurse of assignedNurses" (click)="openDetail(nurse)">
+    <div class="nurses-grid mb-4" *ngIf="activeNurses.length > 0">
+      <div class="nurse-card" *ngFor="let nurse of activeNurses" (click)="openDetail(nurse)">
 
         <!-- Avatar + identity -->
         <div class="nc-top">
@@ -230,7 +256,91 @@
         </div>
 
       </div>
+    </div> <!-- /nurses-grid -->
+
+    </div> <!-- /active tab -->
+
+    <!-- ── PREVIOUS NURSES TAB ── -->
+    <div *ngIf="!isLoading && nurseTab === 'previous'">
+
+    <!-- Empty state for previous -->
+    <div *ngIf="previousNurses.length === 0" class="empty-card text-center py-5">
+      <i class="bi bi-clock-history fs-1 d-block mb-3" style="color:#c8ddd8;"></i>
+      <h6 style="color:#7a9e98;">No previous nurses</h6>
+      <p class="small text-muted">Nurses from completed or cancelled (with shifts) appointments will appear here.</p>
     </div>
+
+    <div class="prev-nurses-grid mb-4" *ngIf="previousNurses.length > 0">
+      <div class="prev-nurse-card" *ngFor="let nurse of previousNurses" (click)="openDetail(nurse)">
+
+          <!-- Avatar + identity -->
+          <div class="nc-top">
+            <div class="nc-avatar prev-avatar"><i class="bi bi-person-fill"></i></div>
+            <div class="nc-identity">
+              <p class="nc-name">{{ nurse.nurseName }}</p>
+              <span class="nc-spec-badge" *ngIf="nurse.nurseSpecialization">{{ nurse.nurseSpecialization }}</span>
+              <span class="nc-spec-badge nc-spec-default" *ngIf="!nurse.nurseSpecialization">General Nursing</span>
+            </div>
+            <div class="nc-rating" *ngIf="nurse.nurseRating">
+              <i class="bi bi-star-fill"></i> {{ nurse.nurseRating | number:'1.1-1' }}
+            </div>
+          </div>
+
+          <!-- Quick stats -->
+          <div class="nc-stats">
+            <div class="nc-stat" *ngIf="nurse.nurseExperience">
+              <span class="nc-stat-val">{{ nurse.nurseExperience }}</span>
+              <span class="nc-stat-lbl">yrs exp</span>
+            </div>
+            <div class="nc-stat-divider" *ngIf="nurse.nurseExperience"></div>
+            <div class="nc-stat">
+              <span class="nc-stat-val">{{ appointmentsFor(nurse.nurseId).length }}</span>
+              <span class="nc-stat-lbl">session{{ appointmentsFor(nurse.nurseId).length !== 1 ? 's' : '' }}</span>
+            </div>
+            <div class="nc-stat-divider" *ngIf="completedShiftsFor(nurse.nurseId) > 0"></div>
+            <div class="nc-stat" *ngIf="completedShiftsFor(nurse.nurseId) > 0">
+              <span class="nc-stat-val">{{ completedShiftsFor(nurse.nurseId) }}</span>
+              <span class="nc-stat-lbl">shifts done</span>
+            </div>
+          </div>
+
+          <!-- Completed appointments summary -->
+          <div class="prev-appt-list">
+            <div class="prev-appt-row" *ngFor="let appt of appointmentsFor(nurse.nurseId)">
+              <span class="prev-appt-badge">Completed</span>
+              <span class="prev-appt-care">{{ appt.careNeeds || 'Home Care' }}</span>
+              <span class="prev-appt-date">
+                {{ appt.appointmentDate | date:'d MMM y' }}
+                <span *ngIf="appt.endDate"> → {{ appt.endDate | date:'d MMM y' }}</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Contact info -->
+          <div class="nc-details" style="margin-top:8px;">
+            <span *ngIf="nurse.nursePhone"><i class="bi bi-telephone me-1"></i>{{ nurse.nursePhone }}</span>
+            <span *ngIf="nurse.nurseEmail"><i class="bi bi-envelope me-1"></i>{{ nurse.nurseEmail }}</span>
+          </div>
+
+          <!-- Expertise tags -->
+          <div class="nc-expertise" *ngIf="nurse.nurseExpertise">
+            <span class="nc-tag nc-tag-prev" *ngFor="let tag of nurse.nurseExpertise.split(',').slice(0,3)">{{ tag.trim() }}</span>
+          </div>
+
+          <!-- Footer -->
+          <div class="prev-footer-row">
+            <span class="prev-view-btn">
+              <i class="bi bi-eye me-1"></i>View Care History
+            </span>
+            <span class="prev-no-chat">
+              <i class="bi bi-lock me-1"></i>Read-only
+            </span>
+          </div>
+
+        </div>
+      </div>
+
+    </div> <!-- /previous tab -->
 
     <!-- ── PAYMENT HISTORY + REFERENCE SEARCH ── -->
     <div class="pay-history-section mt-4" *ngIf="!isLoading && assignedNurses.length > 0">
@@ -330,6 +440,13 @@
 
   <div class="dp-body">
 
+    <!-- Past care banner for previous nurses -->
+    <div class="past-care-banner" *ngIf="!hasConfirmedAppt(selectedNurse.nurseId)">
+      <i class="bi bi-clock-history me-2"></i>
+      <strong>Past Care Record</strong> — This nurse is no longer actively assigned to you.
+      Viewing history only (vitals, notes, medications, telehealth).
+    </div>
+
     <!-- Rating banner -->
     <div class="dp-rating-banner" *ngIf="selectedNurse.nurseRating">
       <i class="bi bi-star-fill me-1" style="color:#f59e0b;"></i>
@@ -400,6 +517,10 @@
         </button>
         <button class="care-tab" [class.active]="careTab==='tips'"       (click)="careTab='tips'">
           <i class="bi bi-lightbulb me-1"></i>Health Tips
+        </button>
+        <button class="care-tab" [class.active]="careTab==='telehealth'"
+                (click)="careTab='telehealth'; loadTelehealth(selectedNurse?.nurseUserId)">
+          <i class="bi bi-camera-video me-1"></i>Telehealth
         </button>
       </div>
 
@@ -476,7 +597,19 @@
 
       <!-- Symptoms tab (AC 8.3) -->
       <ng-container *ngIf="!isLoadingCare && careTab==='symptoms'">
-        <div class="symptom-form mb-3">
+
+        <!-- No active appointment guard -->
+        <div *ngIf="!hasConfirmedAppt(selectedNurse.nurseId)" class="symptom-locked">
+          <i class="bi bi-lock-fill symptom-lock-icon"></i>
+          <div class="symptom-lock-title">Symptom Reporting Unavailable</div>
+          <div class="symptom-lock-msg">
+            You can only report symptoms when you have an active confirmed appointment with this nurse.
+            This nurse is not currently assigned to you.
+          </div>
+        </div>
+
+        <!-- Active appointment: show form -->
+        <div *ngIf="hasConfirmedAppt(selectedNurse.nurseId)" class="symptom-form mb-3">
           <div class="symptom-form-title"><i class="bi bi-activity me-1"></i>Report Symptoms</div>
           <div class="symptom-chips mb-2">
             <button *ngFor="let s of SYMPTOM_OPTIONS"
@@ -539,6 +672,44 @@
         </div>
       </ng-container>
 
+      <!-- Telehealth tab (AC 18.1, 18.5, 18.6) -->
+      <ng-container *ngIf="careTab==='telehealth'">
+        <div *ngIf="isLoadingTelehealth" class="text-center py-4">
+          <div class="spinner-border spinner-border-sm text-success"></div>
+          <span class="ms-2 text-muted small">Loading media…</span>
+        </div>
+        <div *ngIf="!isLoadingTelehealth && nurseMedia.length === 0" class="care-empty">
+          <i class="bi bi-camera-video"></i>
+          <span>No telehealth media shared yet.</span>
+        </div>
+        <div *ngIf="!isLoadingTelehealth && nurseMedia.length > 0">
+          <div *ngFor="let m of nurseMedia" class="th-patient-card mb-3">
+            <div class="th-patient-header">
+              <span class="th-patient-cat">
+                <i class="bi bi-camera-video-fill me-1"></i>{{ m.category }}
+              </span>
+              <span class="th-patient-date ms-auto">{{ m.createdAt | date:'d MMM y' }}</span>
+            </div>
+            <div class="th-patient-title">{{ m.title }}</div>
+            <div *ngIf="m.description" class="th-patient-desc">{{ m.description }}</div>
+            <!-- Video -->
+            <video *ngIf="m.fileType === 'video'" [src]="telehealthFileUrl(m.fileName)"
+                   controls class="th-patient-video mt-2" preload="metadata">
+            </video>
+            <!-- Image -->
+            <img *ngIf="m.fileType === 'image'" [src]="telehealthFileUrl(m.fileName)"
+                 class="th-patient-img mt-2" [alt]="m.title">
+            <!-- Document -->
+            <div *ngIf="m.fileType === 'document'" class="mt-2">
+              <a [href]="telehealthFileUrl(m.fileName)" target="_blank"
+                 class="btn btn-sm btn-outline-success">
+                <i class="bi bi-file-earmark-arrow-down me-1"></i>Open Document
+              </a>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
     </div>
 
     <!-- Appointment + Shift History -->
@@ -547,6 +718,33 @@
         <i class="bi bi-calendar3 me-2"></i>{{ appt.careNeeds || 'Home Care' }}
         <span class="appt-status-badge ms-2" [ngClass]="statusClass(appt.status)">{{ appt.status | titlecase }}</span>
       </div>
+
+      <!-- Booking + shift progress info row -->
+      <div class="booking-info-row mb-2">
+        <span *ngIf="bookingDays(appt) !== null" class="binfo-pill binfo-days">
+          <i class="bi bi-calendar-range me-1"></i>
+          {{ totalShiftsDone(appt.id) }} / {{ bookingDays(appt) }} days
+        </span>
+        <span *ngIf="bookingDays(appt) === null" class="binfo-pill binfo-shifts">
+          <i class="bi bi-check2-square me-1"></i>
+          {{ totalShiftsDone(appt.id) }} shift{{ totalShiftsDone(appt.id) !== 1 ? 's' : '' }} done
+        </span>
+        <span *ngIf="remainingShifts(appt) !== null && remainingShifts(appt)! > 0"
+              class="binfo-pill binfo-remaining">
+          <i class="bi bi-hourglass me-1"></i>{{ remainingShifts(appt) }} remaining
+        </span>
+        <span *ngIf="pendingShiftsFor(appt.id).length > 0" class="binfo-pill binfo-pending">
+          <i class="bi bi-hourglass-split me-1"></i>{{ pendingShiftsFor(appt.id).length }} awaiting nurse
+        </span>
+        <span *ngIf="totalConfirmedAmount(appt.id) > 0" class="binfo-pill binfo-due">
+          <i class="bi bi-cash me-1"></i>{{ formatAmount(totalConfirmedAmount(appt.id)) }} due
+        </span>
+        <span *ngIf="totalConfirmedAmount(appt.id) === 0 && totalShiftsDone(appt.id) > 0"
+              class="binfo-pill binfo-paid">
+          <i class="bi bi-check-circle-fill me-1"></i>All paid
+        </span>
+      </div>
+
       <div class="dp-appt-meta mb-2">
         <i class="bi bi-calendar-range me-1"></i>
         {{ appt.appointmentDate | date:'d MMM y' }}
@@ -569,13 +767,9 @@
         </div>
       </div>
 
-      <!-- Total + actions for active appointments -->
+      <!-- Actions for active appointments -->
       <div class="dp-appt-actions mt-2"
            *ngIf="appt.status === 'CONFIRMED' || appt.status === 'IN_PROGRESS'">
-        <div *ngIf="totalConfirmedAmount(appt.id) > 0" class="dp-amount-due">
-          <i class="bi bi-cash me-1"></i>
-          Total due: <strong>{{ formatAmount(totalConfirmedAmount(appt.id)) }}</strong>
-        </div>
         <div class="d-flex gap-2 mt-2">
           <button class="btn-mark-shift-sm" (click)="openShiftModal(appt)">
             <i class="bi bi-plus-circle me-1"></i>Mark Shift Done
@@ -677,9 +871,13 @@
     </div>
 
     <div class="d-flex gap-2">
-      <button class="btn-sm-confirm" (click)="submitShift()" [disabled]="isMarkingShift">
-        <span *ngIf="!isMarkingShift"><i class="bi bi-send me-1"></i>Submit for Nurse Confirmation</span>
+      <button class="btn-sm-confirm" (click)="submitShift()"
+              [disabled]="isMarkingShift || shiftAlreadyMarked">
+        <span *ngIf="!isMarkingShift && !shiftAlreadyMarked">
+          <i class="bi bi-send me-1"></i>Submit for Nurse Confirmation
+        </span>
         <span *ngIf="isMarkingShift"><span class="sm-spinner me-1"></span>Submitting…</span>
+        <span *ngIf="shiftAlreadyMarked"><i class="bi bi-check-circle me-1"></i>Submitted</span>
       </button>
       <button class="btn-sm-cancel" (click)="closeShiftModal()">Cancel</button>
     </div>
