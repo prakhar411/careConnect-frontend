@@ -49,8 +49,11 @@
 .appt-meta i { margin-right: 2px; }
 .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; }
 .badge-scheduled { background: #e4edff; color: #2563eb; }
+.badge-cancelled  { background: #fde8e8; color: #b91c1c; }
+.badge-completed  { background: #d1fae5; color: #065f46; }
 .btn-cancel-sm { background: white; color: #dc2626; border: 1.5px solid #fca5a5; border-radius: 20px; padding: 4px 12px; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: background 0.18s; }
 .btn-cancel-sm:hover { background: #fde8e8; }
+.btn-cancel-sm:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* RECORDS ROW */
 .rec-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid #f0f5f3; }

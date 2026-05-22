@@ -62,38 +62,63 @@ export class NotificationsComponent implements OnInit, OnDestroy {
 
   typeIcon(type: string): string {
     switch ((type || '').toUpperCase()) {
-      case 'EMERGENCY_JOB': return 'bi-exclamation-triangle-fill text-danger';
-      case 'SHIFT':         return 'bi-calendar-check-fill text-success';
-      case 'PAYMENT':       return 'bi-cash-stack text-primary';
-      default:              return 'bi-bell-fill text-secondary';
+      case 'EMERGENCY_JOB':
+      case 'EMERGENCY_REQUEST':  return 'bi-exclamation-triangle-fill text-danger';
+      case 'SHIFT':
+      case 'SHIFT_COVERAGE':     return 'bi-calendar-check-fill text-success';
+      case 'PAYMENT':            return 'bi-cash-stack text-primary';
+      case 'NEW_REQUEST':        return 'bi-person-raised-hand text-warning';
+      case 'APPOINTMENT':        return 'bi-calendar-x-fill text-warning';
+      case 'CREDENTIAL_REMINDER': return 'bi-shield-exclamation text-warning';
+      case 'HANDOFF':            return 'bi-arrow-left-right text-info';
+      default:                   return 'bi-bell-fill text-secondary';
     }
   }
 
   typeLabel(type: string): string {
     switch ((type || '').toUpperCase()) {
-      case 'EMERGENCY_JOB': return 'Emergency';
-      case 'SHIFT':         return 'Shift';
-      case 'PAYMENT':       return 'Payment';
-      default:              return 'Notification';
+      case 'EMERGENCY_JOB':
+      case 'EMERGENCY_REQUEST':  return 'Emergency';
+      case 'SHIFT':
+      case 'SHIFT_COVERAGE':     return 'Shift';
+      case 'PAYMENT':            return 'Payment';
+      case 'NEW_REQUEST':        return 'Patient Request';
+      case 'APPOINTMENT':        return 'Appointment';
+      case 'CREDENTIAL_REMINDER': return 'Credential';
+      case 'HANDOFF':            return 'Handoff';
+      default:                   return 'Notification';
     }
   }
 
   typeBadgeClass(type: string): string {
     switch ((type || '').toUpperCase()) {
-      case 'EMERGENCY_JOB': return 'badge-emerg';
-      case 'SHIFT':         return 'badge-shift';
-      case 'PAYMENT':       return 'badge-pay';
-      default:              return 'badge-general';
+      case 'EMERGENCY_JOB':
+      case 'EMERGENCY_REQUEST':  return 'badge-emerg';
+      case 'SHIFT':
+      case 'SHIFT_COVERAGE':     return 'badge-shift';
+      case 'PAYMENT':            return 'badge-pay';
+      case 'NEW_REQUEST':        return 'badge-warn';
+      case 'APPOINTMENT':        return 'badge-warn';
+      case 'CREDENTIAL_REMINDER': return 'badge-warn';
+      case 'HANDOFF':            return 'badge-info';
+      default:                   return 'badge-general';
     }
   }
 
-  formatDate(d: string): string {
+  formatDate(d: any): string {
     if (!d) return '—';
-    const dt = new Date(d);
-    const now = new Date();
+    // Handle Jackson array format [year,month,day,hour,min,sec] if write-dates-as-timestamps was on
+    let dt: Date;
+    if (Array.isArray(d)) {
+      dt = new Date(d[0], d[1] - 1, d[2], d[3] ?? 0, d[4] ?? 0, d[5] ?? 0);
+    } else {
+      dt = new Date(d);
+    }
+    if (isNaN(dt.getTime())) return '—';
+    const now  = new Date();
     const diff = Math.floor((now.getTime() - dt.getTime()) / 1000);
-    if (diff < 60)   return 'Just now';
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 60)    return 'Just now';
+    if (diff < 3600)  return `${Math.floor(diff / 60)}m ago`;
     if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
     return dt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
   }

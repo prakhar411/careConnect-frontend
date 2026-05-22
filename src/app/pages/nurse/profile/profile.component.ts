@@ -1,7 +1,9 @@
+import { capName } from '../../../utils/name.util';
 import { AuthService } from '../../../services/auth.service';
 import { NurseService } from '../../../services/nurse.service';
 import { GeoService } from '../../../services/geo.service';
 import { NotificationService } from '../../../services/notification.service';
+import { CredentialService } from '../../../services/credential.service';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
@@ -25,7 +27,7 @@ function lastNameV(): ValidatorFn {
   };
 }
 
-const LICENSE_PATTERN = '^[A-Z]{2}[0-9]{10}$';
+const LICENSE_PATTERN = '^[A-Z0-9]{5,20}$';
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -109,12 +111,70 @@ export class ProfileComponent implements OnInit, OnDestroy {
   selectedExpertise: string[] = [];
   selectedShifts:    string[] = [];
 
+  // ── Credentials ───────────────────────────────────────────────────────────
+  credentials:       any[]   = [];
+  isLoadingCreds     = false;
+  showCredForm       = false;
+  isSavingCred       = false;
+  credError          = '';
+  credSuccess        = false;
+
+  credType        = '';
+  credIssuerSel   = '';   // dropdown value
+  credIssuerOther = '';   // free text when "Other" selected
+  credIssued      = '';
+  credExpiry      = '';
+  credFile: File | null = null;
+  credFileName    = '';
+
+  get credIssuer(): string {
+    return this.credIssuerSel === 'Other' ? this.credIssuerOther.trim() : this.credIssuerSel;
+  }
+
+  readonly CRED_TYPES = [
+    'Nursing License',
+    'BLS (Basic Life Support)',
+    'ACLS (Advanced Cardiovascular Life Support)',
+    'PALS (Pediatric Advanced Life Support)',
+    'CPR Certification',
+    'Infection Control Certificate',
+    'HIPAA Training Certificate',
+    'Wound Care Certification',
+    'IV Therapy Certification',
+    'Diabetic Care Certificate',
+    'Post-operative Care Certificate',
+    'Mental Health First Aid',
+    'Other',
+  ];
+
+  readonly ISSUERS = [
+    'Indian Nursing Council (INC)',
+    'State Nursing Council',
+    'American Heart Association (AHA)',
+    'American Red Cross',
+    'Rajiv Gandhi University of Health Sciences',
+    'AIIMS (All India Institute of Medical Sciences)',
+    'National Board of Examinations (NBE)',
+    'National Institute of Mental Health & Neuro Sciences (NIMHANS)',
+    'Ministry of Health and Family Welfare (India)',
+    'National Health Service (NHS) – UK',
+    'Nursing and Midwifery Council (NMC) – UK',
+    'National Council of State Boards of Nursing (NCSBN) – US',
+    'Joint Commission International (JCI)',
+    'World Health Organization (WHO)',
+    'Hospital / Institution',
+    'Other',
+  ];
+
+  readonly today = new Date().toISOString().split('T')[0];
+
   constructor(
-    private auth:     AuthService,
-    private nurseSvc: NurseService,
-    private geoSvc:   GeoService,
-    private fb:       FormBuilder,
-    private notifSvc: NotificationService
+    private auth:      AuthService,
+    private nurseSvc:  NurseService,
+    private geoSvc:    GeoService,
+    private fb:        FormBuilder,
+    private notifSvc:  NotificationService,
+    public  credSvc:   CredentialService
   ) {}
 
   ngOnInit(): void {
@@ -125,6 +185,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     if (uid) {
       this.notifSvc.initSSE(uid);
       this.notifSub = this.notifSvc.unreadCount$.subscribe(c => this.unreadCount = c);
+      this.loadCredentials(uid);
     }
   }
 
@@ -349,9 +410,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.saveError = '';
 
     const v = this.profileForm.getRawValue();
-    const firstName  = (v.firstName  || '').trim();
-    const middleName = (v.middleName || '').trim();
-    const lastName   = (v.lastName   || '').trim();
+    const firstName  = capName(v.firstName);
+    const middleName = capName(v.middleName);
+    const lastName   = capName(v.lastName);
     const fullName   = [firstName, middleName, lastName].filter(Boolean).join(' ');
     const phone      = (v.phoneCountryCode || '+91') + (v.phone || '');
 
@@ -392,6 +453,121 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this.saveError = err.message;
       }
     });
+  }
+
+  // ── Credentials ───────────────────────────────────────────────────────────
+
+  loadCredentials(userId: number): void {
+    this.isLoadingCreds = true;
+    this.credSvc.getByNurse(userId).subscribe({
+      next: (data) => { this.credentials = data || []; this.isLoadingCreds = false; },
+      error: () => { this.isLoadingCreds = false; }
+    });
+  }
+
+  openCredForm(): void {
+    this.showCredForm    = true;
+    this.credType        = '';
+    this.credIssuerSel   = '';
+    this.credIssuerOther = '';
+    this.credIssued      = '';
+    this.credExpiry      = '';
+    this.credFile        = null;
+    this.credFileName    = '';
+    this.credError       = '';
+    this.credSuccess     = false;
+  }
+
+  onCredFileChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file  = input.files?.[0] ?? null;
+    if (!file) { this.credFile = null; this.credFileName = ''; return; }
+    const allowed = ['image/jpeg','image/png','image/jpg','application/pdf'];
+    if (!allowed.includes(file.type)) {
+      this.credError    = 'Only JPG, PNG or PDF files are allowed.';
+      this.credFile     = null;
+      this.credFileName = '';
+      input.value       = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.credError    = 'File must be under 5 MB.';
+      this.credFile     = null;
+      this.credFileName = '';
+      input.value       = '';
+      return;
+    }
+    this.credFile     = file;
+    this.credFileName = file.name;
+    this.credError    = '';
+  }
+
+  removeCredFile(): void { this.credFile = null; this.credFileName = ''; }
+
+  cancelCredForm(): void { this.showCredForm = false; this.credError = ''; }
+
+  submitCredential(): void {
+    if (!this.credType)        { this.credError = 'Please select a credential type.'; return; }
+    if (!this.credIssuerSel)  { this.credError = 'Please select the issuing authority.'; return; }
+    if (this.credIssuerSel === 'Other' && !this.credIssuerOther.trim()) {
+      this.credError = 'Please specify the issuing authority.'; return;
+    }
+    if (!this.credIssued) { this.credError = 'Please select the issued date.'; return; }
+    if (!this.credExpiry) { this.credError = 'Please select the expiry date.'; return; }
+    if (this.credExpiry <= this.credIssued) { this.credError = 'Expiry date must be after issued date.'; return; }
+
+    const userId = this.auth.getUserId();
+    if (!userId) return;
+
+    this.isSavingCred = true;
+    this.credError    = '';
+    this.credSvc.add(userId, {
+      credentialType: this.credType,
+      issuedBy:       this.credIssuer.trim(),
+      issuedDate:     this.credIssued,
+      expiryDate:     this.credExpiry,
+    }, this.credFile).subscribe({
+      next: (saved) => {
+        this.credentials.unshift(saved);
+        this.isSavingCred = false;
+        this.credSuccess  = true;
+        this.showCredForm = false;
+        setTimeout(() => this.credSuccess = false, 3000);
+      },
+      error: (err: Error) => { this.credError = err.message; this.isSavingCred = false; }
+    });
+  }
+
+  credStatusClass(status: string): string {
+    switch ((status || '').toUpperCase()) {
+      case 'VERIFIED':  return 'cred-verified';
+      case 'EXPIRED':   return 'cred-expired';
+      default:          return 'cred-pending';
+    }
+  }
+
+  credStatusLabel(status: string): string {
+    switch ((status || '').toUpperCase()) {
+      case 'VERIFIED':  return '✔ Verified';
+      case 'EXPIRED':   return '✗ Expired';
+      default:          return '⏳ Pending';
+    }
+  }
+
+  formatDate(d: string): string {
+    if (!d) return '—';
+    return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  isExpiringSoon(expiryDate: string): boolean {
+    if (!expiryDate) return false;
+    const diff = new Date(expiryDate).getTime() - Date.now();
+    return diff > 0 && diff < 90 * 24 * 60 * 60 * 1000;
+  }
+
+  isExpired(expiryDate: string): boolean {
+    if (!expiryDate) return false;
+    return new Date(expiryDate).getTime() < Date.now();
   }
 
   ngOnDestroy(): void { this.notifSub?.unsubscribe(); }

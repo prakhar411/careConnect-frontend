@@ -2,11 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
+import { API } from './api.config';
 
 @Injectable({ providedIn: 'root' })
 export class PlatformAdminService {
 
-  private base = 'http://localhost:8080/api/platform';
+  private base = `${API}/platform`;
 
   constructor(private http: HttpClient) {}
 

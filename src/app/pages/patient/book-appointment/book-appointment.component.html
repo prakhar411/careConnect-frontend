@@ -100,7 +100,7 @@
             <div class="col-md-4">
               <label class="field-label">First Name *</label>
               <input class="field-input" formControlName="firstName"
-                placeholder="First name" maxlength="30"
+                appCapFirst placeholder="First name" maxlength="30"
                 [class.field-readonly]="isSelf"
                 [class.input-err]="bookingForm.get('firstName')?.touched && bookingForm.get('firstName')?.invalid">
               <small class="err" *ngIf="bookingForm.get('firstName')?.touched && bookingForm.get('firstName')?.hasError('required')">First name is required.</small>
@@ -110,7 +110,7 @@
             <div class="col-md-4">
               <label class="field-label">Middle Name</label>
               <input class="field-input" formControlName="middleName"
-                placeholder="Middle name (optional)" maxlength="30"
+                appCapFirst placeholder="Middle name (optional)" maxlength="30"
                 [class.field-readonly]="isSelf"
                 [class.input-err]="bookingForm.get('middleName')?.touched && bookingForm.get('middleName')?.invalid">
               <small class="err" *ngIf="bookingForm.get('middleName')?.touched && bookingForm.get('middleName')?.hasError('pattern')">Letters only.</small>
@@ -118,7 +118,7 @@
             <div class="col-md-4">
               <label class="field-label">Last Name *</label>
               <input class="field-input" formControlName="lastName"
-                placeholder="Last name" maxlength="30"
+                appCapFirst placeholder="Last name" maxlength="30"
                 [class.field-readonly]="isSelf"
                 [class.input-err]="bookingForm.get('lastName')?.touched && bookingForm.get('lastName')?.invalid">
               <small class="err" *ngIf="bookingForm.get('lastName')?.touched && bookingForm.get('lastName')?.hasError('required')">Last name is required.</small>
@@ -326,9 +326,16 @@
 
           <!-- Description -->
           <div>
-            <label class="field-label">Description / Special Requests</label>
-            <textarea class="field-input" rows="3" formControlName="description"
-              placeholder="Describe symptoms, current medications, allergies, or any special care instructions…"></textarea>
+            <label class="field-label">
+              Description / Special Requests
+              <span class="text-muted small ms-1">(optional, 10–150 chars)</span>
+            </label>
+            <textarea class="field-input" rows="3" formControlName="description" maxlength="150"
+              placeholder="Describe symptoms, current medications, allergies, or any special care instructions…"
+              [class.input-error]="bookingForm.get('description')?.touched && bookingForm.get('description')?.invalid"></textarea>
+            <small class="err" *ngIf="bookingForm.get('description')?.touched && bookingForm.get('description')?.hasError('minlength')">
+              Minimum 10 characters required.
+            </small>
           </div>
 
         </div>
@@ -483,10 +490,10 @@
             <div class="col-md-4">
               <label class="field-label">Additional Notes <span style="color:#9ab8b0;font-weight:400;">(optional)</span></label>
               <input class="field-input" formControlName="notes"
-                placeholder="e.g. pet at home, elevator building…" maxlength="50"
+                placeholder="e.g. pet at home, elevator building…" maxlength="150"
                 [class.input-error]="bookingForm.get('notes')?.touched && bookingForm.get('notes')?.invalid">
               <small class="field-err" *ngIf="bookingForm.get('notes')?.touched && bookingForm.get('notes')?.hasError('minlength')">Minimum 10 characters required.</small>
-              <small class="field-err" *ngIf="bookingForm.get('notes')?.touched && bookingForm.get('notes')?.hasError('maxlength')">Notes must not exceed 50 characters.</small>
+              <small class="field-err" *ngIf="bookingForm.get('notes')?.touched && bookingForm.get('notes')?.hasError('maxlength')">Notes must not exceed 150 characters.</small>
             </div>
             <div class="col-md-6">
               <label class="field-label">Application Deadline *

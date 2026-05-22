@@ -49,8 +49,6 @@
 .nc-expertise { display: flex; flex-wrap: wrap; gap: 5px; padding: 0 1.2rem 0.75rem; }
 .nc-tag { background: #e8f4fd; color: #1565c0; padding: 3px 9px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; }
 
-/* Footer link */
-.nc-footer { display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 1.2rem; border-top: 1px solid #f0f5f3; font-size: 0.78rem; color: #1aa37a; font-weight: 600; margin-top: auto; }
 
 /* ── DETAIL PANEL (slide-in) ─────────────────────────────────── */
 .detail-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 2000; }
@@ -96,7 +94,7 @@
 @media (max-width: 720px) { .detail-panel { width: 100vw; } .dp-grid { grid-template-columns: 1fr; } }
 
 /* ── NURSE CARD FOOTER ROW ── */
-.nc-footer-row { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
+.nc-footer-row { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding: 0.6rem 1.2rem 0.75rem; border-top: 1px solid #f0f5f3; }
 .nc-footer { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 600; color: #1aa37a; cursor: pointer; }
 .nc-msg-btn { background: #1aa37a; color: white; border: none; border-radius: 20px; padding: 6px 14px; font-size: 0.78rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: background 0.15s; }
 .nc-msg-btn:hover { background: #0f6b51; }
@@ -316,6 +314,9 @@
 
 /* ── PAY BLOCKED MESSAGE ─────────────────────────────────────── */
 .pay-blocked-msg { background:#fff3cd; color:#856404; border-radius:8px; padding:7px 12px; font-size:0.78rem; margin-top:6px; display:flex; align-items:flex-start; gap:6px; }
+
+/* ── BLACKOUT DATE WARNING ───────────────────────────────────── */
+.blackout-warn { background:#fff3cd; border:1px solid #ffc107; border-radius:7px; padding:7px 10px; font-size:0.78rem; color:#856404; font-weight:600; display:flex; align-items:flex-start; gap:5px; }
 
 /* ── PAY MODAL SUCCESS (ref numbers) ────────────────────────── */
 .pay-success-block  { background:#f0fdf4; border:1.5px solid #a7f3d0; border-radius:12px; padding:16px; text-align:center; }

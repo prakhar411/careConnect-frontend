@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
+import { API, FILES_API } from './api.config';
 
 @Injectable({ providedIn: 'root' })
 export class TelehealthService {
 
-  private base = 'http://localhost:8080/api/telehealth';
-  readonly fileBase = 'http://localhost:8080/api/files';
+  private base = `${API}/telehealth`;
+  readonly fileBase = FILES_API;
 
   constructor(private http: HttpClient) {}
 

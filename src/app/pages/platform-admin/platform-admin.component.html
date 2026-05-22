@@ -425,7 +425,6 @@
                 <th>Rating</th>
                 <th>Credentials</th>
                 <th>Training</th>
-                <th>Onboarding</th>
                 <th>License Status</th>
               </tr>
             </thead>
@@ -451,11 +450,6 @@
                 <td>
                   <span [class]="n.trainingCount > 0 ? 'check-ok' : 'check-fail'">
                     {{ n.trainingCount > 0 ? '✔ ' + n.trainingCount : '✗ None' }}
-                  </span>
-                </td>
-                <td>
-                  <span [class]="onboardingClass(n.onboardingStatus)">
-                    {{ onboardingLabel(n.onboardingStatus) }}
                   </span>
                 </td>
                 <td>

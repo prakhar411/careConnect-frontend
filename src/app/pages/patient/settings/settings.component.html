@@ -164,7 +164,7 @@
             <div class="col-md-4">
               <label class="field-label">First Name *</label>
               <input class="field-input" formControlName="firstName" placeholder="First name"
-                [class.field-readonly]="!isEditing" [class.input-err]="pf['firstName'].touched && pf['firstName'].invalid">
+                appCapFirst [class.field-readonly]="!isEditing" [class.input-err]="pf['firstName'].touched && pf['firstName'].invalid">
               <small class="err" *ngIf="pf['firstName'].touched && pf['firstName'].hasError('required')">Required.</small>
               <small class="err" *ngIf="pf['firstName'].touched && pf['firstName'].hasError('minlength')">Min 3 letters.</small>
               <small class="err" *ngIf="pf['firstName'].touched && pf['firstName'].hasError('pattern')">Letters only, no special characters.</small>
@@ -172,13 +172,13 @@
             <div class="col-md-4">
               <label class="field-label">Middle Name</label>
               <input class="field-input" formControlName="middleName" placeholder="Middle name (optional)"
-                [class.field-readonly]="!isEditing" [class.input-err]="pf['middleName'].touched && pf['middleName'].invalid">
+                appCapFirst [class.field-readonly]="!isEditing" [class.input-err]="pf['middleName'].touched && pf['middleName'].invalid">
               <small class="err" *ngIf="pf['middleName'].touched && pf['middleName'].hasError('pattern')">Letters only.</small>
             </div>
             <div class="col-md-4">
               <label class="field-label">Last Name *</label>
               <input class="field-input" formControlName="lastName" placeholder="Last name"
-                maxlength="30"
+                maxlength="30" appCapFirst
                 [class.field-readonly]="!isEditing" [class.input-err]="pf['lastName'].touched && pf['lastName'].invalid">
               <small class="err" *ngIf="pf['lastName'].touched && pf['lastName'].hasError('required')">Required.</small>
               <small class="err" *ngIf="pf['lastName'].touched && pf['lastName'].hasError('maxlength')">Maximum 30 characters.</small>
@@ -423,10 +423,36 @@
 
         <div class="danger-zone mt-4">
           <div class="form-section-label" style="color:#d63030;">Danger Zone</div>
-          <p class="danger-desc">Deleting your account is permanent and cannot be undone. All your appointments and records will be removed.</p>
-          <button class="btn-danger" type="button">
-            <i class="bi bi-trash me-1"></i>Delete Account
-          </button>
+
+          <div *ngIf="accountActionError" class="alert alert-danger py-2 small mb-3">{{ accountActionError }}</div>
+
+          <!-- Disable -->
+          <div class="d-flex align-items-start gap-3 mb-3">
+            <div class="flex-grow-1">
+              <div class="fw-semibold" style="font-size:0.9rem;">Disable Account</div>
+              <p class="danger-desc mb-0">Temporarily deactivate your account. You'll be logged out and won't be able to log in. Contact support to re-enable.</p>
+            </div>
+            <button class="btn-danger-outline" type="button"
+                    (click)="disableAccount()"
+                    [disabled]="isDisablingAccount || isDeletingAccount">
+              <span *ngIf="!isDisablingAccount"><i class="bi bi-pause-circle me-1"></i>Disable</span>
+              <span *ngIf="isDisablingAccount"><span class="spinner-border spinner-border-sm me-1"></span>Disabling…</span>
+            </button>
+          </div>
+
+          <!-- Delete -->
+          <div class="d-flex align-items-start gap-3">
+            <div class="flex-grow-1">
+              <div class="fw-semibold" style="font-size:0.9rem;">Delete Account</div>
+              <p class="danger-desc mb-0">Permanently delete your account. This cannot be undone. All appointments and records will be removed.</p>
+            </div>
+            <button class="btn-danger" type="button"
+                    (click)="deleteAccount()"
+                    [disabled]="isDeletingAccount || isDisablingAccount">
+              <span *ngIf="!isDeletingAccount"><i class="bi bi-trash me-1"></i>Delete</span>
+              <span *ngIf="isDeletingAccount"><span class="spinner-border spinner-border-sm me-1"></span>Deleting…</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

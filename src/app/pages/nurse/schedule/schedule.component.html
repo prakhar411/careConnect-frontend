@@ -30,15 +30,9 @@
     </div>
 
     <div *ngIf="!isLoading">
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-      <div>
-        <h4 class="fw-semibold mb-0" style="color:#1a3b3a;">My Schedule</h4>
-        <small class="text-muted">View your appointments, availability and blackout dates</small>
-      </div>
-      <button class="btn rounded-pill px-4" [ngClass]="isAvailable ? 'btn-avail' : 'btn-offline'" (click)="toggleAvailability()">
-        <i class="bi me-1" [ngClass]="isAvailable ? 'bi-toggle-on' : 'bi-toggle-off'"></i>
-        {{ isAvailable ? 'Available' : 'Offline' }}
-      </button>
+    <div class="mb-4">
+      <h4 class="fw-semibold mb-0" style="color:#1a3b3a;">My Schedule</h4>
+      <small class="text-muted">View your appointments and manage blackout dates</small>
     </div>
 
     <!-- Stats -->
@@ -77,6 +71,47 @@
       <div class="earn-item">
         <div class="earn-label"><i class="bi bi-hourglass-split me-1"></i>Pending Confirmation</div>
         <div class="earn-val earn-amber">{{ pendingShiftsCount }}</div>
+      </div>
+    </div>
+
+    <!-- Active Org Job Assignments -->
+    <div *ngIf="activeOrgJobs.length > 0" class="section-card mb-4">
+      <h6 class="section-title"><i class="bi bi-building me-2"></i>Active Org Assignments</h6>
+      <div class="table-responsive">
+        <table class="w-100 hist-table">
+          <thead>
+            <tr>
+              <th>Organisation</th>
+              <th>Job Title</th>
+              <th>Department</th>
+              <th>Location</th>
+              <th>Type</th>
+              <th>Shift Details</th>
+              <th>Salary</th>
+              <th>Deadline</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let j of activeOrgJobs">
+              <td><span class="fw-semibold">{{j.organizationName || '—'}}</span></td>
+              <td>{{j.jobTitle || '—'}}</td>
+              <td>{{j.jobDepartment || '—'}}</td>
+              <td>{{j.jobLocation || '—'}}</td>
+              <td>
+                <span class="status-badge badge-upcoming" *ngIf="j.jobType">{{jobTypeLabel(j.jobType)}}</span>
+                <span *ngIf="!j.jobType" class="text-muted">—</span>
+              </td>
+              <td>{{j.jobShiftDetails || '—'}}</td>
+              <td>
+                <span *ngIf="j.jobSalaryMin || j.jobSalaryMax">
+                  ₹{{j.jobSalaryMin | number:'1.0-0'}}<span *ngIf="j.jobSalaryMax"> – ₹{{j.jobSalaryMax | number:'1.0-0'}}</span>
+                </span>
+                <span *ngIf="!j.jobSalaryMin && !j.jobSalaryMax" class="text-muted">—</span>
+              </td>
+              <td>{{formatDeadline(j.jobDeadline)}}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -129,15 +164,21 @@
           <form [formGroup]="blackoutForm" (ngSubmit)="addBlackout()" class="mb-3">
             <input type="date" formControlName="blackoutDate" class="field-input mb-2"
               [class.input-error]="blackoutForm.get('blackoutDate')!.invalid && blackoutForm.get('blackoutDate')!.touched">
-            <small class="err mb-2 d-block" *ngIf="blackoutForm.get('blackoutDate')!.touched && blackoutForm.get('blackoutDate')!.hasError('required')">Please select a date.</small>
-            <button type="submit" class="btn btn-green w-100 btn-sm"><i class="bi bi-plus-circle me-1"></i>Add Blackout Date</button>
+            <small class="err mb-1 d-block" *ngIf="blackoutForm.get('blackoutDate')!.touched && blackoutForm.get('blackoutDate')!.hasError('required')">Please select a date.</small>
+            <input type="text" formControlName="blackoutReason" class="field-input mb-2"
+              placeholder="Reason (optional, max 80 chars)" maxlength="80">
+            <div *ngIf="blackoutError" class="err mb-1">{{ blackoutError }}</div>
+            <button type="submit" class="btn btn-green w-100 btn-sm" [disabled]="isAddingBlackout">
+              <span *ngIf="!isAddingBlackout"><i class="bi bi-plus-circle me-1"></i>Add Blackout Date</span>
+              <span *ngIf="isAddingBlackout"><span class="spinner-border spinner-border-sm me-1"></span>Adding…</span>
+            </button>
           </form>
 
-          <div *ngIf="blackoutAdded" class="alert-toast mb-2"><i class="bi bi-check-circle-fill me-1"></i> Date added.</div>
+          <div *ngIf="blackoutAdded" class="alert-toast mb-2"><i class="bi bi-check-circle-fill me-1"></i>Date blocked successfully.</div>
 
           <div *ngFor="let d of blackoutDates" class="blackout-chip">
             <span><i class="bi bi-calendar-x me-1"></i>{{ d }}</span>
-            <button class="remove-btn" (click)="removeBlackout(d)"><i class="bi bi-x"></i></button>
+            <button class="remove-btn" (click)="removeBlackout(d)" title="Remove"><i class="bi bi-x"></i></button>
           </div>
           <div *ngIf="blackoutDates.length === 0" class="text-center text-muted py-2 small">No blackout dates set.</div>
         </div>

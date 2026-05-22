@@ -19,6 +19,7 @@ export class PatientDashboardComponent implements OnInit {
   appointments: any[] = [];
   records: any[] = [];
   notifications: string[] = [];
+  cancellingId: number | null = null;
 
   constructor(
     private auth: AuthService,
@@ -46,10 +47,12 @@ export class PatientDashboardComponent implements OnInit {
         this.appointments = (appts || []).map((a: any) => {
           const dt = new Date(a.appointmentDate);
           return {
+            id:        a.id,
             nurseName: a.nurseName || 'Unassigned',
             date: dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
             time: dt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-            status: this.mapStatus(a.status)
+            status:    this.mapStatus(a.status),
+            rawStatus: (a.status || '').toUpperCase()
           };
         });
         this.records = (recs || []).slice(0, 5).map((r: any) => ({
@@ -75,6 +78,19 @@ export class PatientDashboardComponent implements OnInit {
 
   countByStatus(status: string): number {
     return this.appointments.filter(a => a.status === status).length;
+  }
+
+  cancelAppointment(appt: any): void {
+    if (this.cancellingId) return;
+    this.cancellingId = appt.id;
+    this.apptService.cancel(appt.id).subscribe({
+      next: () => {
+        appt.status    = 'Cancelled';
+        appt.rawStatus = 'CANCELLED';
+        this.cancellingId = null;
+      },
+      error: () => { this.cancellingId = null; }
+    });
   }
 
   logout(): void { this.auth.logout(); }

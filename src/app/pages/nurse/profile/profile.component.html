@@ -29,30 +29,6 @@
   <!-- MAIN -->
   <div class="main p-4 w-100">
 
-    <!-- Emergency Availability Toggle -->
-    <div class="emergency-toggle-card mb-4">
-      <div class="d-flex align-items-center gap-3">
-        <div class="emerg-icon" [class.emerg-icon-on]="availableForEmergency">
-          <i class="bi bi-exclamation-triangle-fill"></i>
-        </div>
-        <div class="flex-grow-1">
-          <div class="emerg-title">Emergency Availability</div>
-          <div class="emerg-sub">
-            <span *ngIf="availableForEmergency" class="text-success fw-semibold">
-              <i class="bi bi-check-circle-fill me-1"></i>ON — You will be notified of emergency assignments
-            </span>
-            <span *ngIf="!availableForEmergency" class="text-muted">
-              OFF — Turn on to receive emergency job alerts
-            </span>
-          </div>
-        </div>
-        <button class="emerg-toggle-btn" [class.emerg-on]="availableForEmergency"
-                [disabled]="isTogglingEmergency" (click)="toggleEmergencyAvailability()">
-          <span *ngIf="isTogglingEmergency" class="spinner-border spinner-border-sm"></span>
-          <span *ngIf="!isTogglingEmergency">{{ availableForEmergency ? 'Turn OFF' : 'Turn ON' }}</span>
-        </button>
-      </div>
-    </div>
 
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
       <div>
@@ -96,7 +72,7 @@
           <div class="col-md-4">
             <label class="field-label">First Name *</label>
             <input type="text" formControlName="firstName" class="field-input" maxlength="30"
-              placeholder="First name"
+              appCapFirst placeholder="First name"
               [class.input-error]="f['firstName'].touched && f['firstName'].invalid">
             <small class="err" *ngIf="f['firstName'].touched && f['firstName'].hasError('required')">First name is required.</small>
             <small class="err" *ngIf="f['firstName'].touched && f['firstName'].hasError('minlength')">Minimum 3 letters.</small>
@@ -106,7 +82,7 @@
           <div class="col-md-4">
             <label class="field-label">Middle Name</label>
             <input type="text" formControlName="middleName" class="field-input" maxlength="30"
-              placeholder="Middle name (optional)"
+              appCapFirst placeholder="Middle name (optional)"
               [class.input-error]="f['middleName'].touched && f['middleName'].invalid">
             <small class="err" *ngIf="f['middleName'].touched && f['middleName'].hasError('maxlength')">Maximum 30 characters.</small>
             <small class="err" *ngIf="f['middleName'].touched && f['middleName'].hasError('pattern')">Letters only.</small>
@@ -114,7 +90,7 @@
           <div class="col-md-4">
             <label class="field-label">Last Name *</label>
             <input type="text" formControlName="lastName" class="field-input" maxlength="30"
-              placeholder="Last name"
+              appCapFirst placeholder="Last name"
               [class.input-error]="f['lastName'].touched && f['lastName'].invalid">
             <small class="err" *ngIf="f['lastName'].touched && f['lastName'].hasError('required')">Last name is required.</small>
             <small class="err" *ngIf="f['lastName'].touched && f['lastName'].hasError('maxlength')">Maximum 30 characters.</small>
@@ -361,5 +337,126 @@
       </div>
 
     </form>
+
+    <!-- ══════════════════════════════════════════════════════════
+         MY CREDENTIALS SECTION
+    ══════════════════════════════════════════════════════════ -->
+    <div class="section-card mt-4 mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+          <h6 class="section-title mb-0"><i class="bi bi-award-fill me-2 text-success"></i>My Credentials</h6>
+          <p style="font-size:.78rem;color:#6a8c80;margin:2px 0 0;">Licenses, certifications and training documents</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <span *ngIf="credSuccess" style="color:#0f6b51;font-size:.82rem;font-weight:600;"><i class="bi bi-check-circle-fill me-1"></i>Saved!</span>
+          <button class="btn-add-cred" (click)="openCredForm()" *ngIf="!showCredForm">
+            <i class="bi bi-plus-circle me-1"></i>Add Credential
+          </button>
+        </div>
+      </div>
+
+      <!-- Add form -->
+      <div *ngIf="showCredForm" class="cred-form mb-4">
+        <div class="cred-form-title"><i class="bi bi-plus-circle me-1"></i>New Credential</div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="cred-label">Credential Type <span class="req">*</span></label>
+            <select class="cred-input" [(ngModel)]="credType">
+              <option value="">— Select type —</option>
+              <option *ngFor="let t of CRED_TYPES" [value]="t">{{ t }}</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="cred-label">Issued By <span class="req">*</span></label>
+            <select class="cred-input" [(ngModel)]="credIssuerSel">
+              <option value="">— Select issuing authority —</option>
+              <option *ngFor="let iss of ISSUERS" [value]="iss">{{ iss }}</option>
+            </select>
+          </div>
+          <div class="col-md-6" *ngIf="credIssuerSel === 'Other'">
+            <label class="cred-label">Specify Issuing Authority <span class="req">*</span></label>
+            <input class="cred-input" type="text" [(ngModel)]="credIssuerOther"
+                   placeholder="Enter name of issuing authority"
+                   maxlength="100">
+          </div>
+          <div class="col-md-6">
+            <label class="cred-label">Issued Date <span class="req">*</span></label>
+            <input class="cred-input" type="date" [(ngModel)]="credIssued" [max]="today">
+          </div>
+          <div class="col-md-6">
+            <label class="cred-label">Expiry Date <span class="req">*</span></label>
+            <input class="cred-input" type="date" [(ngModel)]="credExpiry" [min]="credIssued || today">
+          </div>
+          <div class="col-12">
+            <label class="cred-label">Supporting Document <span style="color:#9ab8b0;font-weight:500;">(optional — JPG, PNG or PDF, max 5 MB)</span></label>
+            <div *ngIf="!credFileName" class="cred-file-drop">
+              <input type="file" accept=".jpg,.jpeg,.png,.pdf" id="credFileInput"
+                     style="display:none" (change)="onCredFileChange($event)">
+              <label for="credFileInput" class="cred-file-label">
+                <i class="bi bi-cloud-arrow-up me-2"></i>Click to upload document
+              </label>
+            </div>
+            <div *ngIf="credFileName" class="cred-file-chosen">
+              <i class="bi bi-file-earmark-check me-2 text-success"></i>
+              <span>{{ credFileName }}</span>
+              <button type="button" class="cred-file-remove" (click)="removeCredFile()">
+                <i class="bi bi-x"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="credError" class="cred-error mt-2"><i class="bi bi-exclamation-circle me-1"></i>{{ credError }}</div>
+        <div class="d-flex gap-2 mt-3">
+          <button class="btn-cred-save" (click)="submitCredential()" [disabled]="isSavingCred">
+            <span *ngIf="!isSavingCred"><i class="bi bi-check-lg me-1"></i>Save Credential</span>
+            <span *ngIf="isSavingCred" class="spinner-border spinner-border-sm"></span>
+          </button>
+          <button class="btn-cred-cancel" (click)="cancelCredForm()">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="isLoadingCreds" class="text-center py-3">
+        <div class="spinner-border spinner-border-sm text-success"></div>
+        <span class="ms-2 text-muted" style="font-size:.82rem;">Loading credentials…</span>
+      </div>
+
+      <!-- Empty state -->
+      <div *ngIf="!isLoadingCreds && credentials.length === 0 && !showCredForm"
+           class="cred-empty">
+        <i class="bi bi-award d-block mb-2" style="font-size:2rem;color:#c8ddd8;"></i>
+        <p class="mb-1">No credentials added yet.</p>
+        <p style="font-size:.78rem;color:#9ab8b0;">Add your licenses and certifications to improve visibility to hospitals and patients.</p>
+      </div>
+
+      <!-- Credential cards -->
+      <div *ngFor="let c of credentials" class="cred-card mb-2">
+        <div class="cred-card-left">
+          <div class="cred-icon-box"><i class="bi bi-award-fill"></i></div>
+          <div>
+            <div class="cred-name">{{ c.credentialType }}</div>
+            <div class="cred-meta">
+              <span><i class="bi bi-building me-1"></i>{{ c.issuedBy }}</span>
+              <span><i class="bi bi-calendar-check me-1"></i>Issued: {{ formatDate(c.issuedDate) }}</span>
+              <span [class.cred-expiry-warn]="isExpiringSoon(c.expiryDate)" [class.cred-expiry-red]="isExpired(c.expiryDate)">
+                <i class="bi bi-calendar-x me-1"></i>Expires: {{ formatDate(c.expiryDate) }}
+                <span *ngIf="isExpired(c.expiryDate)" class="ms-1">(Expired)</span>
+                <span *ngIf="isExpiringSoon(c.expiryDate) && !isExpired(c.expiryDate)" class="ms-1">(Expiring soon)</span>
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex flex-column align-items-end gap-2 flex-shrink-0">
+          <span class="cred-status-badge" [ngClass]="credStatusClass(c.status)">
+            {{ credStatusLabel(c.status) }}
+          </span>
+          <a *ngIf="c.documentUrl" [href]="credSvc.docUrl(c.documentUrl)"
+             target="_blank" class="cred-doc-link">
+            <i class="bi bi-file-earmark-arrow-down me-1"></i>View Doc
+          </a>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>

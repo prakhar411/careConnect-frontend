@@ -120,11 +120,29 @@
           <div class="detail-grid">
             <div class="detail-item">
               <span class="detail-label">Registration Number</span>
-              <span class="detail-value reg-num">{{ org.regNumber }}</span>
+              <span class="detail-value reg-num d-inline-flex align-items-center gap-2">
+                {{ org.regNumber }}
+                <span class="verif-dot" [class.verif-dot-green]="org.verifiedByAdmin" [class.verif-dot-red]="!org.verifiedByAdmin"
+                      [title]="org.verifiedByAdmin ? 'Verified by Admin' : 'Verification in Progress'"></span>
+              </span>
             </div>
             <div class="detail-item">
               <span class="detail-label">License Number</span>
-              <span class="detail-value reg-num">{{ org.licenseNumber }}</span>
+              <span class="detail-value reg-num d-inline-flex align-items-center gap-2">
+                {{ org.licenseNumber }}
+                <span class="verif-dot" [class.verif-dot-green]="org.verifiedByAdmin" [class.verif-dot-red]="!org.verifiedByAdmin"
+                      [title]="org.verifiedByAdmin ? 'Verified by Admin' : 'Verification in Progress'"></span>
+              </span>
+            </div>
+            <div *ngIf="!org.verifiedByAdmin" class="detail-item" style="grid-column:1/-1;">
+              <span style="display:inline-flex;align-items:center;gap:6px;background:#fff8e1;color:#b45309;border:1.5px solid #fcd34d;border-radius:8px;padding:4px 12px;font-size:0.78rem;font-weight:600;">
+                <i class="bi bi-hourglass-split"></i> Not Verified / Verification in Progress
+              </span>
+            </div>
+            <div *ngIf="org.verifiedByAdmin" class="detail-item" style="grid-column:1/-1;">
+              <span style="display:inline-flex;align-items:center;gap:6px;background:#d1fae5;color:#065f46;border:1.5px solid #6ee7b7;border-radius:8px;padding:4px 12px;font-size:0.78rem;font-weight:600;">
+                <i class="bi bi-patch-check-fill"></i> Verified by Platform Admin
+              </span>
             </div>
             <div class="detail-item">
               <span class="detail-label">Account Status</span>

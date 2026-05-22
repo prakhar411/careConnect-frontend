@@ -2,11 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { API } from './api.config';
 
 @Injectable({ providedIn: 'root' })
 export class SupervisorService {
 
-  private readonly API = 'http://localhost:8080/api/supervisor';
+  private readonly API = `${API}/supervisor`;
 
   constructor(private http: HttpClient) {}
 
@@ -24,6 +25,11 @@ export class SupervisorService {
     return this.http.post<any>(`${this.API}/${orgUserId}/assign`, null, {
       params: { jobId: String(jobId), nurseUserId: String(nurseUserId) }
     }).pipe(map(r => r.data), catchError(this.handleError));
+  }
+
+  removeNurse(orgUserId: number, nurseUserId: number): Observable<any> {
+    return this.http.delete<any>(`${this.API}/${orgUserId}/nurses/${nurseUserId}`)
+      .pipe(map(r => r.data), catchError(this.handleError));
   }
 
   reassignNurse(orgUserId: number, jobId: number, newNurseUserId: number): Observable<any> {

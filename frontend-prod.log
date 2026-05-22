@@ -1,0 +1,103 @@
+ INFO  Accepting connections at http://localhost:4200
+ HTTP  5/22/2026 12:12:12 AM ::1 GET /
+ HTTP  5/22/2026 12:12:12 AM ::1 Returned 200 in 19 ms
+ HTTP  5/22/2026 12:12:43 AM ::1 GET /
+ HTTP  5/22/2026 12:12:43 AM ::1 Returned 200 in 2 ms
+ HTTP  5/22/2026 12:12:43 AM ::1 GET /runtime.5ec2a07ffb68dd33.js
+ HTTP  5/22/2026 12:12:43 AM ::1 Returned 200 in 2 ms
+ HTTP  5/22/2026 12:12:43 AM ::1 GET /main.b7171cf260e94815.js
+ HTTP  5/22/2026 12:12:43 AM ::1 GET /polyfills.a925347503873d6d.js
+ HTTP  5/22/2026 12:12:43 AM ::1 Returned 200 in 2 ms
+ HTTP  5/22/2026 12:12:43 AM ::1 Returned 200 in 7 ms
+ HTTP  5/22/2026 12:12:43 AM ::1 GET /styles.af88714837caff0e.css
+ HTTP  5/22/2026 12:12:43 AM ::1 Returned 200 in 3 ms
+ HTTP  5/22/2026 12:12:49 AM ::1 GET /favicon.ico
+ HTTP  5/22/2026 12:12:49 AM ::1 Returned 200 in 2 ms
+ HTTP  5/22/2026 12:12:49 AM ::1 GET /bootstrap-icons.154365acf3010d96.woff2?e34853135f9e39acf64315236852cd5a
+ HTTP  5/22/2026 12:12:49 AM ::1 Returned 200 in 1 ms
+ HTTP  5/22/2026 12:12:51 AM ::1 GET /favicon.ico
+ HTTP  5/22/2026 12:12:51 AM ::1 Returned 304 in 2 ms
+ HTTP  5/22/2026 12:13:52 AM ::1 GET /
+ HTTP  5/22/2026 12:13:52 AM ::1 Returned 200 in 1 ms
+ HTTP  5/22/2026 12:13:54 AM ::1 GET /runtime.5ec2a07ffb68dd33.js
+ HTTP  5/22/2026 12:13:54 AM ::1 Returned 200 in 1 ms
+ HTTP  5/22/2026 12:13:54 AM ::1 GET /polyfills.a925347503873d6d.js
+ HTTP  5/22/2026 12:13:54 AM ::1 Returned 200 in 1 ms
+ HTTP  5/22/2026 12:13:54 AM ::1 GET /main.b7171cf260e94815.js
+ HTTP  5/22/2026 12:13:54 AM ::1 Returned 200 in 1 ms
+ HTTP  5/22/2026 12:13:54 AM ::1 GET /styles.af88714837caff0e.css
+ HTTP  5/22/2026 12:13:54 AM ::1 Returned 200 in 1 ms
+ HTTP  5/22/2026 12:14:02 AM ::1 GET /bootstrap-icons.154365acf3010d96.woff2?e34853135f9e39acf64315236852cd5a
+ HTTP  5/22/2026 12:14:02 AM ::1 Returned 200 in 1 ms
+ HTTP  5/22/2026 12:14:06 AM ::1 GET /favicon.ico
+ HTTP  5/22/2026 12:14:06 AM ::1 Returned 200 in 1 ms
+ HTTP  5/22/2026 12:14:57 AM ::1 GET /
+ HTTP  5/22/2026 12:14:57 AM ::1 Returned 200 in 1 ms
+ HTTP  5/22/2026 12:14:57 AM ::1 GET /runtime.5ec2a07ffb68dd33.js
+ HTTP  5/22/2026 12:14:57 AM ::1 GET /polyfills.a925347503873d6d.js
+ HTTP  5/22/2026 12:14:57 AM ::1 Returned 304 in 1 ms
+ HTTP  5/22/2026 12:14:57 AM ::1 Returned 304 in 1 ms
+ HTTP  5/22/2026 12:14:57 AM ::1 GET /main.b7171cf260e94815.js
+ HTTP  5/22/2026 12:14:57 AM ::1 Returned 200 in 1 ms
+ HTTP  5/22/2026 12:14:57 AM ::1 GET /styles.af88714837caff0e.css
+ HTTP  5/22/2026 12:14:57 AM ::1 Returned 304 in 1 ms
+ HTTP  5/22/2026 12:14:58 AM ::1 GET /favicon.ico
+ HTTP  5/22/2026 12:14:58 AM ::1 Returned 304 in 1 ms
+ HTTP  5/22/2026 12:14:58 AM ::1 GET /bootstrap-icons.154365acf3010d96.woff2?e34853135f9e39acf64315236852cd5a
+ HTTP  5/22/2026 12:14:58 AM ::1 Returned 304 in 1 ms
+ HTTP  5/22/2026 12:50:01 AM ::1 GET /patient-medical-records
+ HTTP  5/22/2026 12:50:01 AM ::1 Returned 200 in 1 ms
+ HTTP  5/22/2026 12:50:02 AM ::1 GET /runtime.5ec2a07ffb68dd33.js
+ HTTP  5/22/2026 12:50:02 AM ::1 Returned 304 in 1 ms
+ HTTP  5/22/2026 12:50:02 AM ::1 GET /polyfills.a925347503873d6d.js
+ HTTP  5/22/2026 12:50:02 AM ::1 Returned 304 in 0 ms
+ HTTP  5/22/2026 12:50:02 AM ::1 GET /main.b7171cf260e94815.js
+ HTTP  5/22/2026 12:50:02 AM ::1 Returned 304 in 1 ms
+ HTTP  5/22/2026 12:50:02 AM ::1 GET /styles.af88714837caff0e.css
+ HTTP  5/22/2026 12:50:02 AM ::1 Returned 304 in 0 ms
+ HTTP  5/22/2026 12:50:04 AM ::1 GET /favicon.ico
+ HTTP  5/22/2026 12:50:04 AM ::1 Returned 304 in 1 ms
+ HTTP  5/22/2026 12:50:04 AM ::1 GET /bootstrap-icons.154365acf3010d96.woff2?e34853135f9e39acf64315236852cd5a
+ HTTP  5/22/2026 12:50:04 AM ::1 Returned 304 in 1 ms
+ HTTP  5/22/2026 1:10:28 AM ::1 GET /
+ HTTP  5/22/2026 1:10:28 AM ::1 Returned 200 in 1 ms
+ HTTP  5/22/2026 1:10:28 AM ::1 GET /runtime.5ec2a07ffb68dd33.js
+ HTTP  5/22/2026 1:10:28 AM ::1 Returned 200 in 1 ms
+ HTTP  5/22/2026 1:10:28 AM ::1 GET /styles.af88714837caff0e.css
+ HTTP  5/22/2026 1:10:28 AM ::1 Returned 200 in 1 ms
+ HTTP  5/22/2026 1:10:28 AM ::1 GET /polyfills.a925347503873d6d.js
+ HTTP  5/22/2026 1:10:28 AM ::1 GET /main.b7171cf260e94815.js
+ HTTP  5/22/2026 1:10:28 AM ::1 Returned 200 in 0 ms
+ HTTP  5/22/2026 1:10:28 AM ::1 Returned 200 in 1 ms
+ HTTP  5/22/2026 1:10:29 AM ::1 GET /bootstrap-icons.154365acf3010d96.woff2?e34853135f9e39acf64315236852cd5a
+ HTTP  5/22/2026 1:10:29 AM ::1 Returned 200 in 1 ms
+ HTTP  5/22/2026 1:10:29 AM ::1 GET /favicon.ico
+ HTTP  5/22/2026 1:10:29 AM ::1 Returned 200 in 1 ms
+ HTTP  5/22/2026 1:27:39 AM ::1 GET /admin-post-job
+ HTTP  5/22/2026 1:27:39 AM ::1 Returned 200 in 1 ms
+ HTTP  5/22/2026 1:27:40 AM ::1 GET /runtime.5ec2a07ffb68dd33.js
+ HTTP  5/22/2026 1:27:40 AM ::1 Returned 304 in 1 ms
+ HTTP  5/22/2026 1:27:40 AM ::1 GET /main.b7171cf260e94815.js
+ HTTP  5/22/2026 1:27:40 AM ::1 Returned 304 in 1 ms
+ HTTP  5/22/2026 1:27:40 AM ::1 GET /polyfills.a925347503873d6d.js
+ HTTP  5/22/2026 1:27:40 AM ::1 Returned 304 in 0 ms
+ HTTP  5/22/2026 1:27:41 AM ::1 GET /styles.af88714837caff0e.css
+ HTTP  5/22/2026 1:27:41 AM ::1 Returned 304 in 1 ms
+ HTTP  5/22/2026 1:27:42 AM ::1 GET /bootstrap-icons.154365acf3010d96.woff2?e34853135f9e39acf64315236852cd5a
+ HTTP  5/22/2026 1:27:42 AM ::1 Returned 304 in 1 ms
+ HTTP  5/22/2026 1:27:42 AM ::1 GET /favicon.ico
+ HTTP  5/22/2026 1:27:42 AM ::1 Returned 304 in 1 ms
+ HTTP  5/22/2026 2:17:28 AM ::1 GET /register
+ HTTP  5/22/2026 2:17:28 AM ::1 Returned 200 in 1 ms
+ HTTP  5/22/2026 2:17:30 AM ::1 GET /runtime.5ec2a07ffb68dd33.js
+ HTTP  5/22/2026 2:17:30 AM ::1 Returned 304 in 1 ms
+ HTTP  5/22/2026 2:17:30 AM ::1 GET /polyfills.a925347503873d6d.js
+ HTTP  5/22/2026 2:17:30 AM ::1 Returned 304 in 1 ms
+ HTTP  5/22/2026 2:17:30 AM ::1 GET /main.b7171cf260e94815.js
+ HTTP  5/22/2026 2:17:30 AM ::1 Returned 304 in 0 ms
+ HTTP  5/22/2026 2:17:31 AM ::1 GET /styles.af88714837caff0e.css
+ HTTP  5/22/2026 2:17:31 AM ::1 Returned 304 in 1 ms
+ HTTP  5/22/2026 2:17:32 AM ::1 GET /favicon.ico
+ HTTP  5/22/2026 2:17:32 AM ::1 GET /bootstrap-icons.154365acf3010d96.woff2?e34853135f9e39acf64315236852cd5a
+ HTTP  5/22/2026 2:17:32 AM ::1 Returned 304 in 1 ms
+ HTTP  5/22/2026 2:17:32 AM ::1 Returned 304 in 1 ms

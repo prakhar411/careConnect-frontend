@@ -25,7 +25,8 @@ export class JobsComponent implements OnInit, OnDestroy {
   emergencyJobs: any[] = [];   // emergency-flagged jobs
 
   // ── Available: Patient requests ──────────────────────────────
-  openRequests: any[] = [];   // backend open minus applied/declined
+  openRequests:      any[] = [];   // regular open requests minus applied/declined
+  emergencyRequests: any[] = [];   // emergency open requests minus applied/declined
 
   // ── Applied section ──────────────────────────────────────────
   appliedOrgJobs:      any[] = [];  // ApplicationResponse list
@@ -136,9 +137,11 @@ export class JobsComponent implements OnInit, OnDestroy {
           .sort((a: any, b: any) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime());
         this.filteredJobs = [...this.allJobs];
 
-        this.openRequests = ((result.open || []) as any[])
+        const allOpen = ((result.open || []) as any[])
           .filter((r: any) => !this.appliedRequestIds.has(r.id) && !this.declinedRequestIds.has(r.id))
           .sort((a: any, b: any) => new Date(b.createdAt ?? b.appointmentDate ?? 0).getTime() - new Date(a.createdAt ?? a.appointmentDate ?? 0).getTime());
+        this.emergencyRequests = allOpen.filter((r: any) => r.isEmergency);
+        this.openRequests      = allOpen.filter((r: any) => !r.isEmergency);
 
         // Build filter dropdowns from backend data
         const locs    = [...new Set(rawJobs.map((j: any) => j.location).filter(Boolean))];
@@ -233,7 +236,8 @@ export class JobsComponent implements OnInit, OnDestroy {
       next: (res: any) => {
         const reqId = this.selectedRequest.id;
         this.appliedRequestIds.add(reqId);
-        this.openRequests      = this.openRequests.filter(r => r.id !== reqId);
+        this.openRequests       = this.openRequests.filter(r => r.id !== reqId);
+        this.emergencyRequests  = this.emergencyRequests.filter(r => r.id !== reqId);
         this.appliedPatientBids = [res, ...this.appliedPatientBids];
         this.isApplyingRequest   = false;
         this.applyRequestSuccess = true;
@@ -248,7 +252,8 @@ export class JobsComponent implements OnInit, OnDestroy {
     const id = this.selectedRequest.id;
     this.declinedRequestIds.add(id);
     this.saveDeclined();
-    this.openRequests = this.openRequests.filter(r => r.id !== id);
+    this.openRequests      = this.openRequests.filter(r => r.id !== id);
+    this.emergencyRequests = this.emergencyRequests.filter(r => r.id !== id);
     this.closeRequest();
   }
 

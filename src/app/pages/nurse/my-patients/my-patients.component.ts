@@ -9,7 +9,7 @@ import { MedicalRecordService } from '../../../services/medical-record.service';
 import { VitalSignService } from '../../../services/vital-sign.service';
 import { CareCoordinationService } from '../../../services/care-coordination.service';
 
-type CareTab = 'records' | 'vitals' | 'notes' | 'careteam';
+type CareTab = 'records' | 'vitals' | 'notes' | 'careteam' | 'medications';
 
 @Component({
   selector: 'app-my-patients',
@@ -110,6 +110,16 @@ export class MyPatientsComponent implements OnInit, OnDestroy, AfterViewChecked 
     { value: 'ALERT',           label: 'Alert'           },
     { value: 'FOLLOW_UP',       label: 'Follow-Up Task'  },
   ];
+
+  // ── Medications ───────────────────────────────────────────────────────────
+  patientMeds:    Record<number, any[]> = {};
+  medName         = '';
+  medDosage       = '';
+  medFrequency    = '';
+  medNotes        = '';
+  isSavingMed     = false;
+  medError        = '';
+  medSuccess      = false;
 
   // ── Care Goals ─────────────────────────────────────────────────────────────
   careGoals:      Record<number, any[]> = {};
@@ -290,10 +300,11 @@ export class MyPatientsComponent implements OnInit, OnDestroy, AfterViewChecked 
     this.carePanelPatient = patient;
     this.carePanelTab     = tab;
     this.resetCareforms();
-    if (tab === 'records')  this.loadRecordsFor(patient.patientUserId);
-    if (tab === 'vitals')   this.loadVitalsFor(patient.patientUserId);
-    if (tab === 'notes')    this.loadNotesFor(patient.patientUserId);
-    if (tab === 'careteam') this.loadCareTeam(patient.patientUserId);
+    if (tab === 'records')      this.loadRecordsFor(patient.patientUserId);
+    if (tab === 'vitals')       this.loadVitalsFor(patient.patientUserId);
+    if (tab === 'notes')        this.loadNotesFor(patient.patientUserId);
+    if (tab === 'careteam')     this.loadCareTeam(patient.patientUserId);
+    if (tab === 'medications')  this.loadMedsFor(patient.patientUserId);
   }
 
   closeCarePanel(): void {
@@ -306,10 +317,11 @@ export class MyPatientsComponent implements OnInit, OnDestroy, AfterViewChecked 
     this.resetCareforms();
     const pid = this.carePanelPatient?.patientUserId;
     if (!pid) return;
-    if (tab === 'records'  && !this.patientRecords[pid]) this.loadRecordsFor(pid);
-    if (tab === 'vitals'   && !this.patientVitals[pid])  this.loadVitalsFor(pid);
-    if (tab === 'notes'    && !this.noteRecords[pid])    this.loadNotesFor(pid);
-    if (tab === 'careteam')                              this.loadCareTeam(pid);
+    if (tab === 'records'     && !this.patientRecords[pid]) this.loadRecordsFor(pid);
+    if (tab === 'vitals'      && !this.patientVitals[pid])  this.loadVitalsFor(pid);
+    if (tab === 'notes'       && !this.noteRecords[pid])    this.loadNotesFor(pid);
+    if (tab === 'careteam')                                 this.loadCareTeam(pid);
+    if (tab === 'medications')                              this.loadMedsFor(pid);
   }
 
   private resetCareforms(): void {
@@ -330,7 +342,64 @@ export class MyPatientsComponent implements OnInit, OnDestroy, AfterViewChecked 
     this.goalTargetDate  = '';
     this.goalError       = '';
     this.goalSuccess     = false;
+    this.medName         = '';
+    this.medDosage       = '';
+    this.medFrequency    = '';
+    this.medNotes        = '';
+    this.medError        = '';
+    this.medSuccess      = false;
   }
+
+  // ── Medications ───────────────────────────────────────────────────────────
+
+  loadMedsFor(patientUserId: number): void {
+    this.recordSvc.getByPatient(patientUserId).subscribe({
+      next: (data) => {
+        this.patientMeds[patientUserId] = (data || []).filter((r: any) => r.recordType === 'Medication');
+      },
+      error: () => {}
+    });
+  }
+
+  getMeds(patientUserId: number): any[] { return this.patientMeds[patientUserId] || []; }
+
+  addMedication(): void {
+    const pid = this.carePanelPatient?.patientUserId;
+    if (!pid) return;
+    if (!this.medName.trim()) { this.medError = 'Medication name is required.'; return; }
+    this.isSavingMed = true;
+    this.medError    = '';
+    const title = this.medName.trim()
+      + (this.medDosage.trim() ? ` — ${this.medDosage.trim()}` : '')
+      + (this.medFrequency.trim() ? ` (${this.medFrequency.trim()})` : '');
+    this.recordSvc.upload(pid, this.myUserId, 'Medication', title, this.medNotes.trim() || undefined)
+      .subscribe({
+        next: (saved) => {
+          if (!this.patientMeds[pid]) this.patientMeds[pid] = [];
+          this.patientMeds[pid].unshift(saved);
+          this.medName      = '';
+          this.medDosage    = '';
+          this.medFrequency = '';
+          this.medNotes     = '';
+          this.isSavingMed  = false;
+          this.medSuccess   = true;
+          setTimeout(() => this.medSuccess = false, 3000);
+        },
+        error: (err: Error) => { this.medError = err.message; this.isSavingMed = false; }
+      });
+  }
+
+  deleteMed(med: any): void {
+    const pid = this.carePanelPatient?.patientUserId;
+    if (!pid) return;
+    this.recordSvc.delete(med.id).subscribe({
+      next: () => {
+        this.patientMeds[pid] = (this.patientMeds[pid] || []).filter((m: any) => m.id !== med.id);
+      },
+      error: () => {}
+    });
+  }
+
 
   // ── EHR Records ───────────────────────────────────────────────────────────
 
@@ -518,7 +587,10 @@ export class MyPatientsComponent implements OnInit, OnDestroy, AfterViewChecked 
     });
     if (this.orgTeamMembers.length === 0) {
       this.careSvc.getAllTeamMembers().subscribe({
-        next: (data) => { this.orgTeamMembers = (data || []).filter((m: any) => m.status === 'Active'); },
+        next: (data) => {
+          const doctorRoles = ['Doctor', 'Senior Consultant', 'Junior Doctor', 'Resident Doctor', 'Specialist', 'Medical Officer', 'Head of Department'];
+          this.orgTeamMembers = (data || []).filter((m: any) => m.status === 'Active' && doctorRoles.includes(m.role));
+        },
         error: () => {}
       });
     }

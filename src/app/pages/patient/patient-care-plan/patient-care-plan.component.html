@@ -108,21 +108,53 @@
 
       <!-- ── CARE TEAM TAB ── -->
       <div *ngIf="activeTab==='team'">
-        <div class="row g-3" *ngIf="careTeam.length > 0">
-          <div class="col-md-6 col-lg-4" *ngFor="let m of careTeam">
-            <div class="team-card">
-              <div class="team-avatar">{{ getInitials(m.memberName) }}</div>
-              <div class="team-info">
-                <div class="team-name">{{ m.memberName }}</div>
-                <div class="team-role">{{ m.memberRole }}</div>
-                <div class="team-added">Added by {{ m.addedByNurseName || 'Nurse' }} · {{ formatDate(m.createdAt) }}</div>
-              </div>
-              <div class="team-badge">
-                <i class="bi bi-shield-check-fill" style="color:#0f5241;font-size:1.2rem;"></i>
+
+        <!-- Current Care Team -->
+        <div *ngIf="currentCareTeam.length > 0">
+          <div class="team-section-label mb-2">
+            <i class="bi bi-person-check-fill me-1" style="color:#0f6b51;"></i>
+            Current Care Team
+          </div>
+          <div class="row g-3 mb-4">
+            <div class="col-md-6 col-lg-4" *ngFor="let m of currentCareTeam">
+              <div class="team-card">
+                <div class="team-avatar">{{ getInitials(m.memberName) }}</div>
+                <div class="team-info">
+                  <div class="team-name">{{ m.memberName }}</div>
+                  <div class="team-role">{{ m.memberRole }}</div>
+                  <div class="team-added">Added by {{ m.addedByNurseName || 'Nurse' }} · {{ formatDate(m.createdAt) }}</div>
+                </div>
+                <div class="team-badge">
+                  <i class="bi bi-shield-check-fill" style="color:#0f5241;font-size:1.2rem;"></i>
+                </div>
               </div>
             </div>
           </div>
         </div>
+
+        <!-- Previous Care Team -->
+        <div *ngIf="previousCareTeam.length > 0">
+          <div class="team-section-label mb-2" style="color:#6b7280;">
+            <i class="bi bi-clock-history me-1"></i>
+            Previous Care Team
+          </div>
+          <div class="row g-3">
+            <div class="col-md-6 col-lg-4" *ngFor="let m of previousCareTeam">
+              <div class="team-card team-card-prev">
+                <div class="team-avatar team-avatar-prev">{{ getInitials(m.memberName) }}</div>
+                <div class="team-info">
+                  <div class="team-name" style="color:#6b7280;">{{ m.memberName }}</div>
+                  <div class="team-role" style="color:#9ca3af;">{{ m.memberRole }}</div>
+                  <div class="team-added">Added by {{ m.addedByNurseName || 'Nurse' }} · {{ formatDate(m.createdAt) }}</div>
+                </div>
+                <div class="team-badge">
+                  <i class="bi bi-clock-history" style="color:#9ca3af;font-size:1.1rem;"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div *ngIf="careTeam.length === 0" class="empty-state">
           <i class="bi bi-people" style="font-size:2.5rem;color:#d4e5df;"></i>
           <p class="mt-2 mb-0" style="color:#9ab8b2;font-size:0.88rem;">No specialists added to your care team yet.</p>

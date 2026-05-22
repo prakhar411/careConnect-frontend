@@ -134,6 +134,7 @@
               <span *ngIf="course.mandatory" class="mandatory-chip">Mandatory</span>
             </div>
             <div class="course-title">{{ course.title }}</div>
+            <div class="course-offered-by"><i class="bi bi-building me-1"></i>Offered by {{ offeredBy(course) }}</div>
             <div class="course-desc text-muted small" *ngIf="course.description">{{ course.description }}</div>
             <div class="course-meta mt-2">
               <span class="course-credits"><i class="bi bi-award me-1"></i>{{ course.creditPoints }} CEUs</span>

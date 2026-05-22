@@ -1,6 +1,8 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { NgrokInterceptor } from './interceptors/ngrok.interceptor';
+import { CapFirstDirective } from './directives/cap-first.directive';
 import { RouterModule } from '@angular/router';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -45,6 +47,7 @@ import { TelehealthComponent } from './pages/nurse/telehealth/telehealth.compone
 @NgModule({
   declarations: [
     AppComponent,
+    CapFirstDirective,
     LoginComponent,
     RegisterComponent,
     HomeComponent,
@@ -89,7 +92,9 @@ import { TelehealthComponent } from './pages/nurse/telehealth/telehealth.compone
     RouterModule,
     ReactiveFormsModule
   ],
-  providers: [],
+  providers: [
+    { provide: HTTP_INTERCEPTORS, useClass: NgrokInterceptor, multi: true }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

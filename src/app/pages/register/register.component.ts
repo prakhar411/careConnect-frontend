@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { capName } from '../../utils/name.util';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { GeoService } from '../../services/geo.service';
@@ -32,7 +33,6 @@ const PASS_VALIDATORS = [Validators.required, Validators.minLength(12), Validato
 const EMAIL_PATTERN   = '^[a-zA-Z0-9._%+\\-]+@(gmail|yahoo|outlook|infosys)\\.(com|in|org)$';
 const EMAIL_VALIDATORS = [
   Validators.required,
-  Validators.email,
   Validators.pattern(EMAIL_PATTERN),
 ];
 
@@ -336,7 +336,7 @@ export class RegisterComponent implements OnInit {
       firstName:        ['', FIRST_NAME_VALIDATORS],
       middleName:       ['', [Validators.maxLength(30), Validators.pattern('^[A-Za-z]*$')]],
       lastName:         ['', [Validators.required, Validators.maxLength(30), lastNameValidator()]],
-      licenseNumber:    ['', [Validators.required, Validators.pattern('^[A-Z]{2}[0-9]{10}$')]],
+      licenseNumber:    ['', [Validators.required, Validators.minLength(5), Validators.maxLength(20), Validators.pattern('^[A-Z0-9]+$')]],
       specialization:   ['', Validators.required],
       experience:       ['', Validators.required],
       availability:     ['', Validators.required],
@@ -363,14 +363,13 @@ export class RegisterComponent implements OnInit {
         Validators.pattern("^[A-Za-z][A-Za-z .,\\-&()'\\/]*$")
       ]],
       regNumber:         ['', [Validators.required, Validators.pattern('^[A-Za-z]{6}$')]],
-      licenseNumber:     ['', [Validators.required, Validators.pattern('^[0-9]{8}$')]],
+      licenseNumber:     ['', [Validators.required, Validators.minLength(5), Validators.maxLength(20), Validators.pattern('^[A-Z0-9]+$')]],
       contactFirstName:  ['', FIRST_NAME_VALIDATORS],
       contactMiddleName: ['', [Validators.maxLength(30), Validators.pattern('^[A-Za-z]*$')]],
       contactLastName:   ['', [Validators.required, Validators.maxLength(30), lastNameValidator()]],
       designation:       ['', Validators.required],
       email:             ['', [
         Validators.required,
-        Validators.email,
         Validators.pattern(EMAIL_PATTERN),
       ]],
       phoneCountryCode:  ['+91'],
@@ -474,8 +473,8 @@ export class RegisterComponent implements OnInit {
   }
 
   checkLicenseDuplicate(): void {
-    const val = this.orgForm.get('licenseNumber')?.value || '';
-    if (val.length !== 8 || !/^[0-9]{8}$/.test(val)) { this.licenseDuplicateError = false; return; }
+    const val = (this.orgForm.get('licenseNumber')?.value || '').trim().toUpperCase();
+    if (!val || this.orgForm.get('licenseNumber')?.invalid) { this.licenseDuplicateError = false; return; }
     this.auth.checkOrgField('licenseNumber', val).subscribe(exists => this.licenseDuplicateError = exists);
   }
 
@@ -631,7 +630,15 @@ export class RegisterComponent implements OnInit {
 
   // ── Role switching ─────────────────────────────────────────────────────────
 
-  selectRole(r: string): void { this.role = r; }
+  selectRole(r: string): void {
+    this.role = r;
+    this.patEmailDuplicateError   = false;
+    this.nurseEmailDuplicateError = false;
+    this.orgEmailDuplicateError   = false;
+    this.nurseLicenseDuplicateError = false;
+    this.regDuplicateError          = false;
+    this.licenseDuplicateError      = false;
+  }
 
   get activeForm(): FormGroup {
     return this.role === 'patient' ? this.patientForm
@@ -642,9 +649,9 @@ export class RegisterComponent implements OnInit {
   // ── Submit ─────────────────────────────────────────────────────────────────
 
   register(): void {
-    if (this.regDuplicateError || this.licenseDuplicateError ||
-        this.patEmailDuplicateError || this.nurseEmailDuplicateError || this.orgEmailDuplicateError ||
-        this.nurseLicenseDuplicateError) return;
+    if (this.role === 'patient' && this.patEmailDuplicateError) return;
+    if (this.role === 'nurse'   && (this.nurseEmailDuplicateError || this.nurseLicenseDuplicateError)) return;
+    if (this.role === 'organization' && (this.orgEmailDuplicateError || this.regDuplicateError || this.licenseDuplicateError)) return;
     const form = this.activeForm;
     if (form.invalid) { form.markAllAsTouched(); return; }
 
@@ -667,9 +674,9 @@ export class RegisterComponent implements OnInit {
       const v = this.patientForm.getRawValue();
       return {
         role:         'PATIENT',
-        firstName:    v.firstName.trim(),
-        middleName:   v.middleName?.trim() || '',
-        lastName:     v.lastName.trim(),
+        firstName:    capName(v.firstName),
+        middleName:   capName(v.middleName),
+        lastName:     capName(v.lastName),
         email:        v.email.trim().toLowerCase(),
         password:     v.password,
         phone:        v.phoneCountryCode + v.phone,
@@ -689,9 +696,9 @@ export class RegisterComponent implements OnInit {
 
     if (this.role === 'nurse') {
       const v          = this.nurseForm.getRawValue();
-      const firstName  = (v.firstName  || '').trim();
-      const middleName = (v.middleName || '').trim();
-      const lastName   = (v.lastName   || '').trim();
+      const firstName  = capName(v.firstName);
+      const middleName = capName(v.middleName);
+      const lastName   = capName(v.lastName);
       const fullName   = [firstName, middleName, lastName].filter(Boolean).join(' ');
       const expMap: Record<string, number> = {
         '0-2 years': 0, '2-4 years': 2, '4-6 years': 4, '6-8 years': 6, '8+ years': 8
@@ -717,9 +724,9 @@ export class RegisterComponent implements OnInit {
     }
 
     const v       = this.orgForm.getRawValue();
-    const cFirst  = (v.contactFirstName  || '').trim();
-    const cMiddle = (v.contactMiddleName || '').trim();
-    const cLast   = (v.contactLastName   || '').trim();
+    const cFirst  = capName(v.contactFirstName);
+    const cMiddle = capName(v.contactMiddleName);
+    const cLast   = capName(v.contactLastName);
     const contactPerson = [cFirst, cMiddle, cLast].filter(Boolean).join(' ');
     return {
       role:              'ORGANIZATION',

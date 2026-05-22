@@ -266,6 +266,14 @@ export class PaymentsComponent implements OnInit, OnDestroy {
       next: () => {
         this.isSavingBank = false;
         this.bankSuccess  = 'Payment details saved successfully!';
+        // Clear form after save
+        this.bankForm.reset({ preferredPaymentMode: 'UPI' });
+        this.upiList           = [];
+        this.newUpiNumber      = '';
+        this.newUpiSuffix      = '';
+        this.bankFieldsEnabled = false;
+        this.preferredMode     = 'UPI';
+        this.disableBankFields();
         setTimeout(() => this.bankSuccess = '', 3000);
       },
       error: (err: Error) => { this.isSavingBank = false; this.bankError = err.message; }

@@ -42,6 +42,8 @@
 .badge-emerg   { background: #fef2f2; color: #dc2626; }
 .badge-shift   { background: #f0fdf8; color: #065f46; }
 .badge-pay     { background: #eff6ff; color: #1e40af; }
+.badge-warn    { background: #fffbeb; color: #92400e; }
+.badge-info    { background: #e0f2fe; color: #0369a1; }
 .badge-general { background: #f3f4f6; color: #4b5563; }
 
 .notif-title { font-size: 0.92rem; font-weight: 600; color: #0f1c2e; margin-bottom: 3px; }

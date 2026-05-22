@@ -2,11 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { API } from './api.config';
 
 @Injectable({ providedIn: 'root' })
 export class AdminService {
 
-  private readonly API = 'http://localhost:8080/api';
+  private readonly API = API;
 
   constructor(private http: HttpClient) {}
 
@@ -100,8 +101,8 @@ export class AdminService {
       .pipe(map((r: any) => r.data), catchError(this.handleError));
   }
 
-  updateComplianceStatus(id: number, status: string): Observable<any> {
-    return this.http.patch(`${this.API}/compliance/${id}/status?status=${status}`, {})
+  markCompliant(id: number): Observable<any> {
+    return this.http.patch(`${this.API}/compliance/${id}/mark-compliant`, {})
       .pipe(map((r: any) => r.data), catchError(this.handleError));
   }
 

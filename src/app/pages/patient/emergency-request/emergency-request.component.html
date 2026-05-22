@@ -66,7 +66,7 @@
 
           <label class="emr-label">
             Brief description <span class="text-muted small">(optional)</span>
-            <span class="desc-counter" [class.desc-counter-warn]="descLen > 180">{{ descLen }}/{{ DESC_MAX }}</span>
+            <span class="desc-counter" [class.desc-counter-warn]="descLen > 130">{{ descLen }}/{{ DESC_MAX }}</span>
           </label>
           <textarea class="emr-input emr-textarea mb-1" rows="3" [(ngModel)]="description"
                     [maxlength]="DESC_MAX"

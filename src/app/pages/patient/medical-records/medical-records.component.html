@@ -114,9 +114,10 @@
           <div class="col-md-6">
             <label class="field-label">Record Name / Title *</label>
             <input class="field-input" formControlName="fileName" placeholder="e.g., Blood_Test_Nov2025"
-                   [class.input-err]="uploadForm.get('fileName')?.touched && uploadForm.get('fileName')?.invalid">
+                   maxlength="30" [class.input-err]="uploadForm.get('fileName')?.touched && uploadForm.get('fileName')?.invalid">
             <small class="err" *ngIf="uploadForm.get('fileName')?.touched && uploadForm.get('fileName')?.hasError('required')">Record name is required.</small>
-            <small class="err" *ngIf="uploadForm.get('fileName')?.touched && uploadForm.get('fileName')?.hasError('minlength')">Minimum 3 characters.</small>
+            <small class="err" *ngIf="uploadForm.get('fileName')?.touched && uploadForm.get('fileName')?.hasError('minlength')">Minimum 10 characters required.</small>
+            <small class="err" *ngIf="uploadForm.get('fileName')?.touched && uploadForm.get('fileName')?.hasError('maxlength')">Maximum 30 characters allowed.</small>
           </div>
           <div class="col-md-6">
             <label class="field-label">Record Type *</label>
@@ -133,7 +134,10 @@
           </div>
           <div class="col-12">
             <label class="field-label">Notes (optional)</label>
-            <input class="field-input" formControlName="notes" placeholder="Brief description of the record...">
+            <input class="field-input" formControlName="notes" placeholder="Brief description of the record…"
+                   maxlength="150" [class.input-err]="uploadForm.get('notes')?.touched && uploadForm.get('notes')?.invalid">
+            <small class="err" *ngIf="uploadForm.get('notes')?.touched && uploadForm.get('notes')?.hasError('minlength')">Minimum 10 characters required.</small>
+            <small class="err" *ngIf="uploadForm.get('notes')?.touched && uploadForm.get('notes')?.hasError('maxlength')">Maximum 150 characters allowed.</small>
           </div>
           <div class="col-12">
             <label class="field-label">Attach File (optional) <span style="color:#8aaba4;font-weight:400;">— PDF, JPG, PNG, DOC up to 10 MB</span></label>

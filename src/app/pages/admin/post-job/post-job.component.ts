@@ -150,7 +150,7 @@ export class PostJobComponent implements OnInit {
                          Validators.pattern("^[A-Za-z0-9 ,.\\/\\-()&!?:;']+$")]],
       workingConditions: [''],
       shiftDetails:    ['', Validators.required],
-      salaryMin:       ['', [Validators.min(10000), Validators.max(200000)]],
+      salaryMin:       ['', [Validators.min(25000), Validators.max(200000)]],
       priority:          ['Normal', Validators.required],
       deadline:          ['', Validators.required],
       isEmergency:          [false],

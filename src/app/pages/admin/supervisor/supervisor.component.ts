@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../../../services/auth.service';
 import { SupervisorService } from '../../../services/supervisor.service';
+import { BlackoutService } from '../../../services/blackout.service';
 
 @Component({
   selector: 'app-supervisor',
@@ -23,11 +24,12 @@ export class SupervisorComponent implements OnInit {
   assignmentFilter      = 'ALL';
 
   // Assign modal
-  assignModal: any      = null;  // job being assigned
+  assignModal: any      = null;
   selectedNurseUserId   = '';
   isAssigning           = false;
   assignError           = '';
   assignSuccess         = '';
+  assignBlackoutWarning = '';
 
   // ── Performance ───────────────────────────────────────────────────────────
   performance: any[]    = [];
@@ -39,6 +41,11 @@ export class SupervisorComponent implements OnInit {
   isRosterReassigning     = false;
   rosterReassignError     = '';
   rosterReassignSuccess   = '';
+
+  // ── Remove Nurse ──────────────────────────────────────────────────────────
+  removingNurseUserId: number | null = null;
+  removeError   = '';
+  removeSuccess = '';
 
   // ── Handoff Notes ─────────────────────────────────────────────────────────
   handoffs: any[]         = [];
@@ -70,7 +77,8 @@ export class SupervisorComponent implements OnInit {
 
   constructor(
     private auth: AuthService,
-    private supervisorSvc: SupervisorService
+    private supervisorSvc: SupervisorService,
+    private blackoutSvc: BlackoutService
   ) {}
 
   ngOnInit(): void {
@@ -175,13 +183,36 @@ export class SupervisorComponent implements OnInit {
   get assignedCount():   number { return this.jobAssignments.filter(j =>  j.assignedNurseId).length; }
 
   openAssignModal(job: any): void {
-    this.assignModal         = job;
-    this.selectedNurseUserId = '';
-    this.assignError         = '';
-    this.assignSuccess       = '';
+    this.assignModal          = job;
+    this.selectedNurseUserId  = '';
+    this.assignError          = '';
+    this.assignSuccess        = '';
+    this.assignBlackoutWarning = '';
   }
 
   closeAssignModal(): void { this.assignModal = null; }
+
+  onNurseSelect(): void {
+    this.assignBlackoutWarning = '';
+    const nurseUserId = +this.selectedNurseUserId;
+    if (!nurseUserId || !this.assignModal) return;
+    this.blackoutSvc.getByNurse(nurseUserId).subscribe({
+      next: (dates) => {
+        if (!dates.length) return;
+        const jobStart    = this.assignModal.jobStartDate?.slice(0, 10);
+        const jobDeadline = this.assignModal.jobDeadline?.slice(0, 10);
+        const blocked = dates.filter(d =>
+          (jobStart    && d >= jobStart    && (!jobDeadline || d <= jobDeadline)) ||
+          (jobDeadline && d === jobDeadline)
+        );
+        if (blocked.length) {
+          this.assignBlackoutWarning =
+            `This nurse has blocked ${blocked.length} date(s) within this job period: ${blocked.slice(0,3).join(', ')}${blocked.length > 3 ? '…' : ''}.`;
+        }
+      },
+      error: () => {}
+    });
+  }
 
   isReassigning(job: any): boolean { return !!job.assignedNurseId; }
 
@@ -395,6 +426,26 @@ export class SupervisorComponent implements OnInit {
 
   escalationStatusClass(status: string): string {
     return status === 'RESOLVED' ? 'esc-resolved' : 'esc-open';
+  }
+
+  removeNurse(nurse: any): void {
+    if (!confirm(`Remove ${nurse.nurseName} from this organisation? All their approved applications will be rejected.`)) return;
+    this.removingNurseUserId = nurse.nurseUserId;
+    this.removeError   = '';
+    this.removeSuccess = '';
+    this.supervisorSvc.removeNurse(this.orgUserId, nurse.nurseUserId).subscribe({
+      next: () => {
+        this.workload = this.workload.filter(n => n.nurseUserId !== nurse.nurseUserId);
+        this.buildPerformance();
+        this.removingNurseUserId = null;
+        this.removeSuccess = `${nurse.nurseName} removed from organisation.`;
+        setTimeout(() => this.removeSuccess = '', 4000);
+      },
+      error: (err: Error) => {
+        this.removeError = err.message;
+        this.removingNurseUserId = null;
+      }
+    });
   }
 
   logout(): void { this.auth.logout(); }

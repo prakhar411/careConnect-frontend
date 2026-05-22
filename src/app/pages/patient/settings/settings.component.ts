@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+import { capName } from '../../../utils/name.util';
 import { AuthService } from '../../../services/auth.service';
 import { PatientService } from '../../../services/patient.service';
 import { GeoService } from '../../../services/geo.service';
@@ -54,6 +55,12 @@ export class SettingsComponent implements OnInit {
   // Geo
   states: string[] = [];
   cities: string[] = [];
+
+  // Account management
+  isDeletingAccount   = false;
+  isDisablingAccount  = false;
+  accountActionError  = '';
+  accountActionSuccess= '';
 
   // Auto-calculated age
   calculatedAge: number | null = null;
@@ -265,9 +272,9 @@ export class SettingsComponent implements OnInit {
     if (!userId) return;
 
     const v = this.profileForm.getRawValue();
-    const firstName  = (v.firstName  || '').trim();
-    const middleName = (v.middleName || '').trim();
-    const lastName   = (v.lastName   || '').trim();
+    const firstName  = capName(v.firstName);
+    const middleName = capName(v.middleName);
+    const lastName   = capName(v.lastName);
     const fullName   = [firstName, middleName, lastName].filter(Boolean).join(' ');
     const phone      = (v.phoneCountryCode || '+91') + (v.phone || '');
 
@@ -343,6 +350,36 @@ export class SettingsComponent implements OnInit {
       error: (err: Error) => {
         this.isSavingPassword = false;
         this.passwordError    = err.message;
+      }
+    });
+  }
+
+  deleteAccount(): void {
+    if (!confirm('Are you sure you want to permanently delete your account? This cannot be undone.')) return;
+    const userId = this.auth.getUserId();
+    if (!userId) return;
+    this.isDeletingAccount   = true;
+    this.accountActionError  = '';
+    this.patientService.deleteAccount(userId).subscribe({
+      next: () => { this.auth.logout(); },
+      error: (err: Error) => {
+        this.isDeletingAccount  = false;
+        this.accountActionError = err.message;
+      }
+    });
+  }
+
+  disableAccount(): void {
+    if (!confirm('Disable your account? You will be logged out and will not be able to log in until you contact support.')) return;
+    const userId = this.auth.getUserId();
+    if (!userId) return;
+    this.isDisablingAccount  = true;
+    this.accountActionError  = '';
+    this.patientService.disableAccount(userId).subscribe({
+      next: () => { this.auth.logout(); },
+      error: (err: Error) => {
+        this.isDisablingAccount  = false;
+        this.accountActionError  = err.message;
       }
     });
   }

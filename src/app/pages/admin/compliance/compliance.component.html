@@ -157,14 +157,6 @@
                    [class.input-err]="complianceForm.get('dueDate')?.touched && complianceForm.get('dueDate')?.invalid">
             <small class="err" *ngIf="complianceForm.get('dueDate')?.touched && complianceForm.get('dueDate')?.hasError('required')">Required.</small>
           </div>
-          <div class="col-md-4">
-            <label class="field-label">Status *</label>
-            <select class="field-input" formControlName="status">
-              <option value="COMPLIANT">Compliant</option>
-              <option value="PENDING">Pending</option>
-              <option value="NON_COMPLIANT">Non-Compliant</option>
-            </select>
-          </div>
           <div class="col-12">
             <label class="field-label">
               <span *ngIf="complianceForm.get('status')?.value === 'NON_COMPLIANT'">
@@ -188,7 +180,7 @@
             <span *ngIf="!isSaving">Save</span>
             <span *ngIf="isSaving">Saving…</span>
           </button>
-          <button type="button" class="btn-cancel-sm" (click)="formOpen = false; complianceForm.reset({status:'PENDING'})">Cancel</button>
+          <button type="button" class="btn-cancel-sm" (click)="formOpen = false; complianceForm.reset()">Cancel</button>
           <small class="err ms-2" *ngIf="errorMsg">{{ errorMsg }}</small>
         </div>
       </form>
@@ -234,9 +226,9 @@
           <span class="status-badge" [ngClass]="getStatusClass(rec.status)">{{ rec.status }}</span>
           <div class="d-flex gap-1">
             <button class="btn-status-sm btn-compliant" *ngIf="rec.status !== 'COMPLIANT'"
-                    (click)="updateStatus(rec.id, 'COMPLIANT')">✓ Compliant</button>
-            <button class="btn-status-sm btn-noncompliant" *ngIf="rec.status !== 'NON_COMPLIANT'"
-                    (click)="updateStatus(rec.id, 'NON_COMPLIANT')">✗ Non-Compliant</button>
+                    (click)="markCompliant(rec.id)">
+              <i class="bi bi-check-circle me-1"></i>Mark Compliant
+            </button>
             <button class="btn-delete-sm" (click)="deleteRecord(rec.id)" title="Delete">
               <i class="bi bi-trash"></i>
             </button>

@@ -160,8 +160,19 @@
               </div>
             </div>
             <div class="d-flex align-items-center gap-2">
-              <span class="status-badge badge-scheduled">{{ appt.status }}</span>
-              <button class="btn-cancel-sm">Cancel</button>
+              <span class="status-badge"
+                    [class.badge-scheduled]="appt.rawStatus !== 'CANCELLED' && appt.rawStatus !== 'COMPLETED'"
+                    [class.badge-cancelled]="appt.rawStatus === 'CANCELLED'"
+                    [class.badge-completed]="appt.rawStatus === 'COMPLETED'">
+                {{ appt.status }}
+              </span>
+              <button class="btn-cancel-sm"
+                      *ngIf="appt.rawStatus !== 'CANCELLED' && appt.rawStatus !== 'COMPLETED'"
+                      [disabled]="cancellingId === appt.id"
+                      (click)="cancelAppointment(appt)">
+                <span *ngIf="cancellingId !== appt.id">Cancel</span>
+                <span *ngIf="cancellingId === appt.id" class="spinner-border spinner-border-sm"></span>
+              </button>
             </div>
           </div>
         </div>

@@ -45,6 +45,7 @@ export class NurseDashboardComponent implements OnInit, OnDestroy {
   ];
 
   isAvailable       = true;
+  isVerifiedByAdmin = false;
 
   recentAppointments: any[] = [];
   recentApplications: any[] = [];
@@ -102,6 +103,7 @@ export class NurseDashboardComponent implements OnInit, OnDestroy {
     this.nurseExperience  = profile.experienceYears != null ? profile.experienceYears + ' Yrs Exp' : '—';
     this.avatarLetter     = (this.nurseName || 'N')[0].toUpperCase();
     this.profileCompletion = this.calcCompletion(profile);
+    this.isVerifiedByAdmin = !!profile.verifiedByAdmin;
   }
 
   private buildAppointments(appointments: any[]): void {

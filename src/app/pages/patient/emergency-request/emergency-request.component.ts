@@ -117,7 +117,7 @@ export class EmergencyRequestComponent implements OnInit, OnDestroy {
   }
 
   // ── Description validation ───────────────────────────────────────────────
-  readonly DESC_MAX = 200;
+  readonly DESC_MAX = 150;
   readonly DESC_PATTERN = /^[A-Za-z0-9 ,.'\-()!?°%]*$/;
 
   get descLen(): number { return this.description.length; }
@@ -238,8 +238,11 @@ export class EmergencyRequestComponent implements OnInit, OnDestroy {
 
     const now     = new Date();
     const typeStr = Array.from(this.selectedTypes).join(',');
+    const pad     = (n: number) => n.toString().padStart(2, '0');
+    const future  = new Date(now.getTime() + 5 * 60 * 1000); // 5 min from now, local time
+    const appointmentDate = `${future.getFullYear()}-${pad(future.getMonth() + 1)}-${pad(future.getDate())}T${pad(future.getHours())}:${pad(future.getMinutes())}:${pad(future.getSeconds())}`;
     const payload = {
-      appointmentDate:     new Date(now.getTime() + 60000).toISOString(),
+      appointmentDate,
       careNeeds:           this.selectedLabels || 'Emergency',
       requiredSkills:      'Emergency Response, First Aid',
       scheduleType:        'ONE_TIME',

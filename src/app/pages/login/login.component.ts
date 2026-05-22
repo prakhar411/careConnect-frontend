@@ -33,8 +33,8 @@ export class LoginComponent implements OnInit {
   buildForm(): void {
     const idValidators = this.selectedRole === 'organization'
       ? [Validators.required, Validators.pattern('^[A-Za-z0-9]{5,30}$')]
-      : [Validators.required, Validators.email,
-         Validators.pattern('^[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.com$')];
+      : [Validators.required,
+         Validators.pattern('^[a-zA-Z0-9._-]+@(gmail|yahoo|outlook|infosys)\\.(com|in|org)$')];
 
     this.loginForm = this.fb.group({
       identifier: ['', idValidators],
@@ -103,5 +103,13 @@ export class LoginComponent implements OnInit {
     if (this.modalType === 'success' && this.navigateTo) {
       this.router.navigate([this.navigateTo]);
     }
+  }
+
+  toUpperIdentifier(event: Event): void {
+    const el = event.target as HTMLInputElement;
+    const pos = el.selectionStart ?? el.value.length;
+    el.value = el.value.toUpperCase();
+    el.setSelectionRange(pos, pos);
+    this.loginForm.get('identifier')?.setValue(el.value, { emitEvent: false });
   }
 }

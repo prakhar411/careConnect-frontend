@@ -40,9 +40,9 @@ export class MedicalRecordsComponent implements OnInit {
     private recordService: MedicalRecordService
   ) {
     this.uploadForm = this.fb.group({
-      fileName: ['', [Validators.required, Validators.minLength(3)]],
+      fileName: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(30)]],
       type:     ['', Validators.required],
-      notes:    ['']
+      notes:    ['', [Validators.minLength(10), Validators.maxLength(150)]]
     });
   }
 

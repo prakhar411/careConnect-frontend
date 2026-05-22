@@ -4,6 +4,7 @@ import { AuthService } from '../../../services/auth.service';
 import { NotificationService } from '../../../services/notification.service';
 import { TrainingService } from '../../../services/training.service';
 import { AdminService } from '../../../services/admin.service';
+import { NurseService } from '../../../services/nurse.service';
 
 @Component({
   selector: 'app-training',
@@ -43,8 +44,9 @@ export class TrainingComponent implements OnInit, OnDestroy {
   completingTitle = '';
   completions: any[] = [];
 
-  // ── Org mandatory courses ─────────────────────────────────────────────────
+  // ── Org mandatory courses (only from nurse's active orgs) ────────────────
   orgCourses: any[] = [];
+  private activeOrgMap = new Map<number, string>(); // orgUserId → orgName
 
   // ── Credentials for renewal tracker ──────────────────────────────────────
   credentials: any[] = [];
@@ -81,7 +83,8 @@ export class TrainingComponent implements OnInit, OnDestroy {
     private auth:        AuthService,
     private notifSvc:    NotificationService,
     private trainingSvc: TrainingService,
-    private adminSvc:    AdminService
+    private adminSvc:    AdminService,
+    private nurseSvc:    NurseService
   ) {}
 
   ngOnInit(): void {
@@ -96,19 +99,34 @@ export class TrainingComponent implements OnInit, OnDestroy {
   private loadAll(): void {
     this.isLoading = true;
     forkJoin({
-      completions: this.trainingSvc.getNurseHistory(this.userId),
-      orgCourses:  this.trainingSvc.getAllOrgCourses(),
-      credentials: this.adminSvc.getOrgCredentials(this.userId)
+      completions:  this.trainingSvc.getNurseHistory(this.userId),
+      allCourses:   this.trainingSvc.getAllOrgCourses(),
+      credentials:  this.adminSvc.getOrgCredentials(this.userId),
+      applications: this.nurseSvc.getApplications(this.userId)
     }).subscribe({
-      next: ({ completions, orgCourses, credentials }) => {
+      next: ({ completions, allCourses, credentials, applications }) => {
         this.completions = completions || [];
-        this.completedCourseNames = new Set(this.completions.map(c => c.courseName));
-        this.orgCourses  = orgCourses  || [];
+        this.completedCourseNames = new Set(this.completions.map((c: any) => c.courseName));
+
+        // Build map of orgUserId → orgName from APPROVED applications only
+        this.activeOrgMap.clear();
+        (applications || [])
+          .filter((a: any) => (a.status || '').toUpperCase() === 'APPROVED' && a.orgUserId)
+          .forEach((a: any) => this.activeOrgMap.set(a.orgUserId, a.organizationName || 'Organization'));
+
+        // Show only courses from orgs the nurse actively works for
+        this.orgCourses = (allCourses || [])
+          .filter((c: any) => this.activeOrgMap.has(c.orgUserId));
+
         this.credentials = credentials || [];
         this.isLoading   = false;
       },
       error: () => { this.isLoading = false; }
     });
+  }
+
+  offeredBy(course: any): string {
+    return this.activeOrgMap.get(course.orgUserId) || 'Organization';
   }
 
   // ── Filtered static courses ───────────────────────────────────────────────

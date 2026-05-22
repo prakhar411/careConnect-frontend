@@ -7,6 +7,7 @@ import { PaymentService } from '../../../services/payment.service';
 import { VitalSignService } from '../../../services/vital-sign.service';
 import { MedicalRecordService } from '../../../services/medical-record.service';
 import { TelehealthService } from '../../../services/telehealth.service';
+import { BlackoutService } from '../../../services/blackout.service';
 
 @Component({
   selector: 'app-my-nurses',
@@ -34,6 +35,8 @@ export class MyNursesComponent implements OnInit, OnDestroy, AfterViewChecked {
   isMarkingShift             = false;
   shiftSuccess               = '';
   shiftAlreadyMarked         = false;
+  nurseBlackoutDates         = new Set<string>();
+  blackoutWarning            = '';
 
   // Negotiation within mark-shift modal
   wantsToNegotiate = false;
@@ -60,6 +63,9 @@ export class MyNursesComponent implements OnInit, OnDestroy, AfterViewChecked {
   // Block message when nurse has no details
   payBlockedMsg    = '';
   payBlockedApptId: number | null = null;
+
+  // Capture total before shifts are marked paid (for receipt display)
+  lastPaymentAmount = 0;
 
   // Chat state
   chatNurse: any       = null;
@@ -121,14 +127,15 @@ export class MyNursesComponent implements OnInit, OnDestroy, AfterViewChecked {
   };
 
   constructor(
-    private auth:         AuthService,
-    private apptService:  AppointmentService,
-    private msgSvc:       MessageService,
-    private shiftSvc:     ShiftService,
-    private paymentSvc:   PaymentService,
-    private vitalSvc:     VitalSignService,
-    private medSvc:       MedicalRecordService,
-    private telehealthSvc: TelehealthService
+    private auth:          AuthService,
+    private apptService:   AppointmentService,
+    private msgSvc:        MessageService,
+    private shiftSvc:      ShiftService,
+    private paymentSvc:    PaymentService,
+    private vitalSvc:      VitalSignService,
+    private medSvc:        MedicalRecordService,
+    private telehealthSvc: TelehealthService,
+    private blackoutSvc:   BlackoutService
   ) {}
 
   ngOnInit(): void {
@@ -338,12 +345,38 @@ export class MyNursesComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   // ── Shift Loading ─────────────────────────────────────────────────────────
 
+  // ── localStorage-backed paid appointment tracking ────────────────────────
+  private get paidKey(): string { return `cc_paid_appts_${this.myUserId}`; }
+
+  private localPaidApptIds(): Set<number> {
+    try { return new Set<number>(JSON.parse(localStorage.getItem(this.paidKey) || '[]')); }
+    catch { return new Set<number>(); }
+  }
+
+  private markPaidLocally(apptId: number): void {
+    const paid = this.localPaidApptIds();
+    paid.add(apptId);
+    localStorage.setItem(this.paidKey, JSON.stringify(Array.from(paid)));
+  }
+
+  private clearLocalPaid(apptId: number): void {
+    const paid = this.localPaidApptIds();
+    paid.delete(apptId);
+    localStorage.setItem(this.paidKey, JSON.stringify(Array.from(paid)));
+  }
+  // ─────────────────────────────────────────────────────────────────────────
+
   loadShiftsFor(appointmentId: number): void {
     this.loadingShifts.add(appointmentId);
     this.shiftSvc.getByAppointment(appointmentId).subscribe({
       next: (shifts) => {
         this.shiftsMap[appointmentId] = shifts || [];
         this.loadingShifts.delete(appointmentId);
+        // If backend now returns paidByPatient=true on any shift, it is authoritative
+        // — remove the localStorage entry so new confirmed shifts show up correctly.
+        if ((shifts || []).some((s: any) => s.paidByPatient)) {
+          this.clearLocalPaid(appointmentId);
+        }
       },
       error: () => { this.loadingShifts.delete(appointmentId); }
     });
@@ -354,7 +387,18 @@ export class MyNursesComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   confirmedShiftsFor(appointmentId: number): any[] {
-    return this.shiftsFor(appointmentId).filter(s => s.status === 'CONFIRMED' && !s._locallyPaid);
+    const paid = this.localPaidApptIds();
+    return this.shiftsFor(appointmentId).filter(s =>
+      s.status === 'CONFIRMED' &&
+      !s.paidByPatient &&
+      !s._locallyPaid &&
+      !paid.has(appointmentId)
+    );
+  }
+
+  // All confirmed shifts regardless of payment status (for count display)
+  allConfirmedShiftsFor(appointmentId: number): any[] {
+    return this.shiftsFor(appointmentId).filter(s => s.status === 'CONFIRMED');
   }
 
   pendingShiftsFor(appointmentId: number): any[] {
@@ -387,15 +431,36 @@ export class MyNursesComponent implements OnInit, OnDestroy, AfterViewChecked {
   // ── Mark Shift Modal ──────────────────────────────────────────────────────
 
   openShiftModal(appt: any): void {
-    this.shiftModal        = appt;
-    this.shiftDate         = this.today;
-    this.shiftNotes        = '';
-    this.shiftDateError    = '';
-    this.shiftSuccess      = '';
+    this.shiftModal         = appt;
+    this.shiftDate          = this.today;
+    this.shiftNotes         = '';
+    this.shiftDateError     = '';
+    this.shiftSuccess       = '';
     this.shiftAlreadyMarked = false;
-    this.wantsToNegotiate  = false;
-    this.negotiatedRate    = '';
-    this.negotiateError    = '';
+    this.wantsToNegotiate   = false;
+    this.negotiatedRate     = '';
+    this.negotiateError     = '';
+    this.blackoutWarning    = '';
+    this.nurseBlackoutDates = new Set();
+
+    const nurse = this.assignedNurses.find(n => n.nurseId === appt.nurseId);
+    if (nurse?.nurseUserId) {
+      this.blackoutSvc.getByNurse(nurse.nurseUserId).subscribe({
+        next: (dates) => {
+          this.nurseBlackoutDates = new Set(dates);
+          this.checkBlackoutWarning();
+        },
+        error: () => {}
+      });
+    }
+  }
+
+  onShiftDateChange(): void { this.checkBlackoutWarning(); }
+
+  private checkBlackoutWarning(): void {
+    this.blackoutWarning = this.nurseBlackoutDates.has(this.shiftDate)
+      ? 'Warning: The nurse has marked this date as unavailable. The shift can still be submitted but the nurse may not be available.'
+      : '';
   }
 
   closeShiftModal(): void { this.shiftModal = null; }
@@ -502,6 +567,8 @@ export class MyNursesComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (!this.payModal) return;
     this.isProcessingPayment = true;
     this.payError            = '';
+    // Capture total BEFORE marking shifts as paid so receipt shows correct amount
+    this.lastPaymentAmount = this.totalConfirmedAmount(this.payModal.appt.id);
 
     this.paymentSvc.processPatientPayment(
       this.myUserId,
@@ -513,18 +580,15 @@ export class MyNursesComponent implements OnInit, OnDestroy, AfterViewChecked {
         const list = Array.isArray(payments) ? payments : [payments];
         this.paymentRefs = list.map((p: any) => p.referenceNumber).filter(Boolean);
         this.paySuccess  = 'Payment successful!';
-        // Immediately mark confirmed shifts as locally paid so due shows ₹0 right away
         const apptId = this.payModal.appt.id;
+        // Persist paid state in localStorage so it survives page refresh
+        this.markPaidLocally(apptId);
+        // Also mark in-memory so UI updates instantly without any reload
         if (this.shiftsMap[apptId]) {
           this.shiftsMap[apptId] = this.shiftsMap[apptId].map((s: any) =>
-            s.status === 'CONFIRMED' ? { ...s, _locallyPaid: true } : s
+            s.status === 'CONFIRMED' ? { ...s, _locallyPaid: true, paidByPatient: true } : s
           );
         }
-        // Background reload to get true state from backend
-        this.loadShiftsFor(apptId);
-        this.apptService.getByPatient(this.myUserId).subscribe({
-          next: (data) => { this.allAppointments = data || []; }
-        });
       },
       error: (err: Error) => {
         this.payError            = err.message;

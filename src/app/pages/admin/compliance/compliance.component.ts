@@ -45,7 +45,6 @@ export class ComplianceComponent implements OnInit {
                              Validators.pattern('^[A-Za-z.]+$')]],
       requirement:     ['', Validators.required],
       dueDate:         ['', Validators.required],
-      status:          ['PENDING', Validators.required],
       notes:           ['', Validators.maxLength(200)]
     });
   }
@@ -83,7 +82,7 @@ export class ComplianceComponent implements OnInit {
                        v.nurseMiddleName?.trim() || '',
                        v.nurseLastName.trim()]
                       .filter(Boolean).join(' ');
-    const payload = { ...v, nurseName };
+    const payload = { nurseName, requirement: v.requirement, dueDate: v.dueDate, notes: v.notes };
 
     this.adminService.createCompliance(this.orgUserId, payload).subscribe({
       next: (created) => {
@@ -91,7 +90,7 @@ export class ComplianceComponent implements OnInit {
         this.formSaved = true;
         this.formOpen  = false;
         this.isSaving  = false;
-        this.complianceForm.reset({ status: 'PENDING' });
+        this.complianceForm.reset();
         setTimeout(() => this.formSaved = false, 3000);
       },
       error: (err: Error) => {
@@ -101,11 +100,11 @@ export class ComplianceComponent implements OnInit {
     });
   }
 
-  updateStatus(id: number, status: string): void {
-    this.adminService.updateComplianceStatus(id, status).subscribe({
+  markCompliant(id: number): void {
+    this.adminService.markCompliant(id).subscribe({
       next: (updated) => {
         const rec = this.records.find(r => r.id === id);
-        if (rec) rec.status = updated?.status ?? status;
+        if (rec) rec.status = updated?.status ?? 'COMPLIANT';
       }
     });
   }

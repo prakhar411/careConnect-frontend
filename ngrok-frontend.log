@@ -1,0 +1,37 @@
+t=2026-05-22T00:11:03+0530 lvl=info msg="no configuration paths supplied"
+t=2026-05-22T00:11:03+0530 lvl=info msg="using configuration at default config path" path=C:\\Users\\prakhar\\AppData\\Local/ngrok/ngrok.yml
+t=2026-05-22T00:11:03+0530 lvl=info msg="open config file" path=C:\\Users\\prakhar\\AppData\\Local\\ngrok\\ngrok.yml err=nil
+t=2026-05-22T00:11:03+0530 lvl=warn msg="can't bind default web address, trying alternatives" obj=web addr=127.0.0.1:4040
+t=2026-05-22T00:11:03+0530 lvl=info msg="starting web service" obj=web addr=127.0.0.1:4041 allow_hosts=[]
+t=2026-05-22T00:11:05+0530 lvl=info msg="client session established" obj=tunnels.session
+t=2026-05-22T00:11:05+0530 lvl=info msg="tunnel session started" obj=tunnels.session
+t=2026-05-22T00:11:06+0530 lvl=info msg="update available" obj=updater
+t=2026-05-22T00:11:06+0530 lvl=info msg="started tunnel" obj=tunnels name=command_line addr=http://localhost:4200 url=https://53a0-2401-4900-9397-d8dc-55b9-ce3d-e74e-1ea8.ngrok-free.app
+t=2026-05-22T00:12:12+0530 lvl=info msg="join connections" obj=join id=723591c9f15f l=[::1]:4200 r=[2401:4900:9397:d8dc:55b9:ce3d:e74e:1ea8]:55346
+t=2026-05-22T00:12:43+0530 lvl=info msg="join connections" obj=join id=6fa5685709bd l=[::1]:4200 r=[2401:4900:9397:d8dc:55b9:ce3d:e74e:1ea8]:64967
+t=2026-05-22T00:12:43+0530 lvl=info msg="join connections" obj=join id=43aa1c613fdf l=[::1]:4200 r=[2401:4900:9397:d8dc:55b9:ce3d:e74e:1ea8]:64967
+t=2026-05-22T00:12:43+0530 lvl=info msg="join connections" obj=join id=86fb19bb4cb4 l=[::1]:4200 r=[2401:4900:9397:d8dc:55b9:ce3d:e74e:1ea8]:64967
+t=2026-05-22T00:12:43+0530 lvl=info msg="join connections" obj=join id=b274aa06d984 l=[::1]:4200 r=[2401:4900:9397:d8dc:55b9:ce3d:e74e:1ea8]:64967
+t=2026-05-22T00:12:49+0530 lvl=info msg="join connections" obj=join id=73aaab0f6635 l=[::1]:4200 r=[2401:4900:9397:d8dc:55b9:ce3d:e74e:1ea8]:64967
+t=2026-05-22T00:12:49+0530 lvl=info msg="join connections" obj=join id=4bb935ec2d06 l=[::1]:4200 r=[2401:4900:9397:d8dc:55b9:ce3d:e74e:1ea8]:64967
+t=2026-05-22T00:13:52+0530 lvl=info msg="join connections" obj=join id=3d7752103890 l=[::1]:4200 r=80.79.7.105:49934
+t=2026-05-22T00:13:54+0530 lvl=info msg="join connections" obj=join id=b11683cdd3be l=[::1]:4200 r=80.79.7.105:49934
+t=2026-05-22T00:13:54+0530 lvl=info msg="join connections" obj=join id=8fb29f8aa143 l=[::1]:4200 r=80.79.7.105:49934
+t=2026-05-22T00:14:02+0530 lvl=info msg="join connections" obj=join id=d206edd71008 l=[::1]:4200 r=80.79.7.105:49934
+t=2026-05-22T00:50:01+0530 lvl=info msg="join connections" obj=join id=57fbad7ff8fc l=[::1]:4200 r=80.79.7.105:31739
+t=2026-05-22T00:50:02+0530 lvl=info msg="join connections" obj=join id=22ab9bf98a98 l=[::1]:4200 r=80.79.7.105:31739
+t=2026-05-22T00:50:02+0530 lvl=info msg="join connections" obj=join id=6eba5750434d l=[::1]:4200 r=80.79.7.105:31739
+t=2026-05-22T01:10:28+0530 lvl=info msg="join connections" obj=join id=633701d3e664 l=[::1]:4200 r=[2401:4900:9397:d8dc:8e54:359c:80be:2df]:45552
+t=2026-05-22T01:10:28+0530 lvl=info msg="join connections" obj=join id=bf7f42fc3566 l=[::1]:4200 r=[2401:4900:9397:d8dc:8e54:359c:80be:2df]:45552
+t=2026-05-22T01:10:28+0530 lvl=info msg="join connections" obj=join id=6dc6671aec1f l=[::1]:4200 r=[2401:4900:9397:d8dc:8e54:359c:80be:2df]:45552
+t=2026-05-22T01:10:28+0530 lvl=info msg="join connections" obj=join id=3769cfb406cf l=[::1]:4200 r=[2401:4900:9397:d8dc:8e54:359c:80be:2df]:45552
+t=2026-05-22T01:27:39+0530 lvl=info msg="join connections" obj=join id=a6261cb4d715 l=[::1]:4200 r=80.79.7.105:1060
+t=2026-05-22T01:27:40+0530 lvl=info msg="join connections" obj=join id=c8ec7079890a l=[::1]:4200 r=80.79.7.105:1060
+t=2026-05-22T01:27:40+0530 lvl=info msg="join connections" obj=join id=2861ff1b5525 l=[::1]:4200 r=80.79.7.105:1060
+t=2026-05-22T02:17:28+0530 lvl=info msg="join connections" obj=join id=36fa66bec411 l=[::1]:4200 r=80.79.7.105:15160
+t=2026-05-22T02:17:30+0530 lvl=info msg="join connections" obj=join id=915bf7784c71 l=[::1]:4200 r=80.79.7.105:15160
+t=2026-05-22T02:17:30+0530 lvl=info msg="join connections" obj=join id=324c759f4ebe l=[::1]:4200 r=80.79.7.105:15160
+t=2026-05-22T02:24:16+0530 lvl=eror msg="session closed, starting reconnect loop" obj=tunnels.session obj=csess id=ed21d3689278 err="read tcp [2401:4900:9397:d8dc:55b9:ce3d:e74e:1ea8]:59467->[2406:da1a:e91:9302:6bbc:cc3d:8e60:4a99]:443: wsarecv: An established connection was aborted by the software in your host machine."
+t=2026-05-22T02:24:18+0530 lvl=info msg="client session established" obj=tunnels.session
+t=2026-05-22T02:24:18+0530 lvl=info msg="tunnel session started" obj=tunnels.session
+t=2026-05-22T02:24:23+0530 lvl=eror msg="heartbeat timeout, terminating session" obj=tunnels.session obj=csess id=11e0389fe0e8 clientid=ffb28eb2614f39d1173e85164271ad90

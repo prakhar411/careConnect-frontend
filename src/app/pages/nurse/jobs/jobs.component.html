@@ -35,7 +35,8 @@
     <div class="jobs-tab-row mb-4">
       <button class="jobs-tab" [class.jobs-tab-active]="activeTab === 'available'" (click)="activeTab = 'available'">
         <i class="bi bi-briefcase me-1"></i>Available
-        <span class="jobs-tab-count">{{ openRequests.length + filteredJobs.length }}</span>
+        <span class="jobs-tab-count">{{ emergencyRequests.length + openRequests.length + filteredJobs.length }}</span>
+        <span *ngIf="emergencyRequests.length > 0" style="background:#dc2626;color:white;border-radius:20px;font-size:.62rem;font-weight:800;padding:1px 7px;margin-left:4px;animation:pulse 1.5s infinite;">🚨 {{emergencyRequests.length}}</span>
       </button>
       <button class="jobs-tab" [class.jobs-tab-active]="activeTab === 'applied'" (click)="activeTab = 'applied'">
         <i class="bi bi-send-check me-1"></i>Applied
@@ -81,6 +82,45 @@
               <div class="emerg-salary" *ngIf="job.salaryMin || job.salaryMax">{{ formatSalary(job) }}<small>/mo</small></div>
               <button class="emerg-apply-btn" (click)="$event.stopPropagation(); applyToJob(job)">
                 <i class="bi bi-lightning-fill me-1"></i>Quick Apply
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── EMERGENCY PATIENT REQUESTS ── -->
+        <div *ngIf="emergencyRequests.length > 0" class="emerg-section mb-4" style="border:2px solid #dc2626;border-radius:14px;overflow:hidden;">
+          <div class="emerg-section-hdr" style="background:linear-gradient(135deg,#dc2626,#991b1b);padding:12px 16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <i class="bi bi-exclamation-octagon-fill" style="font-size:1.1rem;"></i>
+            <span style="font-weight:800;font-size:0.95rem;letter-spacing:.3px;">EMERGENCY PATIENT REQUESTS</span>
+            <span style="background:white;color:#dc2626;border-radius:20px;font-size:.72rem;font-weight:800;padding:1px 8px;">{{ emergencyRequests.length }}</span>
+            <span style="font-size:0.78rem;opacity:.85;margin-left:4px;">— Patient needs immediate assistance</span>
+          </div>
+          <div *ngFor="let req of emergencyRequests" class="emerg-job-card" style="border-left:4px solid #dc2626;background:#fff5f5;cursor:pointer;" (click)="openRequest(req)">
+            <div class="emerg-job-left">
+              <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
+                <div class="emerg-badge" style="background:#dc2626;font-size:.7rem;padding:2px 10px;"><i class="bi bi-exclamation-octagon-fill me-1"></i>PATIENT EMERGENCY</div>
+                <span *ngIf="req.emergencyType" style="background:#fee2e2;color:#991b1b;border-radius:20px;font-size:.72rem;font-weight:700;padding:2px 10px;">
+                  {{ req.emergencyType.replace(',', ' + ') }}
+                </span>
+              </div>
+              <div class="emerg-job-title" style="color:#7f1d1d;">{{ req.careNeeds || 'Emergency Care Needed' }}</div>
+              <div class="emerg-job-meta mt-1">
+                <span *ngIf="req.patientFirstName"><i class="bi bi-person-fill me-1"></i>{{ req.patientFirstName }} {{ req.patientLastName }}</span>
+                <span *ngIf="req.patientCity"><i class="bi bi-geo-alt-fill me-1"></i>{{ req.patientCity }}</span>
+                <span *ngIf="req.patientPhone"><i class="bi bi-telephone-fill me-1"></i>{{ req.patientPhone }}</span>
+              </div>
+              <div *ngIf="req.patientAddressLine1" style="font-size:.78rem;color:#6b7280;margin-top:4px;">
+                <i class="bi bi-house-fill me-1"></i>{{ req.patientAddressLine1 }}
+              </div>
+              <div *ngIf="req.notes" style="font-size:.8rem;color:#374151;margin-top:6px;font-style:italic;">
+                <i class="bi bi-chat-left-text me-1"></i>{{ req.notes }}
+              </div>
+            </div>
+            <div class="emerg-job-right" style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+              <div style="color:#dc2626;font-weight:800;font-size:.85rem;letter-spacing:.5px;">CRITICAL</div>
+              <small style="color:#9ca3af;font-size:.72rem;">{{ req.appointmentDate | date:'shortTime' }}</small>
+              <button class="emerg-apply-btn" style="background:#dc2626;border:none;" (click)="$event.stopPropagation(); openRequest(req)">
+                <i class="bi bi-lightning-fill me-1"></i>Respond Now
               </button>
             </div>
           </div>
@@ -196,7 +236,12 @@
                 <button class="btn btn-outline-green btn-sm" (click)="openDetails(job)">
                   <i class="bi bi-eye me-1"></i>Details
                 </button>
-                <button class="btn btn-green btn-sm" [disabled]="isApplying" (click)="applyToJob(job)">Apply Now</button>
+                <button class="btn btn-green btn-sm"
+                        [disabled]="isApplying || job.openings === 0"
+                        [title]="job.openings === 0 ? 'No openings available' : ''"
+                        (click)="applyToJob(job)">
+                  {{ job.openings === 0 ? 'No Openings' : 'Apply Now' }}
+                </button>
               </div>
             </div>
           </div>
@@ -348,10 +393,18 @@
           <div *ngIf="applyError" class="alert alert-danger mt-3 py-2 px-3 small"><i class="bi bi-exclamation-circle me-1"></i>{{ applyError }}</div>
         </div>
         <div class="modal-footer-custom">
-          <button class="btn btn-green rounded-pill px-4" [disabled]="applySuccess || isApplying" (click)="applyToJob(selectedJob)">
-            <span *ngIf="!isApplying"><i class="bi bi-send-check me-1"></i>Apply Now</span>
+          <button class="btn btn-green rounded-pill px-4"
+                  [disabled]="applySuccess || isApplying || selectedJob?.openings === 0"
+                  (click)="applyToJob(selectedJob)">
+            <span *ngIf="!isApplying">
+              <i class="bi bi-send-check me-1"></i>
+              {{ selectedJob?.openings === 0 ? 'No Openings' : 'Apply Now' }}
+            </span>
             <span *ngIf="isApplying"><span class="spinner-border spinner-border-sm me-1"></span>Applying…</span>
           </button>
+          <span *ngIf="selectedJob?.openings === 0" class="text-danger small ms-2">
+            <i class="bi bi-exclamation-circle me-1"></i>All positions filled
+          </span>
           <button class="btn btn-outline-secondary rounded-pill px-4" (click)="closeModal()">Close</button>
         </div>
       </div>

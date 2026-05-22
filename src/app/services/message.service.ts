@@ -2,11 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { API } from './api.config';
 
 @Injectable({ providedIn: 'root' })
 export class MessageService {
 
-  private readonly API = 'http://localhost:8080/api/messages';
+  private readonly API = `${API}/messages`;
 
   constructor(private http: HttpClient) {}
 

@@ -245,6 +245,24 @@
 .sv-assign-btn:hover    { background: #0b5ed7; }
 .sv-assign-btn:disabled { background: #adb5bd; cursor: not-allowed; }
 
+/* ── Remove button ────────────────────────────────────────────────────── */
+.sv-remove-btn {
+  background: #dc3545;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.sv-remove-btn:hover    { background: #b02a37; }
+.sv-remove-btn:disabled { background: #adb5bd; cursor: not-allowed; }
+
 /* ── Assigned/Unassigned labels ───────────────────────────────────────── */
 .sv-assigned-nurse  { font-size: 0.85rem; color: #198754; }
 .sv-unassigned-label{ font-size: 0.83rem; color: #adb5bd; }

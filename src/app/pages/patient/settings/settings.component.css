@@ -94,6 +94,10 @@
 .danger-desc { font-size: 0.83rem; color: #8a6a6a; margin: 6px 0 16px; }
 .btn-danger { background: white; border: 1.5px solid #d63030; color: #d63030; border-radius: 20px; padding: 9px 22px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.18s; }
 .btn-danger:hover { background: #d63030; color: white; }
+.btn-danger:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-danger-outline { background: white; border: 1.5px solid #e8a020; color: #c17d10; border-radius: 20px; padding: 9px 22px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.18s; white-space: nowrap; }
+.btn-danger-outline:hover { background: #fff5e6; }
+.btn-danger-outline:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* Auto-calculated age (readonly) */
 .age-readonly { background:#f8fff8 !important; color:#0f5241 !important; font-weight:700 !important; text-align:center; cursor:default; }

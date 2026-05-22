@@ -150,6 +150,10 @@
           <button class="sv-filter-btn" [class.active]="workloadFilter==='OVERLOADED'" (click)="workloadFilter='OVERLOADED'">Overloaded</button>
         </div>
 
+        <!-- Remove alerts -->
+        <div *ngIf="removeSuccess" class="alert alert-success py-2 small mb-3">{{removeSuccess}}</div>
+        <div *ngIf="removeError"   class="alert alert-danger py-2 small mb-3">{{removeError}}</div>
+
         <!-- Nurse cards -->
         <div *ngIf="filteredWorkload.length === 0" class="sv-empty">
           <i class="bi bi-person-x"></i> No nurses found for this filter.
@@ -195,6 +199,16 @@
                 <span class="sv-cs-num">{{n.totalJobs}}</span>
                 <span class="sv-cs-lbl">Total</span>
               </div>
+            </div>
+
+            <div class="mt-2">
+              <button class="sv-remove-btn w-100"
+                      (click)="removeNurse(n)"
+                      [disabled]="removingNurseUserId === n.nurseUserId">
+                <span *ngIf="removingNurseUserId === n.nurseUserId" class="spinner-border spinner-border-sm me-1"></span>
+                <i class="bi bi-person-dash-fill me-1" *ngIf="removingNurseUserId !== n.nurseUserId"></i>
+                Remove from Org
+              </button>
             </div>
           </div>
         </div>
@@ -441,10 +455,18 @@
                 </td>
                 <td>{{n.location || '—'}}</td>
                 <td>
-                  <button class="sv-assign-btn" (click)="openRosterReassign(n)">
-                    <i class="bi bi-arrow-repeat me-1"></i>
-                    {{n.currentJob ? 'Reassign' : 'Assign'}}
-                  </button>
+                  <div class="d-flex gap-2 flex-wrap">
+                    <button class="sv-assign-btn" (click)="openRosterReassign(n)">
+                      <i class="bi bi-arrow-repeat me-1"></i>
+                      {{n.currentJob ? 'Reassign' : 'Assign'}}
+                    </button>
+                    <button class="sv-remove-btn" (click)="removeNurse(n)"
+                            [disabled]="removingNurseUserId === n.nurseUserId">
+                      <span *ngIf="removingNurseUserId === n.nurseUserId" class="spinner-border spinner-border-sm me-1"></span>
+                      <i class="bi bi-person-dash-fill me-1" *ngIf="removingNurseUserId !== n.nurseUserId"></i>
+                      Remove
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -689,7 +711,7 @@
 
     <!-- Select nurse -->
     <label class="form-label fw-semibold">Select Nurse from your team</label>
-    <select class="form-select sv-nurse-select mb-1" [(ngModel)]="selectedNurseUserId">
+    <select class="form-select sv-nurse-select mb-1" [(ngModel)]="selectedNurseUserId" (change)="onNurseSelect()">
       <option value="">— Choose a nurse —</option>
       <option *ngFor="let n of workload" [value]="n.nurseUserId">
         {{n.nurseName}} · {{n.specialization}} · {{n.workloadStatus}}
@@ -697,6 +719,10 @@
       </option>
     </select>
 
+    <div *ngIf="assignBlackoutWarning" class="alert py-2 mt-2"
+         style="background:#fff3cd;border-color:#ffc107;color:#856404;font-size:0.82rem;">
+      <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ assignBlackoutWarning }}
+    </div>
     <div *ngIf="assignError" class="alert alert-danger py-2 mt-2">{{assignError}}</div>
     <div *ngIf="assignSuccess" class="alert alert-success py-2 mt-2">{{assignSuccess}}</div>
   </div>

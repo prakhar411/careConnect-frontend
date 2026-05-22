@@ -2,13 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { API } from './api.config';
 
 @Injectable({ providedIn: 'root' })
 export class NurseService {
 
-  private readonly NURSES_API = 'http://localhost:8080/api/nurses';
-  private readonly JOBS_API   = 'http://localhost:8080/api/jobs';
-  private readonly APPS_API   = 'http://localhost:8080/api/applications';
+  private readonly NURSES_API = `${API}/nurses`;
+  private readonly JOBS_API   = `${API}/jobs`;
+  private readonly APPS_API   = `${API}/applications`;
 
   constructor(private http: HttpClient) {}
 

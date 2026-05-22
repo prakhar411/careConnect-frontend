@@ -339,6 +339,10 @@
             (click)="switchCareTab('careteam')">
       <i class="bi bi-diagram-3 me-1"></i>Care Team
     </button>
+    <button class="care-tab-btn" [class.care-tab-active]="carePanelTab === 'medications'"
+            (click)="switchCareTab('medications')">
+      <i class="bi bi-capsule me-1"></i>Medications
+    </button>
   </div>
 
   <!-- Tab Body -->
@@ -595,6 +599,55 @@
           </button>
           <button class="ct-remove-btn" (click)="deleteGoal(g.id)"><i class="bi bi-x"></i></button>
         </div>
+      </div>
+
+    </ng-container>
+
+    <!-- ── MEDICATIONS TAB ────────────────────────────── -->
+    <ng-container *ngIf="carePanelTab === 'medications'">
+
+      <p class="care-section-label">Add medications prescribed to this patient</p>
+
+      <!-- Add form -->
+      <div class="ct-goal-form mb-3">
+        <div class="row g-2">
+          <div class="col-12">
+            <label class="vital-label">Medication Name *</label>
+            <input class="vital-input" [(ngModel)]="medName" placeholder="e.g. Paracetamol" maxlength="100">
+          </div>
+          <div class="col-6">
+            <label class="vital-label">Dosage</label>
+            <input class="vital-input" [(ngModel)]="medDosage" placeholder="e.g. 500mg" maxlength="60">
+          </div>
+          <div class="col-6">
+            <label class="vital-label">Frequency</label>
+            <input class="vital-input" [(ngModel)]="medFrequency" placeholder="e.g. Twice daily" maxlength="60">
+          </div>
+          <div class="col-12">
+            <label class="vital-label">Notes (optional)</label>
+            <input class="vital-input" [(ngModel)]="medNotes" placeholder="e.g. Take after food" maxlength="200">
+          </div>
+        </div>
+        <div class="care-err mt-2" *ngIf="medError">{{ medError }}</div>
+        <div class="care-success mt-2" *ngIf="medSuccess"><i class="bi bi-check-circle me-1"></i>Medication added!</div>
+        <button class="care-save-btn mt-2" (click)="addMedication()" [disabled]="isSavingMed">
+          <span *ngIf="!isSavingMed"><i class="bi bi-plus-circle me-1"></i>Add Medication</span>
+          <span *ngIf="isSavingMed"><span class="spinner-border spinner-border-sm me-1"></span>Saving…</span>
+        </button>
+      </div>
+
+      <!-- Medications list -->
+      <p class="care-section-label mt-3">Current Medications</p>
+      <div *ngIf="getMeds(carePanelPatient.patientUserId).length === 0" class="care-empty-msg">
+        No medications added yet.
+      </div>
+      <div *ngFor="let m of getMeds(carePanelPatient.patientUserId)" class="ct-goal-item">
+        <div class="ct-goal-text">
+          <span class="fw-semibold"><i class="bi bi-capsule me-1 text-success"></i>{{ m.title }}</span>
+          <span *ngIf="m.description" class="ct-note-date">{{ m.description }}</span>
+          <span class="ct-note-date">Added {{ m.createdAt | date:'d MMM y' }}</span>
+        </div>
+        <button class="ct-remove-btn" (click)="deleteMed(m)"><i class="bi bi-x"></i></button>
       </div>
 
     </ng-container>

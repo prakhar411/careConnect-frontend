@@ -1,5 +1,6 @@
 ﻿import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { capName } from '../../../utils/name.util';
 import { forkJoin } from 'rxjs';
 import { AdminService } from '../../../services/admin.service';
 import { AuthService } from '../../../services/auth.service';
@@ -47,25 +48,57 @@ export class TeamManagementComponent implements OnInit {
     return this.teamMembers.filter(m => !this.DOCTOR_ROLES.includes(m.role));
   }
 
-  readonly STAFF_ROLES = [...this.DOCTOR_ROLES, ...this.ADMIN_ROLES];
-
-  readonly DEPARTMENTS = [
+  // ── Doctor-specific dropdowns ──────────────────────────────────────────────
+  readonly DOCTOR_DEPARTMENTS = [
     'Cardiology', 'Neurology', 'Orthopedics', 'Pediatrics', 'Emergency',
     'Radiology', 'Pathology', 'Oncology', 'Dermatology', 'Psychiatry',
     'General Medicine', 'Surgery', 'Gynecology', 'ENT', 'Ophthalmology',
-    'Administration', 'HR', 'Finance', 'Operations'
+    'Anesthesiology', 'Nephrology', 'Gastroenterology', 'Pulmonology', 'Endocrinology'
   ];
 
-  readonly DESIGNATIONS = [
+  readonly DOCTOR_DESIGNATIONS = [
     'Head of Department', 'Senior Consultant', 'Consultant',
-    'Associate Consultant', 'Medical Officer', 'Junior Doctor',
-    'Resident Doctor', 'Senior Manager', 'Manager', 'Executive', 'Staff'
+    'Associate Consultant', 'Medical Officer', 'Junior Doctor', 'Resident Doctor'
   ];
 
-  readonly QUALIFICATIONS = [
+  readonly DOCTOR_QUALIFICATIONS = [
     'MBBS', 'MBBS MD', 'MBBS MS', 'MD', 'MS', 'MCh', 'DM',
-    'BDS', 'MDS', 'BPharm', 'MPharm', 'BPT', 'MPT', 'MBA', 'Other'
+    'BDS', 'MDS', 'BPT', 'MPT', 'DNB', 'FRCS', 'MRCP', 'Other'
   ];
+
+  // ── Staff-specific dropdowns ───────────────────────────────────────────────
+  readonly STAFF_DEPARTMENTS = [
+    'Administration', 'Human Resources', 'Finance & Accounts',
+    'Operations', 'IT & Systems', 'Housekeeping', 'Security',
+    'Medical Records', 'Supply Chain', 'Legal & Compliance'
+  ];
+
+  readonly STAFF_DESIGNATIONS = [
+    'Senior Manager', 'Manager', 'Assistant Manager', 'Supervisor',
+    'Team Lead', 'Executive', 'Senior Executive', 'Coordinator',
+    'Assistant', 'Officer', 'Staff'
+  ];
+
+  readonly STAFF_QUALIFICATIONS = [
+    'MBA', 'BBA', 'B.Com', 'M.Com', 'BCA', 'MCA', 'B.Tech', 'M.Tech',
+    'Diploma', 'Graduate', 'Post Graduate', 'Other'
+  ];
+
+  // ── Mode-aware getters ─────────────────────────────────────────────────────
+  get activeDepartments(): string[] {
+    return this.addMode === 'doctor' ? this.DOCTOR_DEPARTMENTS : this.STAFF_DEPARTMENTS;
+  }
+
+  get activeDesignations(): string[] {
+    return this.addMode === 'doctor' ? this.DOCTOR_DESIGNATIONS : this.STAFF_DESIGNATIONS;
+  }
+
+  get activeQualifications(): string[] {
+    return this.addMode === 'doctor' ? this.DOCTOR_QUALIFICATIONS : this.STAFF_QUALIFICATIONS;
+  }
+
+  // Today's date string for join date max
+  readonly today = new Date().toISOString().split('T')[0];
 
   readonly COUNTRY_CODES = [
     { label: '🇮🇳 +91 India',     code: '+91'  },
@@ -128,11 +161,14 @@ export class TeamManagementComponent implements OnInit {
       department:      [''],
       designation:     [''],
       qualification:   [''],
-      email:           ['', [Validators.required, Validators.email,
+      email:           ['', [Validators.required,
                              Validators.pattern('^[a-zA-Z0-9._%+\\-]+@(gmail|yahoo|outlook|infosys)\\.(com|in|org)$')]],
       phoneCountryCode:['+91'],
       phone:           ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
-      joinDate:        ['', Validators.required]
+      joinDate:        ['', [Validators.required, (c: AbstractControl) => {
+        if (!c.value) return null;
+        return c.value > new Date().toISOString().split('T')[0] ? { futureDate: true } : null;
+      }]]
     });
   }
 
@@ -207,7 +243,7 @@ export class TeamManagementComponent implements OnInit {
     this.errorMsg = '';
 
     const v = this.memberForm.value;
-    const fullName = [v.firstName.trim(), v.middleName?.trim() || '', v.lastName.trim()]
+    const fullName = [capName(v.firstName), capName(v.middleName), capName(v.lastName)]
                      .filter(Boolean).join(' ');
     const payload = {
       name:          fullName,

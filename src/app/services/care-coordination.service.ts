@@ -2,11 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
+import { API } from './api.config';
 
 @Injectable({ providedIn: 'root' })
 export class CareCoordinationService {
 
-  private base = 'http://localhost:8080/api/care-coordination';
+  private base = `${API}/care-coordination`;
 
   constructor(private http: HttpClient) {}
 

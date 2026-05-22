@@ -2,11 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { API } from './api.config';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
 
-  private readonly BASE = 'http://localhost:8080/api/notifications';
+  private readonly BASE = `${API}/notifications`;
 
   private unreadSubject = new BehaviorSubject<number>(0);
   readonly unreadCount$ = this.unreadSubject.asObservable();

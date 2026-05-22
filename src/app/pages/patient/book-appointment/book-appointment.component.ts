@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { capName } from '../../../utils/name.util';
 import { AuthService } from '../../../services/auth.service';
 import { AppointmentService } from '../../../services/appointment.service';
 import { PatientService } from '../../../services/patient.service';
@@ -9,7 +10,6 @@ import { GeoService } from '../../../services/geo.service';
 
 const EMAIL_V = [
   Validators.required,
-  Validators.email,
   Validators.pattern('^[a-zA-Z0-9._%+\\-]+@(gmail|yahoo|outlook|infosys)\\.(com|in|org)$'),
 ];
 
@@ -156,7 +156,7 @@ export class BookAppointmentComponent implements OnInit {
       mobilityLevel:         [''],
       dietRequirements:   ['No Restrictions'],
       visitDurationHours: [''],
-      description:        [''],
+      description:        ['', [Validators.minLength(10), Validators.maxLength(150)]],
 
       // Schedule
       scheduleType:  ['One-time'],
@@ -172,7 +172,7 @@ export class BookAppointmentComponent implements OnInit {
       genderPreference:    ['No Preference'],
       languagePreference:  ['No Preference'],
       applicationDeadline: ['', Validators.required],
-      notes:               ['', [Validators.minLength(10), Validators.maxLength(50)]],
+      notes:               ['', [Validators.minLength(10), Validators.maxLength(150)]],
     });
   }
 
@@ -303,9 +303,9 @@ export class BookAppointmentComponent implements OnInit {
     const visitTime24    = this.buildVisitTime24();
     const appointmentDate = `${v.startDate}T${visitTime24}:00`;
 
-    const firstName  = (v.firstName  || '').trim();
-    const middleName = (v.middleName || '').trim();
-    const lastName   = (v.lastName   || '').trim();
+    const firstName  = capName(v.firstName);
+    const middleName = capName(v.middleName);
+    const lastName   = capName(v.lastName);
 
     const noteParts = [v.description, v.notes].filter(Boolean);
 

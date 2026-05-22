@@ -2,6 +2,8 @@ import { AuthService } from '../../../services/auth.service';
 import { AppointmentService } from '../../../services/appointment.service';
 import { NotificationService } from '../../../services/notification.service';
 import { ShiftService } from '../../../services/shift.service';
+import { NurseService } from '../../../services/nurse.service';
+import { BlackoutService } from '../../../services/blackout.service';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subscription, forkJoin } from 'rxjs';
@@ -23,16 +25,21 @@ interface Shift {
 export class ScheduleComponent implements OnInit, OnDestroy {
 
   blackoutForm!: FormGroup;
-  blackoutAdded = false;
-  isAvailable   = true;
-  isLoading     = true;
-  unreadCount   = 0;
+  blackoutAdded   = false;
+  blackoutError   = '';
+  isAddingBlackout = false;
+  isLoading        = true;
+  unreadCount      = 0;
   private notifSub!: Subscription;
+  private nurseUserId!: number;
 
   blackoutDates: string[] = [];
 
   upcomingShifts: Shift[] = [];
   history:        Shift[] = [];
+
+  // ── Active Org Job Assignments ────────────────────────────────────────────
+  activeOrgJobs: any[] = [];
 
   // ── Earnings metrics (AC 6.4) ─────────────────────────────────────────────
   totalConfirmedEarnings = 0;
@@ -47,28 +54,44 @@ export class ScheduleComponent implements OnInit, OnDestroy {
   get completedShifts() { return this.history.filter(h => h.status === 'Completed').length; }
 
   constructor(
-    private auth:        AuthService,
-    private apptService: AppointmentService,
-    private shiftSvc:    ShiftService,
-    private fb:          FormBuilder,
-    private notifSvc:    NotificationService
+    private auth:         AuthService,
+    private apptService:  AppointmentService,
+    private shiftSvc:     ShiftService,
+    private nurseSvc:     NurseService,
+    private blackoutSvc:  BlackoutService,
+    private fb:           FormBuilder,
+    private notifSvc:     NotificationService
   ) {}
 
   ngOnInit(): void {
-    this.blackoutForm = this.fb.group({ blackoutDate: ['', Validators.required] });
+    this.blackoutForm = this.fb.group({
+      blackoutDate:   ['', Validators.required],
+      blackoutReason: ['', Validators.maxLength(80)]
+    });
 
     const userId = this.auth.getUserId();
     if (userId) {
+      this.nurseUserId = userId;
       this.notifSvc.initSSE(userId);
       this.notifSub = this.notifSvc.unreadCount$.subscribe(c => this.unreadCount = c);
     }
     if (!userId) { this.isLoading = false; return; }
 
+    // Load blackout dates from backend
+    this.blackoutSvc.getByNurse(userId).subscribe({
+      next: (dates) => { this.blackoutDates = dates || []; },
+      error: () => {}
+    });
+
     forkJoin({
       appointments: this.apptService.getByNurse(userId),
-      shifts:       this.shiftSvc.getByNurse(userId)
+      shifts:       this.shiftSvc.getByNurse(userId),
+      applications: this.nurseSvc.getApplications(userId)
     }).subscribe({
-      next: ({ appointments, shifts }) => {
+      next: ({ appointments, shifts, applications }) => {
+        this.activeOrgJobs = (applications || []).filter((a: any) =>
+          (a.status || '').toUpperCase() === 'APPROVED'
+        );
         const today = new Date().toISOString().split('T')[0];
 
         // Build appointment lookup map
@@ -157,21 +180,43 @@ export class ScheduleComponent implements OnInit, OnDestroy {
     return '₹' + Number(n).toLocaleString('en-IN');
   }
 
-  toggleAvailability() { this.isAvailable = !this.isAvailable; }
+  jobTypeLabel(jt: string): string {
+    const map: Record<string, string> = {
+      FULL_TIME: 'Full Time', PART_TIME: 'Part Time',
+      CONTRACT: 'Contract', TEMPORARY: 'Temporary', PER_DIEM: 'Per Diem'
+    };
+    return map[jt] || jt || '—';
+  }
+
+  formatDeadline(dt: string): string {
+    if (!dt) return '—';
+    return new Date(dt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
 
   addBlackout() {
     if (this.blackoutForm.invalid) { this.blackoutForm.markAllAsTouched(); return; }
-    const d = this.blackoutForm.value.blackoutDate;
-    if (!this.blackoutDates.includes(d)) {
-      this.blackoutDates.push(d);
-      this.blackoutAdded = true;
-      this.blackoutForm.reset();
-      setTimeout(() => this.blackoutAdded = false, 2500);
-    }
+    const date = this.blackoutForm.value.blackoutDate;
+    if (this.blackoutDates.includes(date)) { this.blackoutError = 'This date is already blocked.'; return; }
+    this.isAddingBlackout = true;
+    this.blackoutError    = '';
+    const reason = this.blackoutForm.value.blackoutReason || undefined;
+    this.blackoutSvc.add(this.nurseUserId, date, reason).subscribe({
+      next: () => {
+        this.blackoutDates = [...this.blackoutDates, date].sort();
+        this.blackoutAdded    = true;
+        this.isAddingBlackout = false;
+        this.blackoutForm.reset();
+        setTimeout(() => this.blackoutAdded = false, 2500);
+      },
+      error: () => { this.blackoutError = 'Failed to add date. Try again.'; this.isAddingBlackout = false; }
+    });
   }
 
   removeBlackout(date: string) {
-    this.blackoutDates = this.blackoutDates.filter(d => d !== date);
+    this.blackoutSvc.remove(this.nurseUserId, date).subscribe({
+      next: () => { this.blackoutDates = this.blackoutDates.filter(d => d !== date); },
+      error: () => {}
+    });
   }
 
   monthDay(date: string) { return date.slice(5); }

@@ -16,10 +16,14 @@ export class PatientCarePlanComponent implements OnInit {
   isLoading   = true;
   activeTab: PlanTab = 'team';
 
-  careTeam:     any[] = [];
+  careTeam:         any[] = [];
+  currentCareTeam:  any[] = [];
+  previousCareTeam: any[] = [];
   providerNotes: any[] = [];
   followUpTasks: any[] = [];
   careGoals:    any[] = [];
+
+  private activeApptIds = new Set<number>();
 
   private patientUserId!: number;
 
@@ -51,12 +55,30 @@ export class PatientCarePlanComponent implements OnInit {
   loadAll(): void {
     this.isLoading = true;
     forkJoin({
-      team:  this.careSvc.getTeam(this.patientUserId),
-      notes: this.careSvc.getNotes(this.patientUserId),
-      goals: this.careSvc.getGoals(this.patientUserId)
+      team:   this.careSvc.getTeam(this.patientUserId),
+      notes:  this.careSvc.getNotes(this.patientUserId),
+      goals:  this.careSvc.getGoals(this.patientUserId),
+      appts:  this.apptSvc.getByPatient(this.patientUserId)
     }).subscribe({
-      next: ({ team, notes, goals }) => {
-        this.careTeam      = team  || [];
+      next: ({ team, notes, goals, appts }) => {
+        // Build set of active appointment IDs
+        const ACTIVE_STATUSES = ['CONFIRMED', 'IN_PROGRESS', 'PENDING'];
+        this.activeApptIds = new Set(
+          (appts || [])
+            .filter((a: any) => ACTIVE_STATUSES.includes((a.status || '').toUpperCase()))
+            .map((a: any) => a.id)
+        );
+
+        this.careTeam = team || [];
+
+        // Split by whether the appointment that added the doctor is still active
+        this.currentCareTeam  = this.careTeam.filter((m: any) =>
+          m.appointmentId == null || this.activeApptIds.has(m.appointmentId)
+        );
+        this.previousCareTeam = this.careTeam.filter((m: any) =>
+          m.appointmentId != null && !this.activeApptIds.has(m.appointmentId)
+        );
+
         const allNotes     = notes || [];
         this.providerNotes = allNotes.filter((n: any) => n.noteType !== 'FOLLOW_UP');
         this.followUpTasks = allNotes.filter((n: any) => n.noteType === 'FOLLOW_UP');

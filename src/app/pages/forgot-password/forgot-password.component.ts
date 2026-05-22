@@ -20,7 +20,7 @@ export class ForgotPasswordComponent implements OnInit {
   buildForm(): void {
     const validators = this.role === 'organization'
       ? [Validators.required, Validators.minLength(5)]
-      : [Validators.required, Validators.email];
+      : [Validators.required, Validators.pattern('^[a-zA-Z0-9._%+\\-]+@(gmail|yahoo|outlook|infosys)\\.(com|in|org)$')];
     this.form = this.fb.group({ identifier: ['', validators] });
   }
 
